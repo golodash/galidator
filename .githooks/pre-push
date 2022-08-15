@@ -1,0 +1,40 @@
+#!env/bin/python
+# Run test cases before push
+
+import os, sys
+
+packages = ["slices", "maps", "dates", "functions", "languages", "maths", "numbers", "structs", "strings"]
+
+for i in range(len(packages)):
+    packages[i] = "./" + packages[i]
+
+f = open("go.mod")
+mod = f.readline()
+f.close()
+if mod == "":
+    print("go.mod file is unreadable, please restore the changes to the file. `git restore go.mod`")
+    sys.exit(1)
+mod = mod.replace("module ", "").strip()
+
+try:
+    for package in packages:
+        if os.path.isdir(package):
+            files = os.listdir(package)
+            hast_test_files = False
+            for file in files:
+                if "_test.go" in file:
+                    hast_test_files = True
+            if hast_test_files:
+                print(f"Testing {mod}/{package.replace('./', '')} package:\n")
+                if os.system(f"go clean -testcache && go test -v {mod}/{package.replace('./', '')}") != 0:
+                    print(f"❌ {package.replace('./', '')} package test cases didn't succeed.")
+                    sys.exit(1)
+except:
+    print('❌ All test cases didn\'t succeed.')
+    sys.exit(1)
+
+print('\n✅ All test cases succeed.')
+
+print("""\n✨ Thanks for your Contribution ✨\n""")
+
+sys.exit(0)

@@ -1,0 +1,10 @@
+# go
+go.sum
+main.go
+
+# vscode
+.vscode
+
+# env
+env
+.env
