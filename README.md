@@ -24,7 +24,8 @@ import (
 
 ```go
 import (
-    "fmt"
+	"fmt"
+
 	"github.com/golodash/galidator"
 )
 
