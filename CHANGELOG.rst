@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🐛 fix: Required paniced when int values been used
 * 🎉 feat: Required function added
 * 🎉 feat: users can now pass rules' keys as PascalCase or snake_case
 * 🎉 feat: Len validator added

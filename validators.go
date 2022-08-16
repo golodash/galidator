@@ -6,11 +6,12 @@ import (
 )
 
 var defaultValidatorErrorMessages = map[string]string{
-	"int":   "{field} is not integer",
-	"float": "{field} is not float",
-	"min":   "{field} must be higher equal to {min}",
-	"max":   "{field} must be lower equal to {max}",
-	"len":   "{field}'s length must be between {from} to {to} characters long",
+	"int":      "{field} is not integer",
+	"float":    "{field} is not float",
+	"min":      "{field} must be higher equal to {min}",
+	"max":      "{field} must be lower equal to {max}",
+	"len":      "{field}'s length must be between {from} to {to} characters long",
+	"required": "{field} can not be empty",
 }
 
 func Int(input interface{}) bool {
@@ -106,5 +107,5 @@ func Len(from, to int) func(interface{}) bool {
 
 func Required(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
-	return inputValue.IsZero() || inputValue.IsNil()
+	return !inputValue.IsZero() && !isNil(input)
 }
