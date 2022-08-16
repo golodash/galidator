@@ -2,55 +2,72 @@ package galidator
 
 import (
 	"fmt"
+
+	"github.com/golodash/galidator/independents"
 )
 
-type option map[string]string
-type options map[string]option
-type validators map[string]func(interface{}) bool
-type itemS struct {
-	validators validators
-	options    options
-}
+type (
+	option     map[string]string
+	options    map[string]option
+	validators map[string]func(interface{}) bool
+	itemS      struct {
+		validators validators
+		options    options
+	}
+	item interface {
+		validate(interface{}) []string
+
+		Int() item
+		Float() item
+		Min(min float64) item
+		Max(max float64) item
+		Len(from int, to int) item
+		Required() item
+
+		getOption(key string) option
+		addOption(key string, subKey string, value string)
+	}
+)
 
 // Adds int validator
 func (o *itemS) Int() item {
-	o.validators["int"] = Int
+	o.validators["int"] = independents.Int
 	return o
 }
 
 // Adds float validator
 func (o *itemS) Float() item {
-	o.validators["float"] = Float
+	o.validators["float"] = independents.Float
 	return o
 }
 
 func (o *itemS) Min(min float64) item {
 	functionName := "min"
-	o.validators[functionName] = Min(min)
+	o.validators[functionName] = independents.Min(min)
 	precision := determinePrecision(min)
-	o.AddOption(functionName, "min", fmt.Sprintf("%."+precision+"f", min))
+	o.addOption(functionName, "min", fmt.Sprintf("%."+precision+"f", min))
 	return o
 }
 
 func (o *itemS) Max(max float64) item {
 	functionName := "max"
-	o.validators[functionName] = Max(max)
+	o.validators[functionName] = independents.Max(max)
 	precision := determinePrecision(max)
-	o.AddOption(functionName, "max", fmt.Sprintf("%."+precision+"f", max))
+	o.addOption(functionName, "max", fmt.Sprintf("%."+precision+"f", max))
 	return o
 }
 
 func (o *itemS) Len(from, to int) item {
 	functionName := "len"
-	o.validators[functionName] = Len(from, to)
-	o.AddOption(functionName, "from", fmt.Sprintf("%d", from))
-	o.AddOption(functionName, "to", fmt.Sprintf("%d", to))
+	o.validators[functionName] = independents.Len(from, to)
+	o.addOption(functionName, "from", fmt.Sprintf("%d", from))
+	o.addOption(functionName, "to", fmt.Sprintf("%d", to))
 	return o
 }
 
 func (o *itemS) Required() item {
 	functionName := "required"
-	o.validators[functionName] = Required
+	o.validators[functionName] = independents.Required
 	return o
 }
 
@@ -66,31 +83,17 @@ func (o *itemS) validate(input interface{}) []string {
 	return fails
 }
 
-func (o *itemS) GetOption(key string) option {
+func (o *itemS) getOption(key string) option {
 	if option, ok := o.options[key]; ok {
 		return option
 	}
 	return option{}
 }
 
-func (o *itemS) AddOption(key string, subKey string, value string) {
+func (o *itemS) addOption(key string, subKey string, value string) {
 	if option, ok := o.options[key]; ok {
 		option[subKey] = value
 		return
 	}
 	o.options[key] = option{subKey: value}
-}
-
-type item interface {
-	validate(interface{}) []string
-
-	Int() item
-	Float() item
-	Min(min float64) item
-	Max(max float64) item
-	Len(from int, to int) item
-	Required() item
-
-	GetOption(key string) option
-	AddOption(key string, subKey string, value string)
 }

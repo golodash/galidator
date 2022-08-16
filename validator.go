@@ -5,17 +5,21 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/golodash/galidator/independents"
 	gStrings "github.com/golodash/godash/strings"
 )
 
-type Items map[string]item
-
-type Messages map[string]string
-
-type validatorS struct {
-	items    Items
-	messages Messages
-}
+type (
+	Items      map[string]item
+	Messages   map[string]string
+	validatorS struct {
+		items    Items
+		messages Messages
+	}
+	validator interface {
+		Validate(interface{}) map[string][]string
+	}
+)
 
 func getErrorMessage(fieldName string, failKey string, options option, messages Messages) string {
 	failKey = strings.ToLower(failKey)
@@ -25,7 +29,7 @@ func getErrorMessage(fieldName string, failKey string, options option, messages 
 		}
 		return strings.ReplaceAll(out, "{field}", fieldName)
 	} else {
-		if defaultErrorMessage, ok := defaultValidatorErrorMessages[failKey]; ok {
+		if defaultErrorMessage, ok := independents.DefaultValidatorErrorMessages[failKey]; ok {
 			for key, value := range options {
 				defaultErrorMessage = strings.ReplaceAll(defaultErrorMessage, "{"+key+"}", value)
 			}
@@ -46,7 +50,7 @@ func (o *validatorS) Validate(input interface{}) map[string][]string {
 		if len(fails) != 0 {
 			for _, failKey := range fails {
 				fieldName = gStrings.SnakeCase(fieldName)
-				output[fieldName] = append(output[fieldName], getErrorMessage(fieldName, failKey, role.GetOption(failKey), o.messages))
+				output[fieldName] = append(output[fieldName], getErrorMessage(fieldName, failKey, role.getOption(failKey), o.messages))
 			}
 		}
 	}
@@ -65,8 +69,4 @@ func (o *validatorS) Validate(input interface{}) map[string][]string {
 	}
 
 	return output
-}
-
-type validator interface {
-	Validate(interface{}) map[string][]string
 }

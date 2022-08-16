@@ -1,11 +1,11 @@
-package galidator
+package independents
 
 import (
 	"reflect"
 	"strconv"
 )
 
-var defaultValidatorErrorMessages = map[string]string{
+var DefaultValidatorErrorMessages = map[string]string{
 	"int":      "{field} is not integer",
 	"float":    "{field} is not float",
 	"min":      "{field} must be higher equal to {min}",

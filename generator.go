@@ -4,7 +4,13 @@ import (
 	"github.com/golodash/godash/strings"
 )
 
-type generatorS struct{}
+type (
+	generatorS struct{}
+	generator  interface {
+		Generate(Items, Messages) validator
+		Item() item
+	}
+)
 
 func (o *generatorS) Generate(items Items, errorMessages Messages) validator {
 	for key, errorMessage := range errorMessages {
@@ -22,11 +28,6 @@ func (o *generatorS) Generate(items Items, errorMessages Messages) validator {
 
 func (o *generatorS) Item() item {
 	return &itemS{validators: validators{}, options: options{}}
-}
-
-type generator interface {
-	Generate(Items, Messages) validator
-	Item() item
 }
 
 // Returns a Generator
