@@ -6,8 +6,10 @@ import (
 )
 
 var defaultValidatorErrorMessages = map[string]string{
-	"int":   "%s is not integer",
-	"float": "%s is not float",
+	"int":   "{field} is not integer",
+	"float": "{field} is not float",
+	"min":   "{field} must be higher equal to {min}",
+	"max":   "{field} must be lower equal to {max}",
 }
 
 func Int(input interface{}) bool {
@@ -41,5 +43,45 @@ func Float(input interface{}) bool {
 		return true
 	default:
 		return false
+	}
+}
+
+func Min(min float64) func(interface{}) bool {
+	return func(input interface{}) bool {
+		inputValue := reflect.ValueOf(input)
+		switch inputValue.Kind() {
+		case reflect.String:
+			inputFloat, err := strconv.ParseFloat(input.(string), 64)
+			if err != nil {
+				return false
+			}
+			return inputFloat >= min
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
+			reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
+			reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
+			return inputValue.Convert(reflect.TypeOf(1.0)).Float() >= min
+		default:
+			return false
+		}
+	}
+}
+
+func Max(max float64) func(interface{}) bool {
+	return func(input interface{}) bool {
+		inputValue := reflect.ValueOf(input)
+		switch inputValue.Kind() {
+		case reflect.String:
+			inputFloat, err := strconv.ParseFloat(input.(string), 64)
+			if err != nil {
+				return false
+			}
+			return inputFloat <= max
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
+			reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
+			reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
+			return inputValue.Convert(reflect.TypeOf(1.0)).Float() <= max
+		default:
+			return false
+		}
 	}
 }

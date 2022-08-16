@@ -7,7 +7,7 @@ func (o *generatorS) Generate(items Items, errorMessages Messages) validator {
 }
 
 func (o *generatorS) Item() item {
-	return &itemS{validates: map[string]func(interface{}) bool{}}
+	return &itemS{validators: validators{}, options: options{}}
 }
 
 type generator interface {
