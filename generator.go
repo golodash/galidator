@@ -5,14 +5,19 @@ import (
 )
 
 type (
+	// A struct to implement `generator` interface
 	generatorS struct{}
-	generator  interface {
-		Generate(Rules, Messages) validator
+
+	// An interface to generate a `validator` or `rule`
+	generator interface {
+		// Generates a `validator` interface which can be used to validate some data by some filters
+		Validator(Rules, Messages) validator
+		// Generates a `rule` to validate passed information
 		Rule() rule
 	}
 )
 
-func (o *generatorS) Generate(rules Rules, errorMessages Messages) validator {
+func (o *generatorS) Validator(rules Rules, errorMessages Messages) validator {
 	for key, errorMessage := range errorMessages {
 		updatedKey := strings.SnakeCase(key)
 		if updatedKey == key {
@@ -30,6 +35,7 @@ func (o *generatorS) Rule() rule {
 	return &ruleS{validators: validators{}, options: options{}}
 }
 
+// A unique instance of `generatorS` to stop creating unnecessarily multiple instances of a generator
 var generatorInstance = &generatorS{}
 
 // Returns a Generator

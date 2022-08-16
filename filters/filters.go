@@ -1,10 +1,11 @@
-package independents
+package filters
 
 import (
 	"reflect"
 	"strconv"
 )
 
+// A map which with rule's key will provide the default error message of that key
 var DefaultValidatorErrorMessages = map[string]string{
 	"int":      "{field} is not integer",
 	"float":    "{field} is not float",
@@ -14,6 +15,7 @@ var DefaultValidatorErrorMessages = map[string]string{
 	"required": "{field} can not be empty",
 }
 
+// Returns true if the passed `input` (can be)/is int
 func Int(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	switch inputValue.Kind() {
@@ -32,6 +34,7 @@ func Int(input interface{}) bool {
 	}
 }
 
+// Returns true if the passed `input` (can be)/is float
 func Float(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	switch inputValue.Kind() {
@@ -48,6 +51,7 @@ func Float(input interface{}) bool {
 	}
 }
 
+// Returns true if: `input` >= `min`
 func Min(min float64) func(interface{}) bool {
 	return func(input interface{}) bool {
 		inputValue := reflect.ValueOf(input)
@@ -68,6 +72,7 @@ func Min(min float64) func(interface{}) bool {
 	}
 }
 
+// Returns true if: `input` <= `max`
 func Max(max float64) func(interface{}) bool {
 	return func(input interface{}) bool {
 		inputValue := reflect.ValueOf(input)
@@ -88,6 +93,10 @@ func Max(max float64) func(interface{}) bool {
 	}
 }
 
+// Returns true if len(input) >= from && len(input) <= to
+//
+// If from == -1, no check on `from` config will happen
+// If to == -1, no check on `to` config will happen
 func Len(from, to int) func(interface{}) bool {
 	return func(input interface{}) bool {
 		inputValue := reflect.ValueOf(input)
@@ -105,6 +114,7 @@ func Len(from, to int) func(interface{}) bool {
 	}
 }
 
+// Returns true if passed `input` is not 0, "", nil and empty rune
 func Required(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	return !inputValue.IsZero() && !isNil(input)

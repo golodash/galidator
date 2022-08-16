@@ -5,31 +5,41 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/golodash/galidator/independents"
+	"github.com/golodash/galidator/filters"
 	gStrings "github.com/golodash/godash/strings"
 )
 
 type (
-	Rules      map[string]rule
-	Messages   map[string]string
+	// Stores keys of fields with their rules
+	Rules map[string]rule
+
+	// Stores custom error messages sent by user
+	Messages map[string]string
+
+	// A struct to implement `validator` interface
 	validatorS struct {
 		rules    Rules
 		messages Messages
 	}
+
+	// Validator object
 	validator interface {
-		Validate(interface{}) map[string][]string
+		// Validates passed data and returns a map of possible validation errors happened on every field with failed validation.
+		//
+		// If no errors found, length of the output will be 0
+		Validate(input interface{}) map[string][]string
 	}
 )
 
+// Formats and returns error message associated with passed `failKey`
 func getErrorMessage(fieldName string, failKey string, options option, messages Messages) string {
-	failKey = strings.ToLower(failKey)
 	if out, ok := messages[failKey]; ok {
 		for key, value := range options {
 			out = strings.ReplaceAll(out, "{"+key+"}", value)
 		}
 		return strings.ReplaceAll(out, "{field}", fieldName)
 	} else {
-		if defaultErrorMessage, ok := independents.DefaultValidatorErrorMessages[failKey]; ok {
+		if defaultErrorMessage, ok := filters.DefaultValidatorErrorMessages[failKey]; ok {
 			for key, value := range options {
 				defaultErrorMessage = strings.ReplaceAll(defaultErrorMessage, "{"+key+"}", value)
 			}

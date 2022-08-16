@@ -1,7 +1,8 @@
-package independents
+package filters
 
 import "reflect"
 
+// Returns true if `input` is nil
 func isNil(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	switch inputValue.Kind() {
