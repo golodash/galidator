@@ -10,6 +10,7 @@ var defaultValidatorErrorMessages = map[string]string{
 	"float": "{field} is not float",
 	"min":   "{field} must be higher equal to {min}",
 	"max":   "{field} must be lower equal to {max}",
+	"len":   "{field}'s length must be between {from} to {to} characters long",
 }
 
 func Int(input interface{}) bool {
@@ -83,5 +84,22 @@ func Max(max float64) func(interface{}) bool {
 		default:
 			return false
 		}
+	}
+}
+
+func Len(from, to int) func(interface{}) bool {
+	return func(input interface{}) bool {
+		inputValue := reflect.ValueOf(input)
+		if inputValue.Kind() == reflect.String {
+			inputStr := input.(string)
+			if from != -1 && len(inputStr) < from {
+				return false
+			} else if to != -1 && len(inputStr) > to {
+				return false
+			}
+		} else {
+			return false
+		}
+		return true
 	}
 }

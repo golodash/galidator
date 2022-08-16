@@ -2,7 +2,6 @@ package galidator
 
 import (
 	"fmt"
-	"strings"
 )
 
 type option map[string]string
@@ -15,31 +14,37 @@ type itemS struct {
 
 // Adds int validator
 func (o *itemS) Int() item {
-	functionName := strings.ToLower("int")
-	o.validators[functionName] = Int
+	o.validators["int"] = Int
 	return o
 }
 
 // Adds float validator
 func (o *itemS) Float() item {
-	functionName := strings.ToLower("float")
-	o.validators[functionName] = Float
+	o.validators["float"] = Float
 	return o
 }
 
 func (o *itemS) Min(min float64) item {
-	functionName := strings.ToLower("min")
+	functionName := "min"
 	o.validators[functionName] = Min(min)
 	precision := determinePrecision(min)
-	o.AddOption("min", "min", fmt.Sprintf("%."+precision+"f", min))
+	o.AddOption(functionName, "min", fmt.Sprintf("%."+precision+"f", min))
 	return o
 }
 
 func (o *itemS) Max(max float64) item {
-	functionName := strings.ToLower("max")
+	functionName := "max"
 	o.validators[functionName] = Max(max)
 	precision := determinePrecision(max)
-	o.AddOption("max", "max", fmt.Sprintf("%."+precision+"f", max))
+	o.AddOption(functionName, "max", fmt.Sprintf("%."+precision+"f", max))
+	return o
+}
+
+func (o *itemS) Len(from, to int) item {
+	functionName := "len"
+	o.validators[functionName] = Len(from, to)
+	o.AddOption(functionName, "from", fmt.Sprintf("%d", from))
+	o.AddOption(functionName, "to", fmt.Sprintf("%d", to))
 	return o
 }
 
@@ -75,8 +80,9 @@ type item interface {
 
 	Int() item
 	Float() item
-	Min(float64) item
-	Max(float64) item
+	Min(min float64) item
+	Max(max float64) item
+	Len(from int, to int) item
 
 	GetOption(key string) option
 	AddOption(key string, subKey string, value string)
