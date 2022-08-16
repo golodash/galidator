@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	gStrings "github.com/golodash/godash/strings"
 )
 
 type Items map[string]item
@@ -38,28 +40,27 @@ func (o *validatorS) Validate(input interface{}) map[string][]string {
 	output := map[string][]string{}
 	inputValue := reflect.ValueOf(input)
 
+	validate := func(role item, onKeyInput interface{}, fieldName string) {
+		valueOnKeyInput := reflect.ValueOf(onKeyInput)
+		fails := role.validate(valueOnKeyInput.Interface())
+		if len(fails) != 0 {
+			for _, failKey := range fails {
+				fieldName = gStrings.SnakeCase(fieldName)
+				output[fieldName] = append(output[fieldName], getErrorMessage(fieldName, failKey, role.GetOption(failKey), o.messages))
+			}
+		}
+	}
+
 	switch inputValue.Kind() {
 	case reflect.Struct:
 		for fieldName, role := range o.items {
 			valueOnKeyInput := inputValue.FieldByName(fieldName)
-			fails := role.validate(valueOnKeyInput.Interface())
-			if len(fails) != 0 {
-				for _, failKey := range fails {
-					fieldName = strings.ToLower(fieldName)
-					output[fieldName] = append(output[fieldName], getErrorMessage(fieldName, failKey, role.GetOption(failKey), o.messages))
-				}
-			}
+			validate(role, valueOnKeyInput.Interface(), fieldName)
 		}
 	case reflect.Map:
 		for fieldName, role := range o.items {
 			valueOnKeyInput := inputValue.MapIndex(reflect.ValueOf(fieldName))
-			fails := role.validate(valueOnKeyInput.Interface().(string))
-			if len(fails) != 0 {
-				for _, failKey := range fails {
-					fieldName = strings.ToLower(fieldName)
-					output[fieldName] = append(output[fieldName], getErrorMessage(fieldName, failKey, role.GetOption(failKey), o.messages))
-				}
-			}
+			validate(role, valueOnKeyInput.Interface(), fieldName)
 		}
 	}
 
