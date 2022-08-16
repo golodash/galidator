@@ -31,9 +31,9 @@ import (
 
 func main() {
 	g := galidator.New()
-	schema := g.Generate(galidator.Items{
-		"number": g.Item().Int(),
-		"id":     g.Item().Float(),
+	schema := g.Generate(galidator.Rules{
+		"number": g.Rule().Int(),
+		"id":     g.Rule().Float(),
 	}, nil)
 
 	output := map[string]string{
@@ -65,9 +65,9 @@ type testStruct struct {
 
 func main() {
 	g := galidator.New()
-	schema := g.Generate(galidator.Items{
-		"Number": g.Item().Int(),
-		"ID":     g.Item().Float(),
+	schema := g.Generate(galidator.Rules{
+		"Number": g.Rule().Int(),
+		"ID":     g.Rule().Float(),
 	}, nil)
 
 	output := testStruct{

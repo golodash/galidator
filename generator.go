@@ -7,12 +7,12 @@ import (
 type (
 	generatorS struct{}
 	generator  interface {
-		Generate(Items, Messages) validator
-		Item() item
+		Generate(Rules, Messages) validator
+		Rule() rule
 	}
 )
 
-func (o *generatorS) Generate(items Items, errorMessages Messages) validator {
+func (o *generatorS) Generate(rules Rules, errorMessages Messages) validator {
 	for key, errorMessage := range errorMessages {
 		updatedKey := strings.SnakeCase(key)
 		if updatedKey == key {
@@ -23,17 +23,16 @@ func (o *generatorS) Generate(items Items, errorMessages Messages) validator {
 		delete(errorMessages, key)
 	}
 
-	return &validatorS{items: items, messages: errorMessages}
+	return &validatorS{rules: rules, messages: errorMessages}
 }
 
-func (o *generatorS) Item() item {
-	return &itemS{validators: validators{}, options: options{}}
+func (o *generatorS) Rule() rule {
+	return &ruleS{validators: validators{}, options: options{}}
 }
+
+var generatorInstance = &generatorS{}
 
 // Returns a Generator
-
-var generatorValue = &generatorS{}
-
 func New() generator {
-	return generatorValue
+	return generatorInstance
 }

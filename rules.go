@@ -10,19 +10,19 @@ type (
 	option     map[string]string
 	options    map[string]option
 	validators map[string]func(interface{}) bool
-	itemS      struct {
+	ruleS      struct {
 		validators validators
 		options    options
 	}
-	item interface {
+	rule interface {
 		validate(interface{}) []string
 
-		Int() item
-		Float() item
-		Min(min float64) item
-		Max(max float64) item
-		Len(from int, to int) item
-		Required() item
+		Int() rule
+		Float() rule
+		Min(min float64) rule
+		Max(max float64) rule
+		Len(from int, to int) rule
+		Required() rule
 
 		getOption(key string) option
 		addOption(key string, subKey string, value string)
@@ -30,18 +30,18 @@ type (
 )
 
 // Adds int validator
-func (o *itemS) Int() item {
+func (o *ruleS) Int() rule {
 	o.validators["int"] = independents.Int
 	return o
 }
 
 // Adds float validator
-func (o *itemS) Float() item {
+func (o *ruleS) Float() rule {
 	o.validators["float"] = independents.Float
 	return o
 }
 
-func (o *itemS) Min(min float64) item {
+func (o *ruleS) Min(min float64) rule {
 	functionName := "min"
 	o.validators[functionName] = independents.Min(min)
 	precision := determinePrecision(min)
@@ -49,7 +49,7 @@ func (o *itemS) Min(min float64) item {
 	return o
 }
 
-func (o *itemS) Max(max float64) item {
+func (o *ruleS) Max(max float64) rule {
 	functionName := "max"
 	o.validators[functionName] = independents.Max(max)
 	precision := determinePrecision(max)
@@ -57,7 +57,7 @@ func (o *itemS) Max(max float64) item {
 	return o
 }
 
-func (o *itemS) Len(from, to int) item {
+func (o *ruleS) Len(from, to int) rule {
 	functionName := "len"
 	o.validators[functionName] = independents.Len(from, to)
 	o.addOption(functionName, "from", fmt.Sprintf("%d", from))
@@ -65,14 +65,14 @@ func (o *itemS) Len(from, to int) item {
 	return o
 }
 
-func (o *itemS) Required() item {
+func (o *ruleS) Required() rule {
 	functionName := "required"
 	o.validators[functionName] = independents.Required
 	return o
 }
 
 // Validates all validators that did set for the field
-func (o *itemS) validate(input interface{}) []string {
+func (o *ruleS) validate(input interface{}) []string {
 	fails := []string{}
 	for key, vFunction := range o.validators {
 		if !vFunction(input) {
@@ -83,14 +83,14 @@ func (o *itemS) validate(input interface{}) []string {
 	return fails
 }
 
-func (o *itemS) getOption(key string) option {
+func (o *ruleS) getOption(key string) option {
 	if option, ok := o.options[key]; ok {
 		return option
 	}
 	return option{}
 }
 
-func (o *itemS) addOption(key string, subKey string, value string) {
+func (o *ruleS) addOption(key string, subKey string, value string) {
 	if option, ok := o.options[key]; ok {
 		option[subKey] = value
 		return
