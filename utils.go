@@ -1,12 +1,15 @@
 package galidator
 
 import (
-	"reflect"
-	"runtime"
-	"strings"
+	"fmt"
+	"math"
 )
 
-func getFunctionName(temp interface{}) string {
-	strs := strings.Split((runtime.FuncForPC(reflect.ValueOf(temp).Pointer()).Name()), ".")
-	return strs[len(strs)-1]
+func determinePrecision(number float64) string {
+	for i := 0; ; i++ {
+		ten := math.Pow10(i)
+		if math.Floor(ten*number) == ten*number {
+			return fmt.Sprint(i)
+		}
+	}
 }
