@@ -48,6 +48,12 @@ func (o *itemS) Len(from, to int) item {
 	return o
 }
 
+func (o *itemS) Required() item {
+	functionName := "required"
+	o.validators[functionName] = Required
+	return o
+}
+
 // Validates all validators that did set for the field
 func (o *itemS) validate(input interface{}) []string {
 	fails := []string{}
@@ -83,6 +89,7 @@ type item interface {
 	Min(min float64) item
 	Max(max float64) item
 	Len(from int, to int) item
+	Required() item
 
 	GetOption(key string) option
 	AddOption(key string, subKey string, value string)

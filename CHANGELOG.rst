@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: Required function added
 * 🎉 feat: users can now pass rules' keys as PascalCase or snake_case
 * 🎉 feat: Len validator added
 * 🎉 feat(validators): Min and Max function and options parameter added to use in error prints

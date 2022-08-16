@@ -103,3 +103,8 @@ func Len(from, to int) func(interface{}) bool {
 		return true
 	}
 }
+
+func Required(input interface{}) bool {
+	inputValue := reflect.ValueOf(input)
+	return inputValue.IsZero() || inputValue.IsNil()
+}
