@@ -14,3 +14,13 @@ func isNil(input interface{}) bool {
 		return false
 	}
 }
+
+func hasZeroItems(input interface{}) bool {
+	inputValue := reflect.ValueOf(input)
+	switch inputValue.Kind() {
+	case reflect.Array, reflect.Slice, reflect.Map:
+		return inputValue.Len() == 0
+	default:
+		return false
+	}
+}

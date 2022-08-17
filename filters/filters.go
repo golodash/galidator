@@ -13,9 +13,10 @@ var DefaultValidatorErrorMessages = map[string]string{
 	"max":       "{field} must be lower equal to {max}",
 	"len_range": "{field}'s length must be between {from} to {to} characters long",
 	"len":       "{field}'s length must be equal to {length}",
-	"required":  "{field} can not be empty",
+	"required":  "{field} can not be 0 or \"\" or '' or nil or empty",
 	"non_zero":  "{field} can not be 0 or \"\" or ''",
 	"non_nil":   "{field} can not be nil",
+	"non_empty": "{field} can not be empty",
 }
 
 // Returns true if the passed input (can be)/is int
@@ -122,10 +123,10 @@ func Len(length int) func(interface{}) bool {
 	}
 }
 
-// Returns true if passed input is not 0, "", nil and empty rune
+// Returns true if passed input is not 0, "", ”, nil and empty
 func Required(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
-	return !inputValue.IsZero() && !isNil(input)
+	return !inputValue.IsZero() && !isNil(input) && !hasZeroItems(input)
 }
 
 // Returns true if input is not zero(0, "", ”)
@@ -136,4 +137,9 @@ func NonZero(input interface{}) bool {
 // Returns true if input is not nil
 func NonNil(input interface{}) bool {
 	return !isNil(input)
+}
+
+// Returns true if input has items
+func NonEmpty(input interface{}) bool {
+	return !hasZeroItems(input)
 }

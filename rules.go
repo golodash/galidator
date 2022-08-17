@@ -50,6 +50,8 @@ type (
 		NonZero() rule
 		// Checks if input is not nil
 		NonNil() rule
+		// Checks if input has items inside it
+		NonEmpty() rule
 		// Returns option of the passed rule key
 		getOption(key string) option
 		// Adds a new subKey with a value associated with it to option of passed rule key
@@ -113,6 +115,12 @@ func (o *ruleS) NonZero() rule {
 func (o *ruleS) NonNil() rule {
 	functionName := "non_nil"
 	o.validators[functionName] = filters.NonNil
+	return o
+}
+
+func (o *ruleS) NonEmpty() rule {
+	functionName := "non_empty"
+	o.validators[functionName] = filters.NonEmpty
 	return o
 }
 
