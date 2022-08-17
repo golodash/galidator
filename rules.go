@@ -10,13 +10,13 @@ type (
 	// A map with data recorded to be used in returning error messages
 	option map[string]string
 
-	// A map of different rules as `key` with their own `option`
+	// A map of different rules as key with their own option
 	options map[string]option
 
-	// A map full of validators which is assigned for a single key in a `validator` struct
+	// A map full of validators which is assigned for a single key in a validator struct
 	validators map[string]func(interface{}) bool
 
-	// A struct to implement `rule` interface
+	// A struct to implement rule interface
 	ruleS struct {
 		// Used to validate user's data
 		validators validators
@@ -26,30 +26,30 @@ type (
 
 	// An interface with some functions to satisfy validation purpose
 	rule interface {
-		// Validates all `validators` defined
+		// Validates all validators defined
 		validate(interface{}) []string
 
-		// Checks if passed data is an int or can be an int
+		// Checks if input (can be)/is int
 		Int() rule
-		// Checks if passed data is a float or can be a float
+		// Checks if input (can be)/is float
 		Float() rule
-		// Checks if passed data is higher or equal to `min` passed value
+		// Checks if input acts like: input >= min or len(input) >= min
 		Min(min float64) rule
-		// Checks if passed data is lower or equal to `max` passed value
+		// Checks if input acts like: input <= max or len(input) <= max
 		Max(max float64) rule
-		// Checks if passed string's length is between `from` and `to`
+		// Checks if input acts like: len(input) >= from && len(input) <= to
 		//
-		// If from == -1, no check on `from` will happen
-		// If to == -1, no check on `to` will happen
+		// If from == -1, no check on from will happen
+		// If to == -1, no check on to will happen
 		LenRange(from int, to int) rule
-		// Returns true if len(input) is equal to passed length
+		// Checks if input acts like: len(input) == length
 		Len(length int) rule
-		// Checks if passed data is not zero(0, "", '') or nil
+		// Checks if input is not zero(0, "", '') or nil
 		Required() rule
 
-		// Returns `option` of the passed rule `key`
+		// Returns option of the passed rule key
 		getOption(key string) option
-		// Adds a new `subKey` with a value associated with it to `option` of passed rule `key`
+		// Adds a new subKey with a value associated with it to option of passed rule key
 		addOption(key string, subKey string, value string)
 	}
 )

@@ -16,7 +16,7 @@ type (
 	// Stores custom error messages sent by user
 	Messages map[string]string
 
-	// A struct to implement `validator` interface
+	// A struct to implement validator interface
 	validatorS struct {
 		rules    Rules
 		messages Messages
@@ -31,7 +31,7 @@ type (
 	}
 )
 
-// Formats and returns error message associated with passed `failKey`
+// Formats and returns error message associated with passed failKey
 func getErrorMessage(fieldName string, failKey string, options option, messages Messages) string {
 	if out, ok := messages[failKey]; ok {
 		for key, value := range options {

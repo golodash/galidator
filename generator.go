@@ -5,14 +5,14 @@ import (
 )
 
 type (
-	// A struct to implement `generator` interface
+	// A struct to implement generator interface
 	generatorS struct{}
 
-	// An interface to generate a `validator` or `rule`
+	// An interface to generate a validator or rule
 	generator interface {
-		// Generates a `validator` interface which can be used to validate some data by some filters
+		// Generates a validator interface which can be used to validate some data by some filters
 		Validator(Rules, Messages) validator
-		// Generates a `rule` to validate passed information
+		// Generates a rule to validate passed information
 		Rule() rule
 	}
 )
@@ -35,7 +35,7 @@ func (o *generatorS) Rule() rule {
 	return &ruleS{validators: validators{}, options: options{}}
 }
 
-// A unique instance of `generatorS` to stop creating unnecessarily multiple instances of a generator
+// A unique instance of generatorS to stop creating unnecessarily multiple instances of a generator
 var generatorInstance = &generatorS{}
 
 // Returns a Generator

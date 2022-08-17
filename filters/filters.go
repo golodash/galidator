@@ -16,7 +16,7 @@ var DefaultValidatorErrorMessages = map[string]string{
 	"required":  "{field} can not be empty",
 }
 
-// Returns true if the passed `input` (can be)/is int
+// Returns true if the passed input (can be)/is int
 func Int(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	switch inputValue.Kind() {
@@ -35,7 +35,7 @@ func Int(input interface{}) bool {
 	}
 }
 
-// Returns true if the passed `input` (can be)/is float
+// Returns true if the passed input (can be)/is float
 func Float(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	switch inputValue.Kind() {
@@ -52,17 +52,13 @@ func Float(input interface{}) bool {
 	}
 }
 
-// Returns true if: `input` >= `min`
+// Returns true if: input >= min or len(input) >= min
 func Min(min float64) func(interface{}) bool {
 	return func(input interface{}) bool {
 		inputValue := reflect.ValueOf(input)
 		switch inputValue.Kind() {
-		case reflect.String:
-			inputFloat, err := strconv.ParseFloat(input.(string), 64)
-			if err != nil {
-				return false
-			}
-			return inputFloat >= min
+		case reflect.String, reflect.Array, reflect.Map, reflect.Slice:
+			return inputValue.Len() >= int(min)
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
 			reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
 			reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
@@ -73,17 +69,13 @@ func Min(min float64) func(interface{}) bool {
 	}
 }
 
-// Returns true if: `input` <= `max`
+// Returns true if: input <= max or len(input) <= max
 func Max(max float64) func(interface{}) bool {
 	return func(input interface{}) bool {
 		inputValue := reflect.ValueOf(input)
 		switch inputValue.Kind() {
-		case reflect.String:
-			inputFloat, err := strconv.ParseFloat(input.(string), 64)
-			if err != nil {
-				return false
-			}
-			return inputFloat <= max
+		case reflect.String, reflect.Array, reflect.Map, reflect.Slice:
+			return inputValue.Len() <= int(max)
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
 			reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
 			reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
@@ -96,20 +88,20 @@ func Max(max float64) func(interface{}) bool {
 
 // Returns true if len(input) >= from && len(input) <= to
 //
-// If from == -1, no check on `from` config will happen
-// If to == -1, no check on `to` config will happen
+// If from == -1, no check on from config will happen
+// If to == -1, no check on to config will happen
 func LenRange(from, to int) func(interface{}) bool {
 	return func(input interface{}) bool {
 		inputValue := reflect.ValueOf(input)
-		if inputValue.Kind() == reflect.String {
-			inputStr := input.(string)
-			if from != -1 && len(inputStr) < from {
+		switch inputValue.Kind() {
+		case reflect.String, reflect.Array, reflect.Map, reflect.Slice:
+			if from != -1 && inputValue.Len() < from {
 				return false
-			} else if to != -1 && len(inputStr) > to {
+			} else if to != -1 && inputValue.Len() > to {
 				return false
 			}
 			return true
-		} else {
+		default:
 			return false
 		}
 	}
@@ -119,15 +111,16 @@ func LenRange(from, to int) func(interface{}) bool {
 func Len(length int) func(interface{}) bool {
 	return func(input interface{}) bool {
 		inputValue := reflect.ValueOf(input)
-		if inputValue.Kind() == reflect.String {
-			return len(input.(string)) == length
-		} else {
+		switch inputValue.Kind() {
+		case reflect.String, reflect.Array, reflect.Map, reflect.Slice:
+			return inputValue.Len() == length
+		default:
 			return false
 		}
 	}
 }
 
-// Returns true if passed `input` is not 0, "", nil and empty rune
+// Returns true if passed input is not 0, "", nil and empty rune
 func Required(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	return !inputValue.IsZero() && !isNil(input)
