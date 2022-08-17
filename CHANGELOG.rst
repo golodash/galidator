@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: added NonNil and NonZero
 * 🐛 fix: making Min, Max, LenRange and Len general usecase
 * 🎉 feat: added Len and LenRange functions in different meanings
 * 🐛 fix: workflow now downloads requirements

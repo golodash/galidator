@@ -44,9 +44,12 @@ type (
 		LenRange(from int, to int) rule
 		// Checks if input acts like: len(input) == length
 		Len(length int) rule
-		// Checks if input is not zero(0, "", '') or nil
+		// Checks if input is not zero(0, "", '') or nil or empty
 		Required() rule
-
+		// Checks if input is not zero(0, "", '')
+		NonZero() rule
+		// Checks if input is not nil
+		NonNil() rule
 		// Returns option of the passed rule key
 		getOption(key string) option
 		// Adds a new subKey with a value associated with it to option of passed rule key
@@ -98,6 +101,18 @@ func (o *ruleS) Len(length int) rule {
 func (o *ruleS) Required() rule {
 	functionName := "required"
 	o.validators[functionName] = filters.Required
+	return o
+}
+
+func (o *ruleS) NonZero() rule {
+	functionName := "non_zero"
+	o.validators[functionName] = filters.NonZero
+	return o
+}
+
+func (o *ruleS) NonNil() rule {
+	functionName := "non_nil"
+	o.validators[functionName] = filters.NonNil
 	return o
 }
 

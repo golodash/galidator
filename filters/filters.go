@@ -14,6 +14,8 @@ var DefaultValidatorErrorMessages = map[string]string{
 	"len_range": "{field}'s length must be between {from} to {to} characters long",
 	"len":       "{field}'s length must be equal to {length}",
 	"required":  "{field} can not be empty",
+	"non_zero":  "{field} can not be 0 or \"\" or ''",
+	"non_nil":   "{field} can not be nil",
 }
 
 // Returns true if the passed input (can be)/is int
@@ -124,4 +126,14 @@ func Len(length int) func(interface{}) bool {
 func Required(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	return !inputValue.IsZero() && !isNil(input)
+}
+
+// Returns true if input is not zero(0, "", ”)
+func NonZero(input interface{}) bool {
+	return !reflect.ValueOf(input).IsZero()
+}
+
+// Returns true if input is not nil
+func NonNil(input interface{}) bool {
+	return !isNil(input)
 }
