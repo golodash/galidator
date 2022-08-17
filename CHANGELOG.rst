@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: added Len and LenRange functions in different meanings
 * 🐛 fix: workflow now downloads requirements
 * 🐛 fix: Required paniced when int values been used
 * 🎉 feat: Required function added

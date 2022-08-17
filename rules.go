@@ -41,7 +41,9 @@ type (
 		//
 		// If from == -1, no check on `from` will happen
 		// If to == -1, no check on `to` will happen
-		Len(from int, to int) rule
+		LenRange(from int, to int) rule
+		// Returns true if len(input) is equal to passed length
+		Len(length int) rule
 		// Checks if passed data is not zero(0, "", '') or nil
 		Required() rule
 
@@ -78,11 +80,18 @@ func (o *ruleS) Max(max float64) rule {
 	return o
 }
 
-func (o *ruleS) Len(from, to int) rule {
-	functionName := "len"
-	o.validators[functionName] = filters.Len(from, to)
+func (o *ruleS) LenRange(from, to int) rule {
+	functionName := "len_range"
+	o.validators[functionName] = filters.LenRange(from, to)
 	o.addOption(functionName, "from", fmt.Sprintf("%d", from))
 	o.addOption(functionName, "to", fmt.Sprintf("%d", to))
+	return o
+}
+
+func (o *ruleS) Len(length int) rule {
+	functionName := "len"
+	o.validators[functionName] = filters.Len(length)
+	o.addOption(functionName, "length", fmt.Sprint(length))
 	return o
 }
 

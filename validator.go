@@ -45,7 +45,7 @@ func getErrorMessage(fieldName string, failKey string, options option, messages 
 			}
 			return strings.ReplaceAll(defaultErrorMessage, "{field}", fieldName)
 		} else {
-			return fmt.Sprintf("error happened but no error message exists on '%s' rule role", failKey)
+			return fmt.Sprintf("error happened but no error message exists on '%s' rule", failKey)
 		}
 	}
 }

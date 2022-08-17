@@ -7,12 +7,13 @@ import (
 
 // A map which with rule's key will provide the default error message of that key
 var DefaultValidatorErrorMessages = map[string]string{
-	"int":      "{field} is not integer",
-	"float":    "{field} is not float",
-	"min":      "{field} must be higher equal to {min}",
-	"max":      "{field} must be lower equal to {max}",
-	"len":      "{field}'s length must be between {from} to {to} characters long",
-	"required": "{field} can not be empty",
+	"int":       "{field} is not integer",
+	"float":     "{field} is not float",
+	"min":       "{field} must be higher equal to {min}",
+	"max":       "{field} must be lower equal to {max}",
+	"len_range": "{field}'s length must be between {from} to {to} characters long",
+	"len":       "{field}'s length must be equal to {length}",
+	"required":  "{field} can not be empty",
 }
 
 // Returns true if the passed `input` (can be)/is int
@@ -97,7 +98,7 @@ func Max(max float64) func(interface{}) bool {
 //
 // If from == -1, no check on `from` config will happen
 // If to == -1, no check on `to` config will happen
-func Len(from, to int) func(interface{}) bool {
+func LenRange(from, to int) func(interface{}) bool {
 	return func(input interface{}) bool {
 		inputValue := reflect.ValueOf(input)
 		if inputValue.Kind() == reflect.String {
@@ -107,10 +108,22 @@ func Len(from, to int) func(interface{}) bool {
 			} else if to != -1 && len(inputStr) > to {
 				return false
 			}
+			return true
 		} else {
 			return false
 		}
-		return true
+	}
+}
+
+// Returns true if len(input) is equal to passed length
+func Len(length int) func(interface{}) bool {
+	return func(input interface{}) bool {
+		inputValue := reflect.ValueOf(input)
+		if inputValue.Kind() == reflect.String {
+			return len(input.(string)) == length
+		} else {
+			return false
+		}
 	}
 }
 
