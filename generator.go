@@ -28,7 +28,7 @@ func (o *generatorS) Validator(rules Rules, errorMessages Messages) validator {
 		delete(errorMessages, key)
 	}
 
-	return &validatorS{rules: rules, messages: errorMessages}
+	return &validatorS{rules: rules, messages: errorMessages, specificMessages: SpecificMessages{}}
 }
 
 func (o *generatorS) Rule() rule {
