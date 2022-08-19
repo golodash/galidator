@@ -92,6 +92,8 @@ func (o *validatorS) Validate(input interface{}) map[string][]string {
 					continue
 				}
 				validate(rule, valueOnKeyInput.Interface(), fieldName)
+			} else {
+				panic(fmt.Sprintf("value on %s is not valid", fieldName))
 			}
 		}
 	case reflect.Map:
@@ -102,6 +104,8 @@ func (o *validatorS) Validate(input interface{}) map[string][]string {
 			}
 			if valueOnKeyInput.IsValid() {
 				validate(rule, valueOnKeyInput.Interface(), fieldName)
+			} else {
+				panic(fmt.Sprintf("value on %s is not valid", fieldName))
 			}
 		}
 	}

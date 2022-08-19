@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: phone validator added
 * 🎉 feat: ability to add custom error messages for specific rules added in specific fields added
 * 🎉 feat: Regex function added
 feat: error output on error validations fixed

@@ -21,6 +21,7 @@ var DefaultValidatorErrorMessages = map[string]string{
 	"non_empty": "$field can not be empty",
 	"email":     "$field is not a valid email address",
 	"regex":     "$field does not pass /$pattern/ pattern",
+	"phone":     "$field is not a valid phone number",
 }
 
 // Returns true if input (can be)/is int
@@ -155,7 +156,7 @@ func NonEmpty(input interface{}) bool {
 	return !hasZeroItems(input)
 }
 
-// Returns true if input is an email
+// Returns true if input is a valid email
 func Email(input interface{}) bool {
 	switch reflect.ValueOf(input).Kind() {
 	case reflect.String:
@@ -169,14 +170,19 @@ func Email(input interface{}) bool {
 	}
 }
 
+// Returns true if input is a valid phone number
+func Phone(input interface{}) bool {
+	return Regex(`((\+|\(|0)?\d{1,3})?((\s|\)|\-))?(\d{10})$`)(input)
+}
+
 // Returns true if input matches the passed pattern
 func Regex(pattern string) func(interface{}) bool {
-	var validEnvName = regexp.MustCompile(pattern)
+	regex := regexp.MustCompile(pattern)
 	return func(input interface{}) bool {
 		inputValue := reflect.ValueOf(input)
 		switch inputValue.Kind() {
 		case reflect.String:
-			return validEnvName.MatchString(input.(string))
+			return regex.MatchString(input.(string))
 		default:
 			return false
 		}

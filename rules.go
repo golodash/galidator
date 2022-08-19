@@ -66,6 +66,8 @@ type (
 		Email() rule
 		// Validates inputs with passed pattern
 		Regex(pattern string) rule
+		// Checks if input is a valid phone number
+		Phone() rule
 
 		// Returns option of the passed rule key
 		getOption(key string) option
@@ -163,6 +165,12 @@ func (o *ruleS) Regex(pattern string) rule {
 	functionName := "regex"
 	o.validators[functionName] = filters.Regex(pattern)
 	o.addOption(functionName, "pattern", pattern)
+	return o
+}
+
+func (o *ruleS) Phone() rule {
+	functionName := "phone"
+	o.validators[functionName] = filters.Phone
 	return o
 }
 
