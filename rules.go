@@ -14,12 +14,12 @@ type (
 	options map[string]option
 
 	// A map full of validators which is assigned for a single key in a validator struct
-	validators map[string]func(interface{}) bool
+	Validators map[string]func(interface{}) bool
 
 	// A struct to implement rule interface
 	ruleS struct {
 		// Used to validate user's data
-		validators validators
+		validators Validators
 		// Used in returning error messages
 		options options
 		// If isOptional is true, if empty is sent, all errors will be ignored
@@ -68,6 +68,8 @@ type (
 		Regex(pattern string) rule
 		// Checks if input is a valid phone number
 		Phone() rule
+		// Adds custom validators
+		Custom(validators Validators) rule
 
 		// Returns option of the passed rule key
 		getOption(key string) option
@@ -171,6 +173,16 @@ func (o *ruleS) Regex(pattern string) rule {
 func (o *ruleS) Phone() rule {
 	functionName := "phone"
 	o.validators[functionName] = filters.Phone
+	return o
+}
+
+func (o *ruleS) Custom(validators Validators) rule {
+	for key, function := range validators {
+		if _, ok := o.validators[key]; ok {
+			panic(fmt.Sprintf("%s is duplicate and has to be unique", key))
+		}
+		o.validators[key] = function
+	}
 	return o
 }
 
