@@ -3,25 +3,27 @@ package filters
 import (
 	"net/mail"
 	"reflect"
+	"regexp"
 	"strconv"
 )
 
 // A map which with rule's key will provide the default error message of that key
 var DefaultValidatorErrorMessages = map[string]string{
-	"int":       "{field} is not integer",
-	"float":     "{field} is not float",
-	"min":       "{field} must be higher equal to {min}",
-	"max":       "{field} must be lower equal to {max}",
-	"len_range": "{field}'s length must be between {from} to {to} characters long",
-	"len":       "{field}'s length must be equal to {length}",
-	"required":  "{field} can not be 0 or \"\" or '' or nil or empty",
-	"non_zero":  "{field} can not be 0 or \"\" or ''",
-	"non_nil":   "{field} can not be nil",
-	"non_empty": "{field} can not be empty",
-	"email":     "{field} is not a valid email address",
+	"int":       "$field is not integer",
+	"float":     "$field is not float",
+	"min":       "$field must be higher equal to $min",
+	"max":       "$field must be lower equal to $max",
+	"len_range": "$field's length must be between $from to $to characters long",
+	"len":       "$field's length must be equal to $length",
+	"required":  "$field can not be 0 or \"\" or '' or nil or empty",
+	"non_zero":  "$field can not be 0 or \"\" or ''",
+	"non_nil":   "$field can not be nil",
+	"non_empty": "$field can not be empty",
+	"email":     "$field is not a valid email address",
+	"regex":     "$field does not pass /$pattern/ pattern",
 }
 
-// Returns true if the passed input (can be)/is int
+// Returns true if input (can be)/is int
 func Int(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	switch inputValue.Kind() {
@@ -40,7 +42,7 @@ func Int(input interface{}) bool {
 	}
 }
 
-// Returns true if the passed input (can be)/is float
+// Returns true if input (can be)/is float
 func Float(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	switch inputValue.Kind() {
@@ -125,7 +127,7 @@ func Len(length int) func(interface{}) bool {
 	}
 }
 
-// Returns true if passed input is not 0, "", ”, nil and empty
+// Returns true if input is not 0, "", ”, nil and empty
 func Required(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	return !inputValue.IsZero() && !isNil(input) && !hasZeroItems(input)
@@ -164,5 +166,19 @@ func Email(input interface{}) bool {
 		return true
 	default:
 		return false
+	}
+}
+
+// Returns true if input matches the passed pattern
+func Regex(pattern string) func(interface{}) bool {
+	var validEnvName = regexp.MustCompile(pattern)
+	return func(input interface{}) bool {
+		inputValue := reflect.ValueOf(input)
+		switch inputValue.Kind() {
+		case reflect.String:
+			return validEnvName.MatchString(input.(string))
+		default:
+			return false
+		}
 	}
 }

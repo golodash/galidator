@@ -35,15 +35,15 @@ type (
 func getErrorMessage(fieldName string, failKey string, options option, messages Messages) string {
 	if out, ok := messages[failKey]; ok {
 		for key, value := range options {
-			out = strings.ReplaceAll(out, "{"+key+"}", value)
+			out = strings.ReplaceAll(out, "$"+key, value)
 		}
-		return strings.ReplaceAll(out, "{field}", fieldName)
+		return strings.ReplaceAll(out, "$field", fieldName)
 	} else {
 		if defaultErrorMessage, ok := filters.DefaultValidatorErrorMessages[failKey]; ok {
 			for key, value := range options {
-				defaultErrorMessage = strings.ReplaceAll(defaultErrorMessage, "{"+key+"}", value)
+				defaultErrorMessage = strings.ReplaceAll(defaultErrorMessage, "$"+key, value)
 			}
-			return strings.ReplaceAll(defaultErrorMessage, "{field}", fieldName)
+			return strings.ReplaceAll(defaultErrorMessage, "$field", fieldName)
 		} else {
 			return fmt.Sprintf("error happened but no error message exists on '%s' rule", failKey)
 		}

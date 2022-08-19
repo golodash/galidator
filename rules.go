@@ -64,6 +64,8 @@ type (
 		NonEmpty() rule
 		// Checks if input is a valid email address
 		Email() rule
+		// Validates inputs with passed pattern
+		Regex(pattern string) rule
 
 		// Returns option of the passed rule key
 		getOption(key string) option
@@ -81,12 +83,14 @@ type (
 )
 
 func (o *ruleS) Int() rule {
-	o.validators["int"] = filters.Int
+	functionName := "int"
+	o.validators[functionName] = filters.Int
 	return o
 }
 
 func (o *ruleS) Float() rule {
-	o.validators["float"] = filters.Float
+	functionName := "float"
+	o.validators[functionName] = filters.Float
 	return o
 }
 
@@ -152,6 +156,13 @@ func (o *ruleS) NonEmpty() rule {
 func (o *ruleS) Email() rule {
 	functionName := "email"
 	o.validators[functionName] = filters.Email
+	return o
+}
+
+func (o *ruleS) Regex(pattern string) rule {
+	functionName := "regex"
+	o.validators[functionName] = filters.Regex(pattern)
+	o.addOption(functionName, "pattern", pattern)
 	return o
 }
 

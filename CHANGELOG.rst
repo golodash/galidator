@@ -4,6 +4,8 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: Regex function added
+feat: error output on error validations fixed
 * 🎉 feat: all fields are optional, until developer uses Required, NonNil, NonEmpty or NonZero rules
 feat: Email validator added
 * 🎉 feat: NonEmpty function added
