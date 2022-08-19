@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/golodash/galidator/filters"
+	filters "github.com/golodash/galidator/internal"
 	gStrings "github.com/golodash/godash/strings"
 )
 

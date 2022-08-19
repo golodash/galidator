@@ -3,7 +3,7 @@ package galidator
 import (
 	"fmt"
 
-	"github.com/golodash/galidator/filters"
+	filters "github.com/golodash/galidator/internal"
 )
 
 type (
