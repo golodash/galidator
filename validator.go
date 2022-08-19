@@ -54,27 +54,37 @@ func (o *validatorS) Validate(input interface{}) map[string][]string {
 	output := map[string][]string{}
 	inputValue := reflect.ValueOf(input)
 
-	validate := func(role rule, onKeyInput interface{}, fieldName string) {
+	validate := func(rule rule, onKeyInput interface{}, fieldName string) {
 		valueOnKeyInput := reflect.ValueOf(onKeyInput)
-		fails := role.validate(valueOnKeyInput.Interface())
+		fails := rule.validate(valueOnKeyInput.Interface())
 		if len(fails) != 0 {
 			for _, failKey := range fails {
 				fieldName = gStrings.SnakeCase(fieldName)
-				output[fieldName] = append(output[fieldName], getErrorMessage(fieldName, failKey, role.getOption(failKey), o.messages))
+				output[fieldName] = append(output[fieldName], getErrorMessage(fieldName, failKey, rule.getOption(failKey), o.messages))
 			}
 		}
 	}
 
 	switch inputValue.Kind() {
 	case reflect.Struct:
-		for fieldName, role := range o.rules {
+		for fieldName, rule := range o.rules {
 			valueOnKeyInput := inputValue.FieldByName(fieldName)
-			validate(role, valueOnKeyInput.Interface(), fieldName)
+			if valueOnKeyInput.IsValid() {
+				if !rule.isRequired() && filters.IsEmptyNilZero(valueOnKeyInput.Interface()) {
+					continue
+				}
+				validate(rule, valueOnKeyInput.Interface(), fieldName)
+			}
 		}
 	case reflect.Map:
-		for fieldName, role := range o.rules {
+		for fieldName, rule := range o.rules {
 			valueOnKeyInput := inputValue.MapIndex(reflect.ValueOf(fieldName))
-			validate(role, valueOnKeyInput.Interface(), fieldName)
+			if !rule.isRequired() && filters.Required(valueOnKeyInput.Interface()) {
+				continue
+			}
+			if valueOnKeyInput.IsValid() {
+				validate(rule, valueOnKeyInput.Interface(), fieldName)
+			}
 		}
 	}
 

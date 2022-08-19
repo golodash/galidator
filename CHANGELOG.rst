@@ -4,6 +4,8 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: all fields are optional, until developer uses Required, NonNil, NonEmpty or NonZero rules
+feat: Email validator added
 * 🎉 feat: NonEmpty function added
 * 🎉 feat: added NonNil and NonZero
 * 🐛 fix: making Min, Max, LenRange and Len general usecase

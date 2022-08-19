@@ -22,6 +22,8 @@ type (
 		validators validators
 		// Used in returning error messages
 		options options
+		// If isOptional is true, if empty is sent, all errors will be ignored
+		isOptional bool
 	}
 
 	// An interface with some functions to satisfy validation purpose
@@ -45,17 +47,36 @@ type (
 		// Checks if input acts like: len(input) == length
 		Len(length int) rule
 		// Checks if input is not zero(0, "", '') or nil or empty
+		//
+		// Note: Field will become required and all validators will be checked
 		Required() rule
 		// Checks if input is not zero(0, "", '')
+		//
+		// Note: Field will become required and all validators will be checked
 		NonZero() rule
 		// Checks if input is not nil
+		//
+		// Note: Field will become required and all validators will be checked
 		NonNil() rule
 		// Checks if input has items inside it
+		//
+		// Note: Field will become required and all validators will be checked
 		NonEmpty() rule
+		// Checks if input is a valid email address
+		Email() rule
+
 		// Returns option of the passed rule key
 		getOption(key string) option
 		// Adds a new subKey with a value associated with it to option of passed rule key
 		addOption(key string, subKey string, value string)
+		// Makes the field optional
+		optional()
+		// Makes the field required
+		required()
+		// Returns true if the rule has to pass all validators
+		//
+		// Returns false if the rule can be empty, nil or zero and is allowed to not pass any validations
+		isRequired() bool
 	}
 )
 
@@ -103,24 +124,34 @@ func (o *ruleS) Len(length int) rule {
 func (o *ruleS) Required() rule {
 	functionName := "required"
 	o.validators[functionName] = filters.Required
+	o.required()
 	return o
 }
 
 func (o *ruleS) NonZero() rule {
 	functionName := "non_zero"
 	o.validators[functionName] = filters.NonZero
+	o.required()
 	return o
 }
 
 func (o *ruleS) NonNil() rule {
 	functionName := "non_nil"
 	o.validators[functionName] = filters.NonNil
+	o.required()
 	return o
 }
 
 func (o *ruleS) NonEmpty() rule {
 	functionName := "non_empty"
 	o.validators[functionName] = filters.NonEmpty
+	o.required()
+	return o
+}
+
+func (o *ruleS) Email() rule {
+	functionName := "email"
+	o.validators[functionName] = filters.Email
 	return o
 }
 
@@ -148,4 +179,16 @@ func (o *ruleS) addOption(key string, subKey string, value string) {
 		return
 	}
 	o.options[key] = option{subKey: value}
+}
+
+func (o *ruleS) optional() {
+	o.isOptional = true
+}
+
+func (o *ruleS) required() {
+	o.isOptional = false
+}
+
+func (o *ruleS) isRequired() bool {
+	return !o.isOptional
 }

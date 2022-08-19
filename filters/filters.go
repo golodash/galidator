@@ -1,6 +1,7 @@
 package filters
 
 import (
+	"net/mail"
 	"reflect"
 	"strconv"
 )
@@ -17,6 +18,7 @@ var DefaultValidatorErrorMessages = map[string]string{
 	"non_zero":  "{field} can not be 0 or \"\" or ''",
 	"non_nil":   "{field} can not be nil",
 	"non_empty": "{field} can not be empty",
+	"email":     "{field} is not a valid email address",
 }
 
 // Returns true if the passed input (can be)/is int
@@ -129,6 +131,13 @@ func Required(input interface{}) bool {
 	return !inputValue.IsZero() && !isNil(input) && !hasZeroItems(input)
 }
 
+// Not a filter
+//
+// A helper function to use inside code
+func IsEmptyNilZero(input interface{}) bool {
+	return !Required(input)
+}
+
 // Returns true if input is not zero(0, "", ”)
 func NonZero(input interface{}) bool {
 	return !reflect.ValueOf(input).IsZero()
@@ -142,4 +151,18 @@ func NonNil(input interface{}) bool {
 // Returns true if input has items
 func NonEmpty(input interface{}) bool {
 	return !hasZeroItems(input)
+}
+
+// Returns true if input is an email
+func Email(input interface{}) bool {
+	switch reflect.ValueOf(input).Kind() {
+	case reflect.String:
+		_, err := mail.ParseAddress(input.(string))
+		if err != nil {
+			return false
+		}
+		return true
+	default:
+		return false
+	}
 }

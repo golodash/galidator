@@ -32,13 +32,13 @@ func (o *generatorS) Validator(rules Rules, errorMessages Messages) validator {
 }
 
 func (o *generatorS) Rule() rule {
-	return &ruleS{validators: validators{}, options: options{}}
+	return &ruleS{validators: validators{}, options: options{}, isOptional: true}
 }
 
 // A unique instance of generatorS to stop creating unnecessarily multiple instances of a generator
 var generatorInstance = &generatorS{}
 
-// Returns a Generator
+// Returns a Validator Generator
 func New() generator {
 	return generatorInstance
 }
