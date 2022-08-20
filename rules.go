@@ -36,6 +36,8 @@ type (
 		// Checks if input (can be)/is float
 		Float() rule
 		// Checks if input acts like: input >= min or len(input) >= min
+		//
+		// Note: If min > 0, field will be required
 		Min(min float64) rule
 		// Checks if input acts like: input <= max or len(input) <= max
 		Max(max float64) rule
@@ -43,24 +45,28 @@ type (
 		//
 		// If from == -1, no check on from will happen
 		// If to == -1, no check on to will happen
+		//
+		// Note: If from > 0, field will be required
 		LenRange(from int, to int) rule
 		// Checks if input acts like: len(input) == length
+		//
+		// Note: If length > 0, field will be required
 		Len(length int) rule
 		// Checks if input is not zero(0, "", '') or nil or empty
 		//
-		// Note: Field will become required and all validators will be checked
+		// Note: Field will be required
 		Required() rule
 		// Checks if input is not zero(0, "", '')
 		//
-		// Note: Field will become required and all validators will be checked
+		// Note: Field will be required
 		NonZero() rule
 		// Checks if input is not nil
 		//
-		// Note: Field will become required and all validators will be checked
+		// Note: Field will be required
 		NonNil() rule
 		// Checks if input has items inside it
 		//
-		// Note: Field will become required and all validators will be checked
+		// Note: Field will be required
 		NonEmpty() rule
 		// Checks if input is a valid email address
 		Email() rule
@@ -103,6 +109,9 @@ func (o *ruleS) Min(min float64) rule {
 	o.validators[functionName] = filters.Min(min)
 	precision := determinePrecision(min)
 	o.addOption(functionName, "min", fmt.Sprintf("%."+precision+"f", min))
+	if min > 0 {
+		o.required()
+	}
 	return o
 }
 
@@ -119,6 +128,9 @@ func (o *ruleS) LenRange(from, to int) rule {
 	o.validators[functionName] = filters.LenRange(from, to)
 	o.addOption(functionName, "from", fmt.Sprintf("%d", from))
 	o.addOption(functionName, "to", fmt.Sprintf("%d", to))
+	if from > 0 {
+		o.required()
+	}
 	return o
 }
 
@@ -126,6 +138,9 @@ func (o *ruleS) Len(length int) rule {
 	functionName := "len"
 	o.validators[functionName] = filters.Len(length)
 	o.addOption(functionName, "length", fmt.Sprint(length))
+	if length > 0 {
+		o.required()
+	}
 	return o
 }
 
@@ -167,6 +182,9 @@ func (o *ruleS) Regex(pattern string) rule {
 	functionName := "regex"
 	o.validators[functionName] = filters.Regex(pattern)
 	o.addOption(functionName, "pattern", pattern)
+	if !filters.Regex(pattern)("") {
+		o.required()
+	}
 	return o
 }
 
