@@ -132,6 +132,10 @@ func (o *validatorS) Validate(input interface{}) map[string]interface{} {
 		}
 	}
 
+	if len(output) == 0 {
+		return nil
+	}
+
 	return output
 }
 
