@@ -1,4 +1,4 @@
-package filters
+package rules
 
 import (
 	"net/mail"
@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-// A map which with rule's key will provide the default error message of that key
+// A map which with rule's key will provide the default error message of that rule's key
 var DefaultValidatorErrorMessages = map[string]string{
 	"int":       "not an integer value",
 	"float":     "not a float value",

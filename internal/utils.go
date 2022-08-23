@@ -1,4 +1,4 @@
-package filters
+package rules
 
 import (
 	"reflect"

@@ -8,13 +8,13 @@ type (
 	// A struct to implement generator interface
 	generatorS struct{}
 
-	// An interface to generate a validator or rule
+	// An interface to generate a validator or ruleSet
 	generator interface {
-		// Generates a validator interface which can be used to validate some data by some filters
+		// Generates a validator interface which can be used to validate some data by some rules
 		//
 		// Please use CapitalCase for rules' keys (Important for getting data out of struct types)
 		Validator(rules Rules, messages ...Messages) validator
-		// Generates a rule to validate passed information
+		// Generates a ruleSet to validate passed information
 		RuleSet() ruleSet
 	}
 )

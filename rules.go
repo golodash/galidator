@@ -3,7 +3,7 @@ package galidator
 import (
 	"fmt"
 
-	filters "github.com/golodash/galidator/internal"
+	rules "github.com/golodash/galidator/internal"
 )
 
 type (
@@ -16,7 +16,7 @@ type (
 	// A map full of validators which is assigned for a single key in a validator struct
 	Validators map[string]func(interface{}) bool
 
-	// A struct to implement rule interface
+	// A struct to implement ruleSet interface
 	ruleSetS struct {
 		// Used to validate user's data
 		validators Validators
@@ -95,17 +95,17 @@ type (
 		// If children of a slice is not struct or map, use this function and otherwise use Complex function after Slice function
 		Children(ruleSet ruleSet) ruleSet
 
-		// Returns option of the passed rule key
-		getOption(key string) option
-		// Adds a new subKey with a value associated with it to option of passed rule key
-		addOption(key string, subKey string, value string)
+		// Returns option of the passed ruleKey
+		getOption(ruleKey string) option
+		// Adds a new subKey with a value associated with it to option of passed ruleKey
+		addOption(ruleKey string, subKey string, value string)
 		// Makes the field optional
 		optional()
 		// Makes the field required
 		required()
-		// Returns true if the rule has to pass all validators
+		// Returns true if the ruleSet has to pass all validators
 		//
-		// Returns false if the rule can be empty, nil or zero and is allowed to not pass any validations
+		// Returns false if the ruleSet can be empty, nil or zero and is allowed to not pass any validations
 		isRequired() bool
 		// Returns true if deepValidator is not nil
 		hasDeepValidator() bool
@@ -120,19 +120,19 @@ type (
 
 func (o *ruleSetS) Int() ruleSet {
 	functionName := "int"
-	o.validators[functionName] = filters.Int
+	o.validators[functionName] = rules.Int
 	return o
 }
 
 func (o *ruleSetS) Float() ruleSet {
 	functionName := "float"
-	o.validators[functionName] = filters.Float
+	o.validators[functionName] = rules.Float
 	return o
 }
 
 func (o *ruleSetS) Min(min float64) ruleSet {
 	functionName := "min"
-	o.validators[functionName] = filters.Min(min)
+	o.validators[functionName] = rules.Min(min)
 	precision := determinePrecision(min)
 	o.addOption(functionName, "min", fmt.Sprintf("%."+precision+"f", min))
 	if min > 0 {
@@ -143,7 +143,7 @@ func (o *ruleSetS) Min(min float64) ruleSet {
 
 func (o *ruleSetS) Max(max float64) ruleSet {
 	functionName := "max"
-	o.validators[functionName] = filters.Max(max)
+	o.validators[functionName] = rules.Max(max)
 	precision := determinePrecision(max)
 	o.addOption(functionName, "max", fmt.Sprintf("%."+precision+"f", max))
 	return o
@@ -151,7 +151,7 @@ func (o *ruleSetS) Max(max float64) ruleSet {
 
 func (o *ruleSetS) LenRange(from, to int) ruleSet {
 	functionName := "len_range"
-	o.validators[functionName] = filters.LenRange(from, to)
+	o.validators[functionName] = rules.LenRange(from, to)
 	o.addOption(functionName, "from", fmt.Sprintf("%d", from))
 	o.addOption(functionName, "to", fmt.Sprintf("%d", to))
 	if from > 0 {
@@ -162,7 +162,7 @@ func (o *ruleSetS) LenRange(from, to int) ruleSet {
 
 func (o *ruleSetS) Len(length int) ruleSet {
 	functionName := "len"
-	o.validators[functionName] = filters.Len(length)
+	o.validators[functionName] = rules.Len(length)
 	o.addOption(functionName, "length", fmt.Sprint(length))
 	if length > 0 {
 		o.required()
@@ -172,43 +172,43 @@ func (o *ruleSetS) Len(length int) ruleSet {
 
 func (o *ruleSetS) Required() ruleSet {
 	functionName := "required"
-	o.validators[functionName] = filters.Required
+	o.validators[functionName] = rules.Required
 	o.required()
 	return o
 }
 
 func (o *ruleSetS) NonZero() ruleSet {
 	functionName := "non_zero"
-	o.validators[functionName] = filters.NonZero
+	o.validators[functionName] = rules.NonZero
 	o.required()
 	return o
 }
 
 func (o *ruleSetS) NonNil() ruleSet {
 	functionName := "non_nil"
-	o.validators[functionName] = filters.NonNil
+	o.validators[functionName] = rules.NonNil
 	o.required()
 	return o
 }
 
 func (o *ruleSetS) NonEmpty() ruleSet {
 	functionName := "non_empty"
-	o.validators[functionName] = filters.NonEmpty
+	o.validators[functionName] = rules.NonEmpty
 	o.required()
 	return o
 }
 
 func (o *ruleSetS) Email() ruleSet {
 	functionName := "email"
-	o.validators[functionName] = filters.Email
+	o.validators[functionName] = rules.Email
 	return o
 }
 
 func (o *ruleSetS) Regex(pattern string) ruleSet {
 	functionName := "regex"
-	o.validators[functionName] = filters.Regex(pattern)
+	o.validators[functionName] = rules.Regex(pattern)
 	o.addOption(functionName, "pattern", pattern)
-	if !filters.Regex(pattern)("") {
+	if !rules.Regex(pattern)("") {
 		o.required()
 	}
 	return o
@@ -216,7 +216,7 @@ func (o *ruleSetS) Regex(pattern string) ruleSet {
 
 func (o *ruleSetS) Phone() ruleSet {
 	functionName := "phone"
-	o.validators[functionName] = filters.Phone
+	o.validators[functionName] = rules.Phone
 	return o
 }
 
@@ -232,19 +232,19 @@ func (o *ruleSetS) Custom(validators Validators) ruleSet {
 
 func (o *ruleSetS) Map() ruleSet {
 	functionName := "map"
-	o.validators[functionName] = filters.Map
+	o.validators[functionName] = rules.Map
 	return o
 }
 
 func (o *ruleSetS) Slice() ruleSet {
 	functionName := "slice"
-	o.validators[functionName] = filters.Slice
+	o.validators[functionName] = rules.Slice
 	return o
 }
 
 func (o *ruleSetS) Struct() ruleSet {
 	functionName := "struct"
-	o.validators[functionName] = filters.Struct
+	o.validators[functionName] = rules.Struct
 	return o
 }
 
@@ -277,19 +277,19 @@ func (o *ruleSetS) validate(input interface{}) []string {
 	return fails
 }
 
-func (o *ruleSetS) getOption(key string) option {
-	if option, ok := o.options[key]; ok {
+func (o *ruleSetS) getOption(ruleKey string) option {
+	if option, ok := o.options[ruleKey]; ok {
 		return option
 	}
 	return option{}
 }
 
-func (o *ruleSetS) addOption(key string, subKey string, value string) {
-	if option, ok := o.options[key]; ok {
+func (o *ruleSetS) addOption(ruleKey string, subKey string, value string) {
+	if option, ok := o.options[ruleKey]; ok {
 		option[subKey] = value
 		return
 	}
-	o.options[key] = option{subKey: value}
+	o.options[ruleKey] = option{subKey: value}
 }
 
 func (o *ruleSetS) optional() {

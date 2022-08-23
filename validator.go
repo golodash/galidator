@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	filters "github.com/golodash/galidator/internal"
+	rules "github.com/golodash/galidator/internal"
 	gStrings "github.com/golodash/godash/strings"
 )
 
@@ -41,11 +41,11 @@ type (
 	}
 )
 
-// Formats and returns error message associated with passed failKey
-func getErrorMessage(fieldName string, failKey string, value interface{}, options option, messages Messages, specificMessages SpecificMessages) string {
+// Formats and returns error message associated with passed ruleKey
+func getErrorMessage(fieldName string, ruleKey string, value interface{}, options option, messages Messages, specificMessages SpecificMessages) string {
 	snakeCaseFieldName := gStrings.SnakeCase(fieldName)
 	if outMessages, ok := specificMessages[fieldName]; ok {
-		if out, ok := outMessages[failKey]; ok {
+		if out, ok := outMessages[ruleKey]; ok {
 			for key, value := range options {
 				out = strings.ReplaceAll(out, "$"+key, value)
 			}
@@ -53,19 +53,19 @@ func getErrorMessage(fieldName string, failKey string, value interface{}, option
 		}
 	}
 
-	if out, ok := messages[failKey]; ok {
+	if out, ok := messages[ruleKey]; ok {
 		for key, value := range options {
 			out = strings.ReplaceAll(out, "$"+key, value)
 		}
 		return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(out, "$fieldS", snakeCaseFieldName), "$field", fieldName), "$value", fmt.Sprint(value))
 	} else {
-		if defaultErrorMessage, ok := filters.DefaultValidatorErrorMessages[failKey]; ok {
+		if defaultErrorMessage, ok := rules.DefaultValidatorErrorMessages[ruleKey]; ok {
 			for key, value := range options {
 				defaultErrorMessage = strings.ReplaceAll(defaultErrorMessage, "$"+key, value)
 			}
 			return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(defaultErrorMessage, "$fieldS", snakeCaseFieldName), "$field", fieldName), "$value", fmt.Sprint(value))
 		} else {
-			return fmt.Sprintf("error happened but no error message exists on '%s' rule", failKey)
+			return fmt.Sprintf("error happened but no error message exists on '%s' rule key", ruleKey)
 		}
 	}
 }
@@ -74,12 +74,12 @@ func (o *validatorS) Validate(input interface{}) map[string]interface{} {
 	output := map[string]interface{}{}
 	inputValue := reflect.ValueOf(input)
 
-	validate := func(rule ruleSet, onKeyInput interface{}, fieldName string) []string {
+	validate := func(ruleSet ruleSet, onKeyInput interface{}, fieldName string) []string {
 		halfOutput := []string{}
-		fails := rule.validate(onKeyInput)
+		fails := ruleSet.validate(onKeyInput)
 		if len(fails) != 0 {
 			for _, failKey := range fails {
-				halfOutput = append(halfOutput, getErrorMessage(fieldName, failKey, onKeyInput, rule.getOption(failKey), o.messages, o.specificMessages))
+				halfOutput = append(halfOutput, getErrorMessage(fieldName, failKey, onKeyInput, ruleSet.getOption(failKey), o.messages, o.specificMessages))
 			}
 		}
 
@@ -92,30 +92,30 @@ func (o *validatorS) Validate(input interface{}) map[string]interface{} {
 
 	switch inputValue.Kind() {
 	case reflect.Struct:
-		for fieldName, rule := range o.rules {
+		for fieldName, ruleSet := range o.rules {
 			valueOnKeyInput := inputValue.FieldByName(fieldName)
 			if valueOnKeyInput.IsValid() {
 				value := valueOnKeyInput.Interface()
-				if !rule.isRequired() && filters.IsEmptyNilZero(value) {
+				if !ruleSet.isRequired() && rules.IsEmptyNilZero(value) {
 					continue
 				}
-				errors := validate(rule, value, fieldName)
+				errors := validate(ruleSet, value, fieldName)
 				if errors != nil {
 					output[fieldName] = errors
 				}
 
-				if rule.hasDeepValidator() && output[fieldName] == nil && (filters.Map(value) || filters.Struct(value)) {
-					data := rule.validateDeepValidator(value)
+				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (rules.Map(value) || rules.Struct(value)) {
+					data := ruleSet.validateDeepValidator(value)
 
 					if len(data) != 0 {
 						output[fieldName] = data
 					}
 				}
 
-				if rule.hasChildrenRule() && output[fieldName] == nil && filters.Slice(value) {
+				if ruleSet.hasChildrenRule() && output[fieldName] == nil && rules.Slice(value) {
 					for i := 0; i < valueOnKeyInput.Len(); i++ {
 						element := valueOnKeyInput.Index(i)
-						childrenRule := rule.getChildrenRule()
+						childrenRule := ruleSet.getChildrenRule()
 						errors = validate(childrenRule, element.Interface(), fieldName)
 						if errors != nil {
 							if _, ok := output[fieldName]; !ok {
@@ -130,33 +130,33 @@ func (o *validatorS) Validate(input interface{}) map[string]interface{} {
 			}
 		}
 	case reflect.Map:
-		for fieldName, rule := range o.rules {
+		for fieldName, ruleSet := range o.rules {
 			valueOnKeyInput := inputValue.MapIndex(reflect.ValueOf(fieldName))
 			if !valueOnKeyInput.IsValid() {
 				valueOnKeyInput = inputValue.MapIndex(reflect.ValueOf(gStrings.SnakeCase(fieldName)))
 			}
 			if valueOnKeyInput.IsValid() {
 				value := valueOnKeyInput.Interface()
-				if !rule.isRequired() && filters.IsEmptyNilZero(value) {
+				if !ruleSet.isRequired() && rules.IsEmptyNilZero(value) {
 					continue
 				}
-				errors := validate(rule, value, fieldName)
+				errors := validate(ruleSet, value, fieldName)
 				if errors != nil {
 					output[fieldName] = errors
 				}
 
-				if rule.hasDeepValidator() && output[fieldName] == nil && (filters.Map(value) || filters.Struct(value)) {
-					data := rule.validateDeepValidator(value)
+				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (rules.Map(value) || rules.Struct(value)) {
+					data := ruleSet.validateDeepValidator(value)
 
 					if len(data) != 0 {
 						output[fieldName] = data
 					}
 				}
 
-				if rule.hasChildrenRule() && output[fieldName] == nil && filters.Slice(value) {
+				if ruleSet.hasChildrenRule() && output[fieldName] == nil && rules.Slice(value) {
 					for i := 0; i < valueOnKeyInput.Len(); i++ {
 						element := valueOnKeyInput.Index(i)
-						childrenRule := rule.getChildrenRule()
+						childrenRule := ruleSet.getChildrenRule()
 						errors = validate(childrenRule, element.Interface(), fieldName)
 						if errors != nil {
 							if _, ok := output[fieldName]; !ok {
