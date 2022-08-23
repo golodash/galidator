@@ -42,12 +42,13 @@ type (
 
 // Formats and returns error message associated with passed failKey
 func getErrorMessage(fieldName string, failKey string, options option, messages Messages, specificMessages SpecificMessages) string {
+	snakeCaseFieldName := gStrings.SnakeCase(fieldName)
 	if outMessages, ok := specificMessages[fieldName]; ok {
 		if out, ok := outMessages[failKey]; ok {
 			for key, value := range options {
 				out = strings.ReplaceAll(out, "$"+key, value)
 			}
-			return strings.ReplaceAll(out, "$field", fieldName)
+			return strings.ReplaceAll(strings.ReplaceAll(out, "$field", fieldName), "$fieldS", snakeCaseFieldName)
 		}
 	}
 
@@ -55,13 +56,13 @@ func getErrorMessage(fieldName string, failKey string, options option, messages 
 		for key, value := range options {
 			out = strings.ReplaceAll(out, "$"+key, value)
 		}
-		return strings.ReplaceAll(out, "$field", fieldName)
+		return strings.ReplaceAll(strings.ReplaceAll(out, "$field", fieldName), "$fieldS", snakeCaseFieldName)
 	} else {
 		if defaultErrorMessage, ok := filters.DefaultValidatorErrorMessages[failKey]; ok {
 			for key, value := range options {
 				defaultErrorMessage = strings.ReplaceAll(defaultErrorMessage, "$"+key, value)
 			}
-			return strings.ReplaceAll(defaultErrorMessage, "$field", fieldName)
+			return strings.ReplaceAll(strings.ReplaceAll(defaultErrorMessage, "$field", fieldName), "$fieldS", snakeCaseFieldName)
 		} else {
 			return fmt.Sprintf("error happened but no error message exists on '%s' rule", failKey)
 		}
