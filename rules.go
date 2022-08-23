@@ -77,6 +77,8 @@ type (
 		// Checks if input is a valid email address
 		Email() ruleSet
 		// Validates inputs with passed pattern
+		//
+		// Note: If pattern does not pass empty string, it will be required
 		Regex(pattern string) ruleSet
 		// Checks if input is a valid phone number
 		Phone() ruleSet
@@ -94,6 +96,10 @@ type (
 		Complex(validator validator) ruleSet
 		// If children of a slice is not struct or map, use this function and otherwise use Complex function after Slice function
 		Children(ruleSet ruleSet) ruleSet
+		// Checks if input is at least 8 characters long, has one lowercase, one uppercase and one number character
+		//
+		// Note: Field will be required
+		Password() ruleSet
 
 		// Returns option of the passed ruleKey
 		getOption(ruleKey string) option
@@ -255,6 +261,13 @@ func (o *ruleSetS) Complex(validator validator) ruleSet {
 
 func (o *ruleSetS) Children(ruleSet ruleSet) ruleSet {
 	o.childrenRule = ruleSet
+	return o
+}
+
+func (o *ruleSetS) Password() ruleSet {
+	functionName := "password"
+	o.validators[functionName] = rules.Password
+	o.required()
 	return o
 }
 

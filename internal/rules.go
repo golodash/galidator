@@ -3,8 +3,9 @@ package rules
 import (
 	"net/mail"
 	"reflect"
-	"regexp"
 	"strconv"
+
+	"github.com/dlclark/regexp2"
 )
 
 // A map which with rule's key will provide the default error message of that rule's key
@@ -25,6 +26,7 @@ var DefaultValidatorErrorMessages = map[string]string{
 	"map":       "not a map",
 	"struct":    "not a struct",
 	"slice":     "not a slice",
+	"password":  "$fieldS must be at least 8 characters long and contain one lowercase, one uppercase, one special and one number character",
 }
 
 // Returns true if input (can be)/is int
@@ -180,12 +182,13 @@ func Phone(input interface{}) bool {
 
 // Returns true if input matches the passed pattern
 func Regex(pattern string) func(interface{}) bool {
-	regex := regexp.MustCompile(pattern)
+	regex := regexp2.MustCompile(pattern, regexp2.None)
 	return func(input interface{}) bool {
 		inputValue := reflect.ValueOf(input)
 		switch inputValue.Kind() {
 		case reflect.String:
-			return regex.MatchString(input.(string))
+			output, _ := regex.MatchString(input.(string))
+			return output
 		default:
 			return false
 		}
@@ -205,4 +208,9 @@ func Struct(input interface{}) bool {
 // Returns true if input is a slice
 func Slice(input interface{}) bool {
 	return reflect.TypeOf(input).Kind() == reflect.Slice
+}
+
+// Returns true if input is at least 8 characters long, has one lowercase, one uppercase, one special and one number character
+func Password(input interface{}) bool {
+	return Regex(`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$`)(input)
 }

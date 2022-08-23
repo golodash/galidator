@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: Password validator added
 * 🐛 fix: slice validation children added
 * 🎉 feat: slice elements with complex can be checked
 * 🐛 fix: Validate function returns nil if no error happened
