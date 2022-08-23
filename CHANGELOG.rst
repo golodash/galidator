@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: slice elements with complex can be checked
 * 🐛 fix: Validate function returns nil if no error happened
 * 🎉 feat: $fieldS addes snake_case version of $field to the error output message
 * 🎉 feat: struct and map can be used

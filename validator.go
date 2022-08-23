@@ -3,6 +3,7 @@ package galidator
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	filters "github.com/golodash/galidator/internal"
@@ -128,6 +129,16 @@ func (o *validatorS) Validate(input interface{}) map[string]interface{} {
 				}
 			} else {
 				panic(fmt.Sprintf("value on %s is not valid", fieldName))
+			}
+		}
+	case reflect.Slice:
+		for i := 0; i < inputValue.Len(); i++ {
+			element := inputValue.Index(i)
+			if element.IsValid() {
+				data := o.Validate(element.Interface())
+				if len(data) != 0 {
+					output[strconv.Itoa(i)] = data
+				}
 			}
 		}
 	}
