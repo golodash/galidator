@@ -5,8 +5,6 @@ UNRELEASED
 ----------
 
 * 🎉 feat: $fieldS addes snake_case version of $field to the error output message
-* 🎉 feat: $fieldS addes snake_case version of $field to the output
-* 🎉 feat: $fieldS addes snake_case version of $field to the string
 * 🎉 feat: struct and map can be used
 * 🐛 fix: required will happen in other function in some cases
 * 🎉 feat: custom function added
