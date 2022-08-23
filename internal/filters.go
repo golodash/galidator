@@ -197,12 +197,12 @@ func Map(input interface{}) bool {
 	return reflect.TypeOf(input).Kind() == reflect.Map
 }
 
-// Returns true if input is a slice
-func Slice(input interface{}) bool {
-	return reflect.TypeOf(input).Kind() == reflect.Slice
-}
-
 // Returns true if input is a struct
 func Struct(input interface{}) bool {
 	return reflect.TypeOf(input).Kind() == reflect.Struct
+}
+
+// Returns true if input is a slice
+func Slice(input interface{}) bool {
+	return reflect.TypeOf(input).Kind() == reflect.Slice
 }
