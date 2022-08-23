@@ -20,7 +20,7 @@ type (
 )
 
 func (o *generatorS) Validator(rules Rules, errorMessages ...Messages) validator {
-	messages := Messages{}
+	var messages Messages = nil
 	if len(errorMessages) != 0 {
 		messages = errorMessages[0]
 	}

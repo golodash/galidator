@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	rules "github.com/golodash/galidator/internal"
+	"github.com/golodash/godash/strings"
 )
 
 type (
@@ -231,7 +232,7 @@ func (o *ruleSetS) Custom(validators Validators) ruleSet {
 		if _, ok := o.validators[key]; ok {
 			panic(fmt.Sprintf("%s is duplicate and has to be unique", key))
 		}
-		o.validators[key] = function
+		o.validators[strings.SnakeCase(key)] = function
 	}
 	return o
 }
