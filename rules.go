@@ -116,7 +116,7 @@ type (
 		// Returns true if deepValidator is not nil
 		hasDeepValidator() bool
 		// Validates deepValidator
-		validateDeepValidator(input interface{}) map[string]interface{}
+		validateDeepValidator(input interface{}) interface{}
 		// Returns true if children is not nil
 		hasChildrenRule() bool
 		// Returns children ruleSet
@@ -321,6 +321,6 @@ func (o *ruleSetS) hasDeepValidator() bool {
 	return o.deepValidator != nil
 }
 
-func (o *ruleSetS) validateDeepValidator(input interface{}) map[string]interface{} {
+func (o *ruleSetS) validateDeepValidator(input interface{}) interface{} {
 	return o.deepValidator.Validate(input)
 }

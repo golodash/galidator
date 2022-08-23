@@ -35,7 +35,7 @@ type (
 		// Validates passed data and returns a map of possible validation errors happened on every field with failed validation.
 		//
 		// If no errors found, length of the output will be 0
-		Validate(input interface{}) map[string]interface{}
+		Validate(input interface{}) interface{}
 		// Adds more specific error messages for specific rules in specific fields
 		AddSpecificMessages(fieldMessages SpecificMessages) validator
 	}
@@ -70,7 +70,7 @@ func getErrorMessage(fieldName string, ruleKey string, value interface{}, option
 	}
 }
 
-func (o *validatorS) Validate(input interface{}) map[string]interface{} {
+func (o *validatorS) Validate(input interface{}) interface{} {
 	output := map[string]interface{}{}
 	inputValue := reflect.ValueOf(input)
 
@@ -104,10 +104,10 @@ func (o *validatorS) Validate(input interface{}) map[string]interface{} {
 					output[fieldName] = errors
 				}
 
-				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (rules.Map(value) || rules.Struct(value)) {
+				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (rules.Map(value) || rules.Struct(value) || rules.Slice(value)) {
 					data := ruleSet.validateDeepValidator(value)
 
-					if len(data) != 0 {
+					if reflect.ValueOf(data).Len() != 0 {
 						output[fieldName] = data
 					}
 				}
@@ -145,10 +145,10 @@ func (o *validatorS) Validate(input interface{}) map[string]interface{} {
 					output[fieldName] = errors
 				}
 
-				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (rules.Map(value) || rules.Struct(value)) {
+				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (rules.Map(value) || rules.Struct(value) || rules.Slice(value)) {
 					data := ruleSet.validateDeepValidator(value)
 
-					if len(data) != 0 {
+					if reflect.ValueOf(data).Len() != 0 {
 						output[fieldName] = data
 					}
 				}
@@ -175,7 +175,7 @@ func (o *validatorS) Validate(input interface{}) map[string]interface{} {
 			element := inputValue.Index(i)
 			if element.IsValid() {
 				data := o.Validate(element.Interface())
-				if len(data) != 0 {
+				if reflect.ValueOf(data).IsValid() && reflect.ValueOf(data).Len() != 0 {
 					output[strconv.Itoa(i)] = data
 				}
 			}

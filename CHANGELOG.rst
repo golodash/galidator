@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🐛 fix: bug fixed on elements of slice
 * 🎉 feat: Password validator added
 * 🐛 fix: slice validation children added
 * 🎉 feat: slice elements with complex can be checked
