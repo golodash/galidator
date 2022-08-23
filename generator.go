@@ -39,7 +39,7 @@ func (o *generatorS) Validator(rules Rules, errorMessages ...Messages) validator
 }
 
 func (o *generatorS) RuleSet() ruleSet {
-	return &ruleSetS{validators: Validators{}, options: options{}, isOptional: true, deepValidator: nil}
+	return &ruleSetS{validators: Validators{}, options: options{}, isOptional: true, deepValidator: nil, childrenRule: nil}
 }
 
 // A unique instance of generatorS to stop creating unnecessarily multiple instances of a generator

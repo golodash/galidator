@@ -74,17 +74,20 @@ func (o *validatorS) Validate(input interface{}) map[string]interface{} {
 	output := map[string]interface{}{}
 	inputValue := reflect.ValueOf(input)
 
-	validate := func(rule ruleSet, onKeyInput interface{}, fieldName string) {
-		valueOnKeyInput := reflect.ValueOf(onKeyInput)
-		fails := rule.validate(valueOnKeyInput.Interface())
+	validate := func(rule ruleSet, onKeyInput interface{}, fieldName string) []string {
+		halfOutput := []string{}
+		fails := rule.validate(onKeyInput)
 		if len(fails) != 0 {
-			if output[fieldName] == nil {
-				output[fieldName] = []string{}
-			}
 			for _, failKey := range fails {
-				output[fieldName] = append(output[fieldName].([]string), getErrorMessage(fieldName, failKey, valueOnKeyInput.Interface(), rule.getOption(failKey), o.messages, o.specificMessages))
+				halfOutput = append(halfOutput, getErrorMessage(fieldName, failKey, onKeyInput, rule.getOption(failKey), o.messages, o.specificMessages))
 			}
 		}
+
+		if len(halfOutput) == 0 {
+			return nil
+		}
+
+		return halfOutput
 	}
 
 	switch inputValue.Kind() {
@@ -92,16 +95,34 @@ func (o *validatorS) Validate(input interface{}) map[string]interface{} {
 		for fieldName, rule := range o.rules {
 			valueOnKeyInput := inputValue.FieldByName(fieldName)
 			if valueOnKeyInput.IsValid() {
-				if !rule.isRequired() && filters.IsEmptyNilZero(valueOnKeyInput.Interface()) {
+				value := valueOnKeyInput.Interface()
+				if !rule.isRequired() && filters.IsEmptyNilZero(value) {
 					continue
 				}
-				validate(rule, valueOnKeyInput.Interface(), fieldName)
+				errors := validate(rule, value, fieldName)
+				if errors != nil {
+					output[fieldName] = errors
+				}
 
-				if rule.hasDeepValidator() && output[fieldName] == nil {
-					data := rule.validateDeepValidator(valueOnKeyInput.Interface())
+				if rule.hasDeepValidator() && output[fieldName] == nil && (filters.Map(value) || filters.Struct(value)) {
+					data := rule.validateDeepValidator(value)
 
 					if len(data) != 0 {
 						output[fieldName] = data
+					}
+				}
+
+				if rule.hasChildrenRule() && output[fieldName] == nil && filters.Slice(value) {
+					for i := 0; i < valueOnKeyInput.Len(); i++ {
+						element := valueOnKeyInput.Index(i)
+						childrenRule := rule.getChildrenRule()
+						errors = validate(childrenRule, element.Interface(), fieldName)
+						if errors != nil {
+							if _, ok := output[fieldName]; !ok {
+								output[fieldName] = map[string][]string{}
+							}
+							output[fieldName].(map[string][]string)[strconv.Itoa(i)] = errors
+						}
 					}
 				}
 			} else {
@@ -115,16 +136,34 @@ func (o *validatorS) Validate(input interface{}) map[string]interface{} {
 				valueOnKeyInput = inputValue.MapIndex(reflect.ValueOf(gStrings.SnakeCase(fieldName)))
 			}
 			if valueOnKeyInput.IsValid() {
-				if !rule.isRequired() && filters.IsEmptyNilZero(valueOnKeyInput.Interface()) {
+				value := valueOnKeyInput.Interface()
+				if !rule.isRequired() && filters.IsEmptyNilZero(value) {
 					continue
 				}
-				validate(rule, valueOnKeyInput.Interface(), fieldName)
+				errors := validate(rule, value, fieldName)
+				if errors != nil {
+					output[fieldName] = errors
+				}
 
-				if rule.hasDeepValidator() && output[fieldName] == nil {
-					data := rule.validateDeepValidator(valueOnKeyInput.Interface())
+				if rule.hasDeepValidator() && output[fieldName] == nil && (filters.Map(value) || filters.Struct(value)) {
+					data := rule.validateDeepValidator(value)
 
 					if len(data) != 0 {
 						output[fieldName] = data
+					}
+				}
+
+				if rule.hasChildrenRule() && output[fieldName] == nil && filters.Slice(value) {
+					for i := 0; i < valueOnKeyInput.Len(); i++ {
+						element := valueOnKeyInput.Index(i)
+						childrenRule := rule.getChildrenRule()
+						errors = validate(childrenRule, element.Interface(), fieldName)
+						if errors != nil {
+							if _, ok := output[fieldName]; !ok {
+								output[fieldName] = map[string][]string{}
+							}
+							output[fieldName].(map[string][]string)[strconv.Itoa(i)] = errors
+						}
 					}
 				}
 			} else {

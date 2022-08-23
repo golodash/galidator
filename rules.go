@@ -28,6 +28,8 @@ type (
 		//
 		// map, slice or struct
 		deepValidator validator
+		// Defines type of elements of a slice
+		childrenRule ruleSet
 	}
 
 	// An interface with some functions to satisfy validation purpose
@@ -91,7 +93,9 @@ type (
 		// Adds another layer to validation structure
 		//
 		// Can check struct, map and When Slice is used before calling this function, it can check elements of the slice
-		Complex(validator) ruleSet
+		Complex(validator validator) ruleSet
+		// If children of a slice is not struct or map, use this function and otherwise use Complex function after Slice function
+		Children(ruleSet ruleSet) ruleSet
 
 		// Returns option of the passed rule key
 		getOption(key string) option
@@ -109,6 +113,10 @@ type (
 		hasDeepValidator() bool
 		// Validates deepValidator
 		validateDeepValidator(input interface{}) map[string]interface{}
+		// Returns true if children is not nil
+		hasChildrenRule() bool
+		// Returns children ruleSet
+		getChildrenRule() ruleSet
 	}
 )
 
@@ -245,6 +253,19 @@ func (o *ruleSetS) Struct() ruleSet {
 func (o *ruleSetS) Complex(validator validator) ruleSet {
 	o.deepValidator = validator
 	return o
+}
+
+func (o *ruleSetS) Children(ruleSet ruleSet) ruleSet {
+	o.childrenRule = ruleSet
+	return o
+}
+
+func (o *ruleSetS) hasChildrenRule() bool {
+	return o.childrenRule != nil
+}
+
+func (o *ruleSetS) getChildrenRule() ruleSet {
+	return o.childrenRule
 }
 
 func (o *ruleSetS) validate(input interface{}) []string {
