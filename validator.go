@@ -71,6 +71,10 @@ func getErrorMessage(fieldName string, ruleKey string, value interface{}, option
 }
 
 func (o *validatorS) Validate(input interface{}) interface{} {
+	if reflect.ValueOf(input).Kind() == reflect.Pointer {
+		input = reflect.ValueOf(input).Elem().Interface()
+	}
+
 	output := map[string]interface{}{}
 	inputValue := reflect.ValueOf(input)
 

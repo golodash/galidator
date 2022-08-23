@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: if pass as reference happens, Validate function now can handle it too
 * 🐛 fix: fixed error on adding custom validators
 * 🐛 fix: bug fixed on elements of slice
 * 🎉 feat: Password validator added
