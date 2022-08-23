@@ -85,14 +85,12 @@ type (
 		// Checks if input is a map
 		Map() ruleSet
 		// Checks if input is a slice
-		//
-		// Makes Complex function to check elements of slice and not the whole slice
 		Slice() ruleSet
 		// Checks if input is a struct
 		Struct() ruleSet
-		// Adds another layer to validation structure
+		// Adds another deeper layer to validation structure
 		//
-		// Can check struct, map and When Slice is used before calling this function, it can check elements of the slice
+		// Can check struct and map
 		Complex(validator validator) ruleSet
 		// If children of a slice is not struct or map, use this function and otherwise use Complex function after Slice function
 		Children(ruleSet ruleSet) ruleSet
