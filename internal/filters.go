@@ -9,22 +9,22 @@ import (
 
 // A map which with rule's key will provide the default error message of that key
 var DefaultValidatorErrorMessages = map[string]string{
-	"int":       "$field is not integer",
-	"float":     "$field is not float",
-	"min":       "$field must be higher equal to $min",
-	"max":       "$field must be lower equal to $max",
-	"len_range": "$field's length must be between $from to $to characters long",
-	"len":       "$field's length must be equal to $length",
-	"required":  "$field can not be 0 or \"\" or '' or nil or empty",
-	"non_zero":  "$field can not be 0 or \"\" or ''",
-	"non_nil":   "$field can not be nil",
-	"non_empty": "$field can not be empty",
-	"email":     "$field is not a valid email address",
-	"regex":     "$field does not pass /$pattern/ pattern",
-	"phone":     "$field is not a valid phone number",
-	"map":       "$field is not a map",
-	"struct":    "$field is not a struct",
-	"slice":     "$field is not a slice",
+	"int":       "not an integer value",
+	"float":     "not a float value",
+	"min":       "$fieldS's length must be higher equal to $min",
+	"max":       "$fieldS's length must be lower equal to $max",
+	"len_range": "$fieldS's length must be between $from to $to characters long",
+	"len":       "$fieldS's length must be equal to $length",
+	"required":  "required",
+	"non_zero":  "can not be 0",
+	"non_nil":   "can not be nil",
+	"non_empty": "can not be empty",
+	"email":     "not a valid email address",
+	"regex":     "$value does not pass /$pattern/ pattern",
+	"phone":     "$value is not a valid phone number",
+	"map":       "not a map",
+	"struct":    "not a struct",
+	"slice":     "not a slice",
 }
 
 // Returns true if input (can be)/is int
