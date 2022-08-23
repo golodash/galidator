@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: struct and map can be used
 * 🐛 fix: required will happen in other function in some cases
 * 🎉 feat: custom function added
 * 🎉 feat: phone validator added

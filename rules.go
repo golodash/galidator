@@ -17,65 +17,81 @@ type (
 	Validators map[string]func(interface{}) bool
 
 	// A struct to implement rule interface
-	ruleS struct {
+	ruleSetS struct {
 		// Used to validate user's data
 		validators Validators
 		// Used in returning error messages
 		options options
 		// If isOptional is true, if empty is sent, all errors will be ignored
 		isOptional bool
+		// Holds data for more complex structures, like:
+		//
+		// map, slice or struct
+		deepValidator validator
 	}
 
 	// An interface with some functions to satisfy validation purpose
-	rule interface {
+	ruleSet interface {
 		// Validates all validators defined
 		validate(interface{}) []string
 
 		// Checks if input (can be)/is int
-		Int() rule
+		Int() ruleSet
 		// Checks if input (can be)/is float
-		Float() rule
+		Float() ruleSet
 		// Checks if input acts like: input >= min or len(input) >= min
 		//
 		// Note: If min > 0, field will be required
-		Min(min float64) rule
+		Min(min float64) ruleSet
 		// Checks if input acts like: input <= max or len(input) <= max
-		Max(max float64) rule
+		Max(max float64) ruleSet
 		// Checks if input acts like: len(input) >= from && len(input) <= to
 		//
 		// If from == -1, no check on from will happen
 		// If to == -1, no check on to will happen
 		//
 		// Note: If from > 0, field will be required
-		LenRange(from int, to int) rule
+		LenRange(from int, to int) ruleSet
 		// Checks if input acts like: len(input) == length
 		//
 		// Note: If length > 0, field will be required
-		Len(length int) rule
+		Len(length int) ruleSet
 		// Checks if input is not zero(0, "", '') or nil or empty
 		//
 		// Note: Field will be required
-		Required() rule
+		Required() ruleSet
 		// Checks if input is not zero(0, "", '')
 		//
 		// Note: Field will be required
-		NonZero() rule
+		NonZero() ruleSet
 		// Checks if input is not nil
 		//
 		// Note: Field will be required
-		NonNil() rule
+		NonNil() ruleSet
 		// Checks if input has items inside it
 		//
 		// Note: Field will be required
-		NonEmpty() rule
+		NonEmpty() ruleSet
 		// Checks if input is a valid email address
-		Email() rule
+		Email() ruleSet
 		// Validates inputs with passed pattern
-		Regex(pattern string) rule
+		Regex(pattern string) ruleSet
 		// Checks if input is a valid phone number
-		Phone() rule
+		Phone() ruleSet
 		// Adds custom validators
-		Custom(validators Validators) rule
+		Custom(validators Validators) ruleSet
+		// Checks if input is a map
+		Map() ruleSet
+		// Checks if input is a slice
+		//
+		// Makes Complex function to check elements of slice and not the whole slice
+		Slice() ruleSet
+		// Checks if input is a struct
+		Struct() ruleSet
+		// Adds another layer to validation structure
+		//
+		// Can check struct, map and When Slice is used before calling this function, it can check elements of the slice
+		Complex(validator) ruleSet
 
 		// Returns option of the passed rule key
 		getOption(key string) option
@@ -89,22 +105,26 @@ type (
 		//
 		// Returns false if the rule can be empty, nil or zero and is allowed to not pass any validations
 		isRequired() bool
+		// Returns true if deepValidator is not nil
+		hasDeepValidator() bool
+		// Validates deepValidator
+		validateDeepValidator(input interface{}) map[string]interface{}
 	}
 )
 
-func (o *ruleS) Int() rule {
+func (o *ruleSetS) Int() ruleSet {
 	functionName := "int"
 	o.validators[functionName] = filters.Int
 	return o
 }
 
-func (o *ruleS) Float() rule {
+func (o *ruleSetS) Float() ruleSet {
 	functionName := "float"
 	o.validators[functionName] = filters.Float
 	return o
 }
 
-func (o *ruleS) Min(min float64) rule {
+func (o *ruleSetS) Min(min float64) ruleSet {
 	functionName := "min"
 	o.validators[functionName] = filters.Min(min)
 	precision := determinePrecision(min)
@@ -115,7 +135,7 @@ func (o *ruleS) Min(min float64) rule {
 	return o
 }
 
-func (o *ruleS) Max(max float64) rule {
+func (o *ruleSetS) Max(max float64) ruleSet {
 	functionName := "max"
 	o.validators[functionName] = filters.Max(max)
 	precision := determinePrecision(max)
@@ -123,7 +143,7 @@ func (o *ruleS) Max(max float64) rule {
 	return o
 }
 
-func (o *ruleS) LenRange(from, to int) rule {
+func (o *ruleSetS) LenRange(from, to int) ruleSet {
 	functionName := "len_range"
 	o.validators[functionName] = filters.LenRange(from, to)
 	o.addOption(functionName, "from", fmt.Sprintf("%d", from))
@@ -134,7 +154,7 @@ func (o *ruleS) LenRange(from, to int) rule {
 	return o
 }
 
-func (o *ruleS) Len(length int) rule {
+func (o *ruleSetS) Len(length int) ruleSet {
 	functionName := "len"
 	o.validators[functionName] = filters.Len(length)
 	o.addOption(functionName, "length", fmt.Sprint(length))
@@ -144,41 +164,41 @@ func (o *ruleS) Len(length int) rule {
 	return o
 }
 
-func (o *ruleS) Required() rule {
+func (o *ruleSetS) Required() ruleSet {
 	functionName := "required"
 	o.validators[functionName] = filters.Required
 	o.required()
 	return o
 }
 
-func (o *ruleS) NonZero() rule {
+func (o *ruleSetS) NonZero() ruleSet {
 	functionName := "non_zero"
 	o.validators[functionName] = filters.NonZero
 	o.required()
 	return o
 }
 
-func (o *ruleS) NonNil() rule {
+func (o *ruleSetS) NonNil() ruleSet {
 	functionName := "non_nil"
 	o.validators[functionName] = filters.NonNil
 	o.required()
 	return o
 }
 
-func (o *ruleS) NonEmpty() rule {
+func (o *ruleSetS) NonEmpty() ruleSet {
 	functionName := "non_empty"
 	o.validators[functionName] = filters.NonEmpty
 	o.required()
 	return o
 }
 
-func (o *ruleS) Email() rule {
+func (o *ruleSetS) Email() ruleSet {
 	functionName := "email"
 	o.validators[functionName] = filters.Email
 	return o
 }
 
-func (o *ruleS) Regex(pattern string) rule {
+func (o *ruleSetS) Regex(pattern string) ruleSet {
 	functionName := "regex"
 	o.validators[functionName] = filters.Regex(pattern)
 	o.addOption(functionName, "pattern", pattern)
@@ -188,13 +208,13 @@ func (o *ruleS) Regex(pattern string) rule {
 	return o
 }
 
-func (o *ruleS) Phone() rule {
+func (o *ruleSetS) Phone() ruleSet {
 	functionName := "phone"
 	o.validators[functionName] = filters.Phone
 	return o
 }
 
-func (o *ruleS) Custom(validators Validators) rule {
+func (o *ruleSetS) Custom(validators Validators) ruleSet {
 	for key, function := range validators {
 		if _, ok := o.validators[key]; ok {
 			panic(fmt.Sprintf("%s is duplicate and has to be unique", key))
@@ -204,7 +224,30 @@ func (o *ruleS) Custom(validators Validators) rule {
 	return o
 }
 
-func (o *ruleS) validate(input interface{}) []string {
+func (o *ruleSetS) Map() ruleSet {
+	functionName := "map"
+	o.validators[functionName] = filters.Map
+	return o
+}
+
+func (o *ruleSetS) Slice() ruleSet {
+	functionName := "slice"
+	o.validators[functionName] = filters.Slice
+	return o
+}
+
+func (o *ruleSetS) Struct() ruleSet {
+	functionName := "struct"
+	o.validators[functionName] = filters.Struct
+	return o
+}
+
+func (o *ruleSetS) Complex(validator validator) ruleSet {
+	o.deepValidator = validator
+	return o
+}
+
+func (o *ruleSetS) validate(input interface{}) []string {
 	fails := []string{}
 	for key, vFunction := range o.validators {
 		if !vFunction(input) {
@@ -215,14 +258,14 @@ func (o *ruleS) validate(input interface{}) []string {
 	return fails
 }
 
-func (o *ruleS) getOption(key string) option {
+func (o *ruleSetS) getOption(key string) option {
 	if option, ok := o.options[key]; ok {
 		return option
 	}
 	return option{}
 }
 
-func (o *ruleS) addOption(key string, subKey string, value string) {
+func (o *ruleSetS) addOption(key string, subKey string, value string) {
 	if option, ok := o.options[key]; ok {
 		option[subKey] = value
 		return
@@ -230,14 +273,22 @@ func (o *ruleS) addOption(key string, subKey string, value string) {
 	o.options[key] = option{subKey: value}
 }
 
-func (o *ruleS) optional() {
+func (o *ruleSetS) optional() {
 	o.isOptional = true
 }
 
-func (o *ruleS) required() {
+func (o *ruleSetS) required() {
 	o.isOptional = false
 }
 
-func (o *ruleS) isRequired() bool {
+func (o *ruleSetS) isRequired() bool {
 	return !o.isOptional
+}
+
+func (o *ruleSetS) hasDeepValidator() bool {
+	return o.deepValidator != nil
+}
+
+func (o *ruleSetS) validateDeepValidator(input interface{}) map[string]interface{} {
+	return o.deepValidator.Validate(input)
 }

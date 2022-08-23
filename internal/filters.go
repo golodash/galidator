@@ -22,6 +22,9 @@ var DefaultValidatorErrorMessages = map[string]string{
 	"email":     "$field is not a valid email address",
 	"regex":     "$field does not pass /$pattern/ pattern",
 	"phone":     "$field is not a valid phone number",
+	"map":       "$field is not a map",
+	"struct":    "$field is not a struct",
+	"slice":     "$field is not a slice",
 }
 
 // Returns true if input (can be)/is int
@@ -65,7 +68,7 @@ func Min(min float64) func(interface{}) bool {
 	return func(input interface{}) bool {
 		inputValue := reflect.ValueOf(input)
 		switch inputValue.Kind() {
-		case reflect.String, reflect.Array, reflect.Map, reflect.Slice:
+		case reflect.String, reflect.Map, reflect.Slice:
 			return inputValue.Len() >= int(min)
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
 			reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
@@ -82,7 +85,7 @@ func Max(max float64) func(interface{}) bool {
 	return func(input interface{}) bool {
 		inputValue := reflect.ValueOf(input)
 		switch inputValue.Kind() {
-		case reflect.String, reflect.Array, reflect.Map, reflect.Slice:
+		case reflect.String, reflect.Map, reflect.Slice:
 			return inputValue.Len() <= int(max)
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
 			reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
@@ -102,7 +105,7 @@ func LenRange(from, to int) func(interface{}) bool {
 	return func(input interface{}) bool {
 		inputValue := reflect.ValueOf(input)
 		switch inputValue.Kind() {
-		case reflect.String, reflect.Array, reflect.Map, reflect.Slice:
+		case reflect.String, reflect.Map, reflect.Slice:
 			if from != -1 && inputValue.Len() < from {
 				return false
 			} else if to != -1 && inputValue.Len() > to {
@@ -120,7 +123,7 @@ func Len(length int) func(interface{}) bool {
 	return func(input interface{}) bool {
 		inputValue := reflect.ValueOf(input)
 		switch inputValue.Kind() {
-		case reflect.String, reflect.Array, reflect.Map, reflect.Slice:
+		case reflect.String, reflect.Map, reflect.Slice:
 			return inputValue.Len() == length
 		default:
 			return false
@@ -187,4 +190,19 @@ func Regex(pattern string) func(interface{}) bool {
 			return false
 		}
 	}
+}
+
+// Returns true if input is a map
+func Map(input interface{}) bool {
+	return reflect.TypeOf(input).Kind() == reflect.Map
+}
+
+// Returns true if input is a slice
+func Slice(input interface{}) bool {
+	return reflect.TypeOf(input).Kind() == reflect.Slice
+}
+
+// Returns true if input is a struct
+func Struct(input interface{}) bool {
+	return reflect.TypeOf(input).Kind() == reflect.Struct
 }

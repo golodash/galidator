@@ -8,7 +8,7 @@ import (
 func isNil(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	switch inputValue.Kind() {
-	case reflect.Array, reflect.Slice, reflect.Struct, reflect.Map:
+	case reflect.Slice, reflect.Map:
 		return inputValue.IsNil()
 	default:
 		return false
@@ -18,7 +18,7 @@ func isNil(input interface{}) bool {
 func hasZeroItems(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	switch inputValue.Kind() {
-	case reflect.Array, reflect.Slice, reflect.Map:
+	case reflect.Slice, reflect.Map:
 		return inputValue.Len() == 0
 	default:
 		return false

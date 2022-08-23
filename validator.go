@@ -11,7 +11,7 @@ import (
 
 type (
 	// To create a map of rules
-	Rules map[string]rule
+	Rules map[string]ruleSet
 
 	// To specify errors for rules
 	Messages map[string]string
@@ -34,7 +34,7 @@ type (
 		// Validates passed data and returns a map of possible validation errors happened on every field with failed validation.
 		//
 		// If no errors found, length of the output will be 0
-		Validate(input interface{}) map[string][]string
+		Validate(input interface{}) map[string]interface{}
 		// Adds more specific error messages for specific rules in specific fields
 		AddSpecificMessages(fieldMessages SpecificMessages) validator
 	}
@@ -42,13 +42,12 @@ type (
 
 // Formats and returns error message associated with passed failKey
 func getErrorMessage(fieldName string, failKey string, options option, messages Messages, specificMessages SpecificMessages) string {
-	snakedFieldName := gStrings.SnakeCase(fieldName)
 	if outMessages, ok := specificMessages[fieldName]; ok {
 		if out, ok := outMessages[failKey]; ok {
 			for key, value := range options {
 				out = strings.ReplaceAll(out, "$"+key, value)
 			}
-			return strings.ReplaceAll(out, "$field", snakedFieldName)
+			return strings.ReplaceAll(out, "$field", fieldName)
 		}
 	}
 
@@ -56,29 +55,32 @@ func getErrorMessage(fieldName string, failKey string, options option, messages 
 		for key, value := range options {
 			out = strings.ReplaceAll(out, "$"+key, value)
 		}
-		return strings.ReplaceAll(out, "$field", snakedFieldName)
+		return strings.ReplaceAll(out, "$field", fieldName)
 	} else {
 		if defaultErrorMessage, ok := filters.DefaultValidatorErrorMessages[failKey]; ok {
 			for key, value := range options {
 				defaultErrorMessage = strings.ReplaceAll(defaultErrorMessage, "$"+key, value)
 			}
-			return strings.ReplaceAll(defaultErrorMessage, "$field", snakedFieldName)
+			return strings.ReplaceAll(defaultErrorMessage, "$field", fieldName)
 		} else {
 			return fmt.Sprintf("error happened but no error message exists on '%s' rule", failKey)
 		}
 	}
 }
 
-func (o *validatorS) Validate(input interface{}) map[string][]string {
-	output := map[string][]string{}
+func (o *validatorS) Validate(input interface{}) map[string]interface{} {
+	output := map[string]interface{}{}
 	inputValue := reflect.ValueOf(input)
 
-	validate := func(rule rule, onKeyInput interface{}, fieldName string) {
+	validate := func(rule ruleSet, onKeyInput interface{}, fieldName string) {
 		valueOnKeyInput := reflect.ValueOf(onKeyInput)
 		fails := rule.validate(valueOnKeyInput.Interface())
 		if len(fails) != 0 {
+			if output[fieldName] == nil {
+				output[fieldName] = []string{}
+			}
 			for _, failKey := range fails {
-				output[fieldName] = append(output[fieldName], getErrorMessage(fieldName, failKey, rule.getOption(failKey), o.messages, o.specificMessages))
+				output[fieldName] = append(output[fieldName].([]string), getErrorMessage(fieldName, failKey, rule.getOption(failKey), o.messages, o.specificMessages))
 			}
 		}
 	}
@@ -92,6 +94,14 @@ func (o *validatorS) Validate(input interface{}) map[string][]string {
 					continue
 				}
 				validate(rule, valueOnKeyInput.Interface(), fieldName)
+
+				if rule.hasDeepValidator() && output[fieldName] == nil {
+					data := rule.validateDeepValidator(valueOnKeyInput.Interface())
+
+					if len(data) != 0 {
+						output[fieldName] = data
+					}
+				}
 			} else {
 				panic(fmt.Sprintf("value on %s is not valid", fieldName))
 			}
@@ -99,11 +109,22 @@ func (o *validatorS) Validate(input interface{}) map[string][]string {
 	case reflect.Map:
 		for fieldName, rule := range o.rules {
 			valueOnKeyInput := inputValue.MapIndex(reflect.ValueOf(fieldName))
-			if !rule.isRequired() && filters.IsEmptyNilZero(valueOnKeyInput.Interface()) {
-				continue
+			if !valueOnKeyInput.IsValid() {
+				valueOnKeyInput = inputValue.MapIndex(reflect.ValueOf(gStrings.SnakeCase(fieldName)))
 			}
 			if valueOnKeyInput.IsValid() {
+				if !rule.isRequired() && filters.IsEmptyNilZero(valueOnKeyInput.Interface()) {
+					continue
+				}
 				validate(rule, valueOnKeyInput.Interface(), fieldName)
+
+				if rule.hasDeepValidator() && output[fieldName] == nil {
+					data := rule.validateDeepValidator(valueOnKeyInput.Interface())
+
+					if len(data) != 0 {
+						output[fieldName] = data
+					}
+				}
 			} else {
 				panic(fmt.Sprintf("value on %s is not valid", fieldName))
 			}
