@@ -86,10 +86,6 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 			}
 		}
 
-		if len(halfOutput) == 0 {
-			return nil
-		}
-
 		return halfOutput
 	}
 
