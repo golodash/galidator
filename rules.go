@@ -27,6 +27,7 @@ var defaultValidatorErrorMessages = map[string]string{
 	"struct":    "not a struct",
 	"slice":     "not a slice",
 	"password":  "$fieldS must be at least 8 characters long and contain one lowercase, one uppercase, one special and one number character",
+	"or":        "ruleSets in $fieldS did not pass",
 }
 
 // Returns true if input (can be)/is int
@@ -206,6 +207,22 @@ func sliceRule(input interface{}) bool {
 // Returns true if input is at least 8 characters long, has one lowercase, one uppercase, one special and one number character
 func passwordRule(input interface{}) bool {
 	return regexRule(`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$`)(input)
+}
+
+func orRule(ruleSets ...ruleSet) func(interface{}) bool {
+	return func(input interface{}) bool {
+		output := false
+
+		if len(ruleSets) == 0 {
+			return true
+		}
+
+		for _, ruleSet := range ruleSets {
+			output = len(ruleSet.validate(input)) == 0 || output
+		}
+
+		return output
+	}
 }
 
 // func whenExistRule(validator validator, options option) func(interface{}) bool {

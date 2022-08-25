@@ -105,6 +105,8 @@ type (
 		//
 		// Note: Field will be required
 		Password() ruleSet
+		// Checks if at least one of passed ruleSets pass its own validation check
+		Or(ruleSets ...ruleSet) ruleSet
 
 		// Returns option of the passed ruleKey
 		getOption(ruleKey string) option
@@ -281,6 +283,12 @@ func (o *ruleSetS) Password() ruleSet {
 	functionName := "password"
 	o.validators[functionName] = passwordRule
 	o.required()
+	return o
+}
+
+func (o *ruleSetS) Or(ruleSets ...ruleSet) ruleSet {
+	functionName := "or"
+	o.validators[functionName] = orRule(ruleSets...)
 	return o
 }
 
