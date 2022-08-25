@@ -16,6 +16,8 @@ type (
 		Validator(rules Rules, messages ...Messages) validator
 		// Generates a ruleSet to validate passed information
 		RuleSet() ruleSet
+		// An alias for RuleSet function
+		R() ruleSet
 	}
 )
 
@@ -40,6 +42,10 @@ func (o *generatorS) Validator(rules Rules, errorMessages ...Messages) validator
 
 func (o *generatorS) RuleSet() ruleSet {
 	return &ruleSetS{validators: Validators{}, options: options{}, isOptional: true, deepValidator: nil, childrenRule: nil}
+}
+
+func (o *generatorS) R() ruleSet {
+	return o.RuleSet()
 }
 
 // A unique instance of generatorS to stop creating unnecessarily multiple instances of a generator

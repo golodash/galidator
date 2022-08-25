@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: added R for RuleSet
 * 🐛 fix: Pointer name does not exists in 1.17, so back to reflect.Ptr name which is supported by v1.17 of golang
 * 🎉 feat: if pass as reference happens, Validate function now can handle it too
 * 🐛 fix: fixed error on adding custom validators
