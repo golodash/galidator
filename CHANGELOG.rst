@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: XOR rule added, Or changed to OR
 * 🎉 feat: Or rule added
 * 🎉 feat: added R for RuleSet
 * 🐛 fix: Pointer name does not exists in 1.17, so back to reflect.Ptr name which is supported by v1.17 of golang

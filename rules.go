@@ -225,6 +225,22 @@ func orRule(ruleSets ...ruleSet) func(interface{}) bool {
 	}
 }
 
+func xorRule(ruleSets ...ruleSet) func(interface{}) bool {
+	return func(input interface{}) bool {
+		output := false
+
+		if len(ruleSets) == 0 {
+			return true
+		}
+
+		for _, ruleSet := range ruleSets {
+			output = len(ruleSet.validate(input)) == 0 != output
+		}
+
+		return output
+	}
+}
+
 // func whenExistRule(validator validator, options option) func(interface{}) bool {
 // 	return func(input interface{}) bool {
 // 		validator.GetRules()validator

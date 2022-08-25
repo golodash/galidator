@@ -106,7 +106,9 @@ type (
 		// Note: Field will be required
 		Password() ruleSet
 		// Checks if at least one of passed ruleSets pass its own validation check
-		Or(ruleSets ...ruleSet) ruleSet
+		OR(ruleSets ...ruleSet) ruleSet
+		// Checks if XOR of all ruleSets passes
+		XOR(ruleSets ...ruleSet) ruleSet
 
 		// Returns option of the passed ruleKey
 		getOption(ruleKey string) option
@@ -286,9 +288,15 @@ func (o *ruleSetS) Password() ruleSet {
 	return o
 }
 
-func (o *ruleSetS) Or(ruleSets ...ruleSet) ruleSet {
+func (o *ruleSetS) OR(ruleSets ...ruleSet) ruleSet {
 	functionName := "or"
 	o.validators[functionName] = orRule(ruleSets...)
+	return o
+}
+
+func (o *ruleSetS) XOR(ruleSets ...ruleSet) ruleSet {
+	functionName := "xor"
+	o.validators[functionName] = xorRule(ruleSets...)
 	return o
 }
 
