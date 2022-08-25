@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🐛 fix: return nill when no errors happened
 * 🎉 feat: XOR rule added, Or changed to OR
 * 🎉 feat: Or rule added
 * 🎉 feat: added R for RuleSet

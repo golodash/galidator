@@ -99,7 +99,7 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 					continue
 				}
 				errors := validate(ruleSet, value, fieldName)
-				if errors != nil {
+				if len(errors) != 0 {
 					output[fieldName] = errors
 				}
 
@@ -116,7 +116,7 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 						element := valueOnKeyInput.Index(i)
 						childrenRule := ruleSet.getChildrenRule()
 						errors = validate(childrenRule, element.Interface(), fieldName)
-						if errors != nil {
+						if len(errors) != 0 {
 							if _, ok := output[fieldName]; !ok {
 								output[fieldName] = map[string][]string{}
 							}
@@ -140,7 +140,7 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 					continue
 				}
 				errors := validate(ruleSet, value, fieldName)
-				if errors != nil {
+				if len(errors) != 0 {
 					output[fieldName] = errors
 				}
 
@@ -157,7 +157,7 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 						element := valueOnKeyInput.Index(i)
 						childrenRule := ruleSet.getChildrenRule()
 						errors = validate(childrenRule, element.Interface(), fieldName)
-						if errors != nil {
+						if len(errors) != 0 {
 							if _, ok := output[fieldName]; !ok {
 								output[fieldName] = map[string][]string{}
 							}
