@@ -27,7 +27,8 @@ var defaultValidatorErrorMessages = map[string]string{
 	"struct":    "not a struct",
 	"slice":     "not a slice",
 	"password":  "$fieldS must be at least 8 characters long and contain one lowercase, one uppercase, one special and one number character",
-	"or":        "ruleSets in $fieldS did not pass",
+	"or":        "ruleSets in $fieldS did not pass based on or logic",
+	"xor":       "ruleSets in $fieldS did not pass based on xor logic",
 }
 
 // Returns true if input (can be)/is int
