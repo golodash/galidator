@@ -1,327 +1,215 @@
 package galidator
 
 import (
-	"fmt"
+	"net/mail"
+	"reflect"
+	"strconv"
 
-	rules "github.com/golodash/galidator/internal"
-	"github.com/golodash/godash/strings"
+	"github.com/dlclark/regexp2"
 )
 
-type (
-	// A map with data recorded to be used in returning error messages
-	option map[string]string
-
-	// A map of different rules as key with their own option
-	options map[string]option
-
-	// A map full of validators which is assigned for a single key in a validator struct
-	Validators map[string]func(interface{}) bool
-
-	// A struct to implement ruleSet interface
-	ruleSetS struct {
-		// Used to validate user's data
-		validators Validators
-		// Used in returning error messages
-		options options
-		// If isOptional is true, if empty is sent, all errors will be ignored
-		isOptional bool
-		// Holds data for more complex structures, like:
-		//
-		// map, slice or struct
-		deepValidator validator
-		// Defines type of elements of a slice
-		childrenRule ruleSet
-	}
-
-	// An interface with some functions to satisfy validation purpose
-	ruleSet interface {
-		// Validates all validators defined
-		validate(interface{}) []string
-
-		// Checks if input (can be)/is int
-		Int() ruleSet
-		// Checks if input (can be)/is float
-		Float() ruleSet
-		// Checks if input acts like: input >= min or len(input) >= min
-		//
-		// Note: If min > 0, field will be required
-		Min(min float64) ruleSet
-		// Checks if input acts like: input <= max or len(input) <= max
-		Max(max float64) ruleSet
-		// Checks if input acts like: len(input) >= from && len(input) <= to
-		//
-		// If from == -1, no check on from will happen
-		// If to == -1, no check on to will happen
-		//
-		// Note: If from > 0, field will be required
-		LenRange(from int, to int) ruleSet
-		// Checks if input acts like: len(input) == length
-		//
-		// Note: If length > 0, field will be required
-		Len(length int) ruleSet
-		// Checks if input is not zero(0, "", '') or nil or empty
-		//
-		// Note: Field will be required
-		Required() ruleSet
-		// Checks if input is not zero(0, "", '')
-		//
-		// Note: Field will be required
-		NonZero() ruleSet
-		// Checks if input is not nil
-		//
-		// Note: Field will be required
-		NonNil() ruleSet
-		// Checks if input has items inside it
-		//
-		// Note: Field will be required
-		NonEmpty() ruleSet
-		// Checks if input is a valid email address
-		Email() ruleSet
-		// Validates inputs with passed pattern
-		//
-		// Note: If pattern does not pass empty string, it will be required
-		Regex(pattern string) ruleSet
-		// Checks if input is a valid phone number
-		Phone() ruleSet
-		// Adds custom validators
-		Custom(validators Validators) ruleSet
-		// Checks if input is a map
-		Map() ruleSet
-		// Checks if input is a slice
-		Slice() ruleSet
-		// Checks if input is a struct
-		Struct() ruleSet
-		// Adds another deeper layer to validation structure
-		//
-		// Can check struct and map
-		Complex(validator validator) ruleSet
-		// If children of a slice is not struct or map, use this function and otherwise use Complex function after Slice function
-		Children(ruleSet ruleSet) ruleSet
-		// Checks if input is at least 8 characters long, has one lowercase, one uppercase and one number character
-		//
-		// Note: Field will be required
-		Password() ruleSet
-
-		// Returns option of the passed ruleKey
-		getOption(ruleKey string) option
-		// Adds a new subKey with a value associated with it to option of passed ruleKey
-		addOption(ruleKey string, subKey string, value string)
-		// Makes the field optional
-		optional()
-		// Makes the field required
-		required()
-		// Returns true if the ruleSet has to pass all validators
-		//
-		// Returns false if the ruleSet can be empty, nil or zero and is allowed to not pass any validations
-		isRequired() bool
-		// Returns true if deepValidator is not nil
-		hasDeepValidator() bool
-		// Validates deepValidator
-		validateDeepValidator(input interface{}) interface{}
-		// Returns true if children is not nil
-		hasChildrenRule() bool
-		// Returns children ruleSet
-		getChildrenRule() ruleSet
-	}
-)
-
-func (o *ruleSetS) Int() ruleSet {
-	functionName := "int"
-	o.validators[functionName] = rules.Int
-	return o
+// A map which with rule's key will provide the default error message of that rule's key
+var defaultValidatorErrorMessages = map[string]string{
+	"int":       "not an integer value",
+	"float":     "not a float value",
+	"min":       "$fieldS's length must be higher equal to $min",
+	"max":       "$fieldS's length must be lower equal to $max",
+	"len_range": "$fieldS's length must be between $from to $to characters long",
+	"len":       "$fieldS's length must be equal to $length",
+	"required":  "required",
+	"non_zero":  "can not be 0",
+	"non_nil":   "can not be nil",
+	"non_empty": "can not be empty",
+	"email":     "not a valid email address",
+	"regex":     "$value does not pass /$pattern/ pattern",
+	"phone":     "$value is not a valid phone number",
+	"map":       "not a map",
+	"struct":    "not a struct",
+	"slice":     "not a slice",
+	"password":  "$fieldS must be at least 8 characters long and contain one lowercase, one uppercase, one special and one number character",
 }
 
-func (o *ruleSetS) Float() ruleSet {
-	functionName := "float"
-	o.validators[functionName] = rules.Float
-	return o
-}
-
-func (o *ruleSetS) Min(min float64) ruleSet {
-	functionName := "min"
-	o.validators[functionName] = rules.Min(min)
-	precision := determinePrecision(min)
-	o.addOption(functionName, "min", fmt.Sprintf("%."+precision+"f", min))
-	if min > 0 {
-		o.required()
-	}
-	return o
-}
-
-func (o *ruleSetS) Max(max float64) ruleSet {
-	functionName := "max"
-	o.validators[functionName] = rules.Max(max)
-	precision := determinePrecision(max)
-	o.addOption(functionName, "max", fmt.Sprintf("%."+precision+"f", max))
-	return o
-}
-
-func (o *ruleSetS) LenRange(from, to int) ruleSet {
-	functionName := "len_range"
-	o.validators[functionName] = rules.LenRange(from, to)
-	o.addOption(functionName, "from", fmt.Sprintf("%d", from))
-	o.addOption(functionName, "to", fmt.Sprintf("%d", to))
-	if from > 0 {
-		o.required()
-	}
-	return o
-}
-
-func (o *ruleSetS) Len(length int) ruleSet {
-	functionName := "len"
-	o.validators[functionName] = rules.Len(length)
-	o.addOption(functionName, "length", fmt.Sprint(length))
-	if length > 0 {
-		o.required()
-	}
-	return o
-}
-
-func (o *ruleSetS) Required() ruleSet {
-	functionName := "required"
-	o.validators[functionName] = rules.Required
-	o.required()
-	return o
-}
-
-func (o *ruleSetS) NonZero() ruleSet {
-	functionName := "non_zero"
-	o.validators[functionName] = rules.NonZero
-	o.required()
-	return o
-}
-
-func (o *ruleSetS) NonNil() ruleSet {
-	functionName := "non_nil"
-	o.validators[functionName] = rules.NonNil
-	o.required()
-	return o
-}
-
-func (o *ruleSetS) NonEmpty() ruleSet {
-	functionName := "non_empty"
-	o.validators[functionName] = rules.NonEmpty
-	o.required()
-	return o
-}
-
-func (o *ruleSetS) Email() ruleSet {
-	functionName := "email"
-	o.validators[functionName] = rules.Email
-	return o
-}
-
-func (o *ruleSetS) Regex(pattern string) ruleSet {
-	functionName := "regex"
-	o.validators[functionName] = rules.Regex(pattern)
-	o.addOption(functionName, "pattern", pattern)
-	if !rules.Regex(pattern)("") {
-		o.required()
-	}
-	return o
-}
-
-func (o *ruleSetS) Phone() ruleSet {
-	functionName := "phone"
-	o.validators[functionName] = rules.Phone
-	return o
-}
-
-func (o *ruleSetS) Custom(validators Validators) ruleSet {
-	for key, function := range validators {
-		if _, ok := o.validators[key]; ok {
-			panic(fmt.Sprintf("%s is duplicate and has to be unique", key))
+// Returns true if input (can be)/is int
+func intRule(input interface{}) bool {
+	inputValue := reflect.ValueOf(input)
+	switch inputValue.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
+		reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
+		reflect.Uint32, reflect.Uint64:
+		return true
+	case reflect.String:
+		_, err := strconv.Atoi(input.(string))
+		if err != nil {
+			return false
 		}
-		o.validators[strings.SnakeCase(key)] = function
+		return true
+	default:
+		return false
 	}
-	return o
 }
 
-func (o *ruleSetS) Map() ruleSet {
-	functionName := "map"
-	o.validators[functionName] = rules.Map
-	return o
+// Returns true if input (can be)/is float
+func floatRule(input interface{}) bool {
+	inputValue := reflect.ValueOf(input)
+	switch inputValue.Kind() {
+	case reflect.Float32, reflect.Float64:
+		return true
+	case reflect.String:
+		_, err := strconv.ParseFloat(input.(string), 64)
+		if err != nil {
+			return false
+		}
+		return true
+	default:
+		return false
+	}
 }
 
-func (o *ruleSetS) Slice() ruleSet {
-	functionName := "slice"
-	o.validators[functionName] = rules.Slice
-	return o
-}
-
-func (o *ruleSetS) Struct() ruleSet {
-	functionName := "struct"
-	o.validators[functionName] = rules.Struct
-	return o
-}
-
-func (o *ruleSetS) Complex(validator validator) ruleSet {
-	o.deepValidator = validator
-	return o
-}
-
-func (o *ruleSetS) Children(ruleSet ruleSet) ruleSet {
-	o.childrenRule = ruleSet
-	return o
-}
-
-func (o *ruleSetS) Password() ruleSet {
-	functionName := "password"
-	o.validators[functionName] = rules.Password
-	o.required()
-	return o
-}
-
-func (o *ruleSetS) hasChildrenRule() bool {
-	return o.childrenRule != nil
-}
-
-func (o *ruleSetS) getChildrenRule() ruleSet {
-	return o.childrenRule
-}
-
-func (o *ruleSetS) validate(input interface{}) []string {
-	fails := []string{}
-	for key, vFunction := range o.validators {
-		if !vFunction(input) {
-			fails = append(fails, key)
+// Returns true if: input >= min or len(input) >= min
+func minRule(min float64) func(interface{}) bool {
+	return func(input interface{}) bool {
+		inputValue := reflect.ValueOf(input)
+		switch inputValue.Kind() {
+		case reflect.String, reflect.Map, reflect.Slice:
+			return inputValue.Len() >= int(min)
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
+			reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
+			reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
+			return inputValue.Convert(reflect.TypeOf(1.0)).Float() >= min
+		default:
+			return false
 		}
 	}
-
-	return fails
 }
 
-func (o *ruleSetS) getOption(ruleKey string) option {
-	if option, ok := o.options[ruleKey]; ok {
-		return option
+// Returns true if: input <= max or len(input) <= max
+func maxRule(max float64) func(interface{}) bool {
+	return func(input interface{}) bool {
+		inputValue := reflect.ValueOf(input)
+		switch inputValue.Kind() {
+		case reflect.String, reflect.Map, reflect.Slice:
+			return inputValue.Len() <= int(max)
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
+			reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
+			reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
+			return inputValue.Convert(reflect.TypeOf(1.0)).Float() <= max
+		default:
+			return false
+		}
 	}
-	return option{}
 }
 
-func (o *ruleSetS) addOption(ruleKey string, subKey string, value string) {
-	if option, ok := o.options[ruleKey]; ok {
-		option[subKey] = value
-		return
+// Returns true if len(input) >= from && len(input) <= to
+//
+// If from == -1, no check on from config will happen
+// If to == -1, no check on to config will happen
+func lenRangeRule(from, to int) func(interface{}) bool {
+	return func(input interface{}) bool {
+		inputValue := reflect.ValueOf(input)
+		switch inputValue.Kind() {
+		case reflect.String, reflect.Map, reflect.Slice:
+			if from != -1 && inputValue.Len() < from {
+				return false
+			} else if to != -1 && inputValue.Len() > to {
+				return false
+			}
+			return true
+		default:
+			return false
+		}
 	}
-	o.options[ruleKey] = option{subKey: value}
 }
 
-func (o *ruleSetS) optional() {
-	o.isOptional = true
+// Returns true if len(input) is equal to passed length
+func lenRule(length int) func(interface{}) bool {
+	return func(input interface{}) bool {
+		inputValue := reflect.ValueOf(input)
+		switch inputValue.Kind() {
+		case reflect.String, reflect.Map, reflect.Slice:
+			return inputValue.Len() == length
+		default:
+			return false
+		}
+	}
 }
 
-func (o *ruleSetS) required() {
-	o.isOptional = false
+// Returns true if input is not 0, "", ”, nil and empty
+func requiredRule(input interface{}) bool {
+	inputValue := reflect.ValueOf(input)
+	return !inputValue.IsZero() && !isNil(input) && !hasZeroItems(input)
 }
 
-func (o *ruleSetS) isRequired() bool {
-	return !o.isOptional
+// Returns true if input is not zero(0, "", ”)
+func nonZeroRule(input interface{}) bool {
+	return !reflect.ValueOf(input).IsZero()
 }
 
-func (o *ruleSetS) hasDeepValidator() bool {
-	return o.deepValidator != nil
+// Returns true if input is not nil
+func nonNilRule(input interface{}) bool {
+	return !isNil(input)
 }
 
-func (o *ruleSetS) validateDeepValidator(input interface{}) interface{} {
-	return o.deepValidator.Validate(input)
+// Returns true if input has items
+func nonEmptyRule(input interface{}) bool {
+	return !hasZeroItems(input)
 }
+
+// Returns true if input is a valid email
+func emailRule(input interface{}) bool {
+	switch reflect.ValueOf(input).Kind() {
+	case reflect.String:
+		_, err := mail.ParseAddress(input.(string))
+		if err != nil {
+			return false
+		}
+		return true
+	default:
+		return false
+	}
+}
+
+// Returns true if input is a valid phone number
+func phoneRule(input interface{}) bool {
+	return regexRule(`((\+|\(|0)?\d{1,3})?((\s|\)|\-))?(\d{10})$`)(input)
+}
+
+// Returns true if input matches the passed pattern
+func regexRule(pattern string) func(interface{}) bool {
+	regex := regexp2.MustCompile(pattern, regexp2.None)
+	return func(input interface{}) bool {
+		inputValue := reflect.ValueOf(input)
+		switch inputValue.Kind() {
+		case reflect.String:
+			output, _ := regex.MatchString(input.(string))
+			return output
+		default:
+			return false
+		}
+	}
+}
+
+// Returns true if input is a map
+func mapRule(input interface{}) bool {
+	return reflect.TypeOf(input).Kind() == reflect.Map
+}
+
+// Returns true if input is a struct
+func structRule(input interface{}) bool {
+	return reflect.TypeOf(input).Kind() == reflect.Struct
+}
+
+// Returns true if input is a slice
+func sliceRule(input interface{}) bool {
+	return reflect.TypeOf(input).Kind() == reflect.Slice
+}
+
+// Returns true if input is at least 8 characters long, has one lowercase, one uppercase, one special and one number character
+func passwordRule(input interface{}) bool {
+	return regexRule(`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$`)(input)
+}
+
+// func whenExistRule(validator validator, options option) func(interface{}) bool {
+// 	return func(input interface{}) bool {
+// 		validator.GetRules()validator
+// 	}
+// }

@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	rules "github.com/golodash/galidator/internal"
 	gStrings "github.com/golodash/godash/strings"
 )
 
@@ -59,7 +58,7 @@ func getErrorMessage(fieldName string, ruleKey string, value interface{}, option
 		}
 		return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(out, "$fieldS", snakeCaseFieldName), "$field", fieldName), "$value", fmt.Sprint(value))
 	} else {
-		if defaultErrorMessage, ok := rules.DefaultValidatorErrorMessages[ruleKey]; ok {
+		if defaultErrorMessage, ok := defaultValidatorErrorMessages[ruleKey]; ok {
 			for key, value := range options {
 				defaultErrorMessage = strings.ReplaceAll(defaultErrorMessage, "$"+key, value)
 			}
@@ -100,7 +99,7 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 			valueOnKeyInput := inputValue.FieldByName(fieldName)
 			if valueOnKeyInput.IsValid() {
 				value := valueOnKeyInput.Interface()
-				if !ruleSet.isRequired() && rules.IsEmptyNilZero(value) {
+				if !ruleSet.isRequired() && isEmptyNilZero(value) {
 					continue
 				}
 				errors := validate(ruleSet, value, fieldName)
@@ -108,7 +107,7 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 					output[fieldName] = errors
 				}
 
-				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (rules.Map(value) || rules.Struct(value) || rules.Slice(value)) {
+				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (mapRule(value) || structRule(value) || sliceRule(value)) {
 					data := ruleSet.validateDeepValidator(value)
 
 					if reflect.ValueOf(data).Len() != 0 {
@@ -116,7 +115,7 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 					}
 				}
 
-				if ruleSet.hasChildrenRule() && output[fieldName] == nil && rules.Slice(value) {
+				if ruleSet.hasChildrenRule() && output[fieldName] == nil && sliceRule(value) {
 					for i := 0; i < valueOnKeyInput.Len(); i++ {
 						element := valueOnKeyInput.Index(i)
 						childrenRule := ruleSet.getChildrenRule()
@@ -141,7 +140,7 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 			}
 			if valueOnKeyInput.IsValid() {
 				value := valueOnKeyInput.Interface()
-				if !ruleSet.isRequired() && rules.IsEmptyNilZero(value) {
+				if !ruleSet.isRequired() && isEmptyNilZero(value) {
 					continue
 				}
 				errors := validate(ruleSet, value, fieldName)
@@ -149,7 +148,7 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 					output[fieldName] = errors
 				}
 
-				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (rules.Map(value) || rules.Struct(value) || rules.Slice(value)) {
+				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (mapRule(value) || structRule(value) || sliceRule(value)) {
 					data := ruleSet.validateDeepValidator(value)
 
 					if reflect.ValueOf(data).Len() != 0 {
@@ -157,7 +156,7 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 					}
 				}
 
-				if ruleSet.hasChildrenRule() && output[fieldName] == nil && rules.Slice(value) {
+				if ruleSet.hasChildrenRule() && output[fieldName] == nil && sliceRule(value) {
 					for i := 0; i < valueOnKeyInput.Len(); i++ {
 						element := valueOnKeyInput.Index(i)
 						childrenRule := ruleSet.getChildrenRule()
