@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: requires added core structure of library
 * 🎉 feat: choices function added
 * 🐛 fix: return nill when no errors happened
 * 🎉 feat: XOR rule added, Or changed to OR

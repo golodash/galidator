@@ -17,15 +17,15 @@ type (
 	// A map full of validators which is assigned for a single key in a validator struct
 	Validators map[string]func(interface{}) bool
 
-	// A map full of validators
-	unCookedValidators map[string]func(validator validator) func(interface{}) bool
+	// A map full of field require determining
+	requires map[string]func(interface{}) func(interface{}) bool
 
 	// A struct to implement ruleSet interface
 	ruleSetS struct {
 		// Used to validate user's data
 		validators Validators
-		// Uncooked Validators will get converted to validators once got validator reference inside them
-		unCookedValidators unCookedValidators
+		// Used to determine what needs to be required
+		requires requires
 		// Used in returning error messages
 		options options
 		// If isOptional is true, if empty is sent, all errors will be ignored
@@ -112,6 +112,8 @@ type (
 		XOR(ruleSets ...ruleSet) ruleSet
 		// Gets a list of values and checks if input is one of them
 		Choices(choices interface{}) ruleSet
+		// Makes field required if passed fields are not empty, nil or zero(0, "", '')
+		WhenExistOne(fields ...string) ruleSet
 
 		// Returns option of the passed ruleKey
 		getOption(ruleKey string) option
@@ -123,7 +125,7 @@ type (
 		required()
 		// Returns true if the ruleSet has to pass all validators
 		//
-		// Returns false if the ruleSet can be empty, nil or zero and is allowed to not pass any validations
+		// Returns false if the ruleSet can be empty, nil or zero(0, "", '') and is allowed to not pass any validations
 		isRequired() bool
 		// Returns true if deepValidator is not nil
 		hasDeepValidator() bool
@@ -133,14 +135,12 @@ type (
 		hasChildrenRule() bool
 		// Returns children ruleSet
 		getChildrenRule() ruleSet
-		// Returns uncookedValidators
-		getUncookedValidators() unCookedValidators
-		// Sets uncookedValidators to nil
-		setUncookedValidatorsEmpty()
 		// Returns validators
 		getValidators() Validators
 		// Adds a validator
 		addValidator(key string, validator func(interface{}) bool)
+		// Returns requires
+		getRequires() requires
 	}
 )
 
@@ -310,6 +310,14 @@ func (o *ruleSetS) Choices(choices interface{}) ruleSet {
 	return o
 }
 
+func (o *ruleSetS) WhenExistOne(choices ...string) ruleSet {
+	functionName := "when_exist_one"
+	o.requires[functionName] = whenExistOneRequire(choices...)
+	o.validators[functionName] = requiredRule
+	o.addOption(functionName, "choices", strings.ReplaceAll(fmt.Sprint(choices), " ", ", "))
+	return o
+}
+
 func (o *ruleSetS) hasChildrenRule() bool {
 	return o.childrenRule != nil
 }
@@ -364,18 +372,14 @@ func (o *ruleSetS) validateDeepValidator(input interface{}) interface{} {
 	return o.deepValidator.Validate(input)
 }
 
-func (o *ruleSetS) getUncookedValidators() unCookedValidators {
-	return o.unCookedValidators
-}
-
-func (o *ruleSetS) setUncookedValidatorsEmpty() {
-	o.unCookedValidators = nil
-}
-
 func (o *ruleSetS) getValidators() Validators {
 	return o.validators
 }
 
 func (o *ruleSetS) addValidator(key string, validator func(interface{}) bool) {
 	o.validators[key] = validator
+}
+
+func (o *ruleSetS) getRequires() requires {
+	return o.requires
 }

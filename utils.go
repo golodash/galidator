@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+
+	gStrings "github.com/golodash/godash/strings"
 )
 
 // Determines the precision of a float number for print
@@ -132,4 +134,48 @@ func same(value1 interface{}, value2 interface{}) (condition bool) {
 	}
 
 	return
+}
+
+// Returns values of passed fields from passed struct or map
+func getValues(all interface{}, fields ...string) []interface{} {
+	fieldsValues := []interface{}{}
+	allValue := reflect.ValueOf(all)
+
+	if allValue.Kind() == reflect.Map {
+		for _, key := range fields {
+			element := allValue.MapIndex(reflect.ValueOf(key))
+			if !element.IsValid() {
+				element = allValue.MapIndex(reflect.ValueOf(gStrings.SnakeCase(key)))
+			}
+
+			if !element.IsValid() {
+				panic(fmt.Sprintf("value on %s is not valid", key))
+			}
+
+			fieldsValues = append(fieldsValues, element.Interface())
+		}
+	} else if allValue.Kind() == reflect.Struct {
+		for _, key := range fields {
+			element := allValue.FieldByName(key)
+			if !element.IsValid() {
+				panic(fmt.Sprintf("value on %s is not valid", key))
+			}
+
+			fieldsValues = append(fieldsValues, element.Interface())
+		}
+	}
+
+	return fieldsValues
+}
+
+// Returns a list of keys for requires which determine not required and a bool which determines if we need to validate or not
+func determineRequires(all interface{}, input interface{}, requires requires) (map[string]interface{}, bool) {
+	output := map[string]interface{}{}
+	for key, req := range requires {
+		if !req(all)(input) {
+			output[key] = 1
+		}
+	}
+
+	return output, len(output) == len(requires)
 }

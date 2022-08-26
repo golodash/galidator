@@ -8,8 +8,9 @@ import (
 	"github.com/dlclark/regexp2"
 )
 
-// A map which with rule's key will provide the default error message of that rule's key
+// A map which with rule or require's key will provide the default error message of that rule or require's key
 var defaultValidatorErrorMessages = map[string]string{
+	// Rules
 	"int":       "not an integer value",
 	"float":     "not a float value",
 	"min":       "$fieldS's length must be higher equal to $min",
@@ -30,6 +31,9 @@ var defaultValidatorErrorMessages = map[string]string{
 	"or":        "ruleSets in $fieldS did not pass based on or logic",
 	"xor":       "ruleSets in $fieldS did not pass based on xor logic",
 	"choices":   "$value does not include in allowed choices: $choices",
+
+	// Requires
+	"when_exist_one": "$fieldS will be required when one of $choices fields are not nil, empty or zero(0, \"\", ”) passed",
 }
 
 // Returns true if input (can be)/is int

@@ -41,7 +41,7 @@ func (o *generatorS) Validator(rules Rules, errorMessages ...Messages) validator
 }
 
 func (o *generatorS) RuleSet() ruleSet {
-	return &ruleSetS{validators: Validators{}, options: options{}, isOptional: true, deepValidator: nil, childrenRule: nil}
+	return &ruleSetS{validators: Validators{}, requires: requires{}, options: options{}, isOptional: true, deepValidator: nil, childrenRule: nil}
 }
 
 func (o *generatorS) R() ruleSet {

@@ -95,10 +95,24 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 			valueOnKeyInput := inputValue.FieldByName(fieldName)
 			if valueOnKeyInput.IsValid() {
 				value := valueOnKeyInput.Interface()
-				if !ruleSet.isRequired() && isEmptyNilZero(value) {
+				// Just continue if no requires are set and field is empty, nil or zero
+				requires, isRequired := determineRequires(input, value, ruleSet.getRequires())
+				if (!ruleSet.isRequired() && !isRequired) && isEmptyNilZero(value) {
 					continue
 				}
+
 				errors := validate(ruleSet, value, fieldName)
+				dels := []int{}
+				for i, key := range errors {
+					if _, ok := requires[key]; ok {
+						dels = append(dels, i)
+					}
+				}
+				j := 0
+				for _, key := range dels {
+					errors = append(errors[:key-j], errors[key+1-j:]...)
+					j++
+				}
 				if len(errors) != 0 {
 					output[fieldName] = errors
 				}
