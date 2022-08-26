@@ -33,7 +33,8 @@ var defaultValidatorErrorMessages = map[string]string{
 	"choices":   "$value does not include in allowed choices: $choices",
 
 	// Requires
-	"when_exist_one": "$fieldS will be required when one of $choices fields are not nil, empty or zero(0, \"\", ”) passed",
+	"when_exist_one": "$fieldS is required because one of $choices fields are not nil, empty or zero(0, \"\", '')",
+	"when_exist_all": "$fieldS is required because all of $choices fields are not nil, empty or zero(0, \"\", '')",
 }
 
 // Returns true if input (can be)/is int

@@ -64,10 +64,16 @@ type (
 		//
 		// Note: If length > 0, field will be required
 		Len(length int) ruleSet
-		// Checks if input is not zero(0, "", '') or nil or empty
+		// Makes this field required, Checks if input is not zero(0, "", ''), nil or empty
 		//
 		// Note: Field will be required
 		Required() ruleSet
+		// Makes this field optional
+		//
+		// Note: Use this after functions that make fields required automatically
+		//
+		// Note: Field will be optional
+		Optional() ruleSet
 		// Checks if input is not zero(0, "", '')
 		//
 		// Note: Field will be required
@@ -112,8 +118,10 @@ type (
 		XOR(ruleSets ...ruleSet) ruleSet
 		// Gets a list of values and checks if input is one of them
 		Choices(choices interface{}) ruleSet
-		// Makes field required if passed fields are not empty, nil or zero(0, "", '')
-		WhenExistOne(fields ...string) ruleSet
+		// Makes field required if at least one of passed fields are not empty, nil or zero(0, "", '')
+		WhenExistOne(choices ...string) ruleSet
+		// Makes field required if all passed fields are not empty, nil or zero(0, "", '')
+		WhenExistAll(choices ...string) ruleSet
 
 		// Returns option of the passed ruleKey
 		getOption(ruleKey string) option
@@ -135,10 +143,6 @@ type (
 		hasChildrenRule() bool
 		// Returns children ruleSet
 		getChildrenRule() ruleSet
-		// Returns validators
-		getValidators() Validators
-		// Adds a validator
-		addValidator(key string, validator func(interface{}) bool)
 		// Returns requires
 		getRequires() requires
 	}
@@ -200,6 +204,11 @@ func (o *ruleSetS) Required() ruleSet {
 	functionName := "required"
 	o.validators[functionName] = requiredRule
 	o.required()
+	return o
+}
+
+func (o *ruleSetS) Optional() ruleSet {
+	o.optional()
 	return o
 }
 
@@ -312,7 +321,15 @@ func (o *ruleSetS) Choices(choices interface{}) ruleSet {
 
 func (o *ruleSetS) WhenExistOne(choices ...string) ruleSet {
 	functionName := "when_exist_one"
-	o.requires[functionName] = whenExistOneRequire(choices...)
+	o.requires[functionName] = whenExistOneRequireRule(choices...)
+	o.validators[functionName] = requiredRule
+	o.addOption(functionName, "choices", strings.ReplaceAll(fmt.Sprint(choices), " ", ", "))
+	return o
+}
+
+func (o *ruleSetS) WhenExistAll(choices ...string) ruleSet {
+	functionName := "when_exist_all"
+	o.requires[functionName] = whenExistAllRequireRule(choices...)
 	o.validators[functionName] = requiredRule
 	o.addOption(functionName, "choices", strings.ReplaceAll(fmt.Sprint(choices), " ", ", "))
 	return o
@@ -370,14 +387,6 @@ func (o *ruleSetS) hasDeepValidator() bool {
 
 func (o *ruleSetS) validateDeepValidator(input interface{}) interface{} {
 	return o.deepValidator.Validate(input)
-}
-
-func (o *ruleSetS) getValidators() Validators {
-	return o.validators
-}
-
-func (o *ruleSetS) addValidator(key string, validator func(interface{}) bool) {
-	o.validators[key] = validator
 }
 
 func (o *ruleSetS) getRequires() requires {

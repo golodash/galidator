@@ -10,3 +10,6 @@ main.go
 
 env
 .env
+
+# git
+.commit

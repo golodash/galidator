@@ -4,6 +4,8 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: added WhenExistAll rule function, added Optional rule function
+* 🎉 feat: added WhenExistAll rule function, added Optional function
 * 🎉 feat: requires added core structure of library
 * 🎉 feat: choices function added
 * 🐛 fix: return nill when no errors happened
