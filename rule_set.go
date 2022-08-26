@@ -2,8 +2,9 @@ package galidator
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/golodash/godash/strings"
+	gstrings "github.com/golodash/godash/strings"
 )
 
 type (
@@ -109,6 +110,8 @@ type (
 		OR(ruleSets ...ruleSet) ruleSet
 		// Checks if XOR of all ruleSets passes
 		XOR(ruleSets ...ruleSet) ruleSet
+		// Gets a list of values and checks if input is one of them
+		Choices(choices interface{}) ruleSet
 
 		// Returns option of the passed ruleKey
 		getOption(ruleKey string) option
@@ -248,7 +251,7 @@ func (o *ruleSetS) Custom(validators Validators) ruleSet {
 		if _, ok := o.validators[key]; ok {
 			panic(fmt.Sprintf("%s is duplicate and has to be unique", key))
 		}
-		o.validators[strings.SnakeCase(key)] = function
+		o.validators[gstrings.SnakeCase(key)] = function
 	}
 	return o
 }
@@ -297,6 +300,13 @@ func (o *ruleSetS) OR(ruleSets ...ruleSet) ruleSet {
 func (o *ruleSetS) XOR(ruleSets ...ruleSet) ruleSet {
 	functionName := "xor"
 	o.validators[functionName] = xorRule(ruleSets...)
+	return o
+}
+
+func (o *ruleSetS) Choices(choices interface{}) ruleSet {
+	functionName := "choices"
+	o.validators[functionName] = choicesRule(choices)
+	o.addOption(functionName, "choices", strings.ReplaceAll(fmt.Sprint(choices), " ", ", "))
 	return o
 }
 

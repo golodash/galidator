@@ -29,6 +29,7 @@ var defaultValidatorErrorMessages = map[string]string{
 	"password":  "$fieldS must be at least 8 characters long and contain one lowercase, one uppercase, one special and one number character",
 	"or":        "ruleSets in $fieldS did not pass based on or logic",
 	"xor":       "ruleSets in $fieldS did not pass based on xor logic",
+	"choices":   "$value does not include in allowed choices: $choices",
 }
 
 // Returns true if input (can be)/is int
@@ -239,6 +240,24 @@ func xorRule(ruleSets ...ruleSet) func(interface{}) bool {
 		}
 
 		return output
+	}
+}
+
+func choicesRule(choices interface{}) func(interface{}) bool {
+	choicesValue := reflect.ValueOf(choices)
+	if choicesValue.Type().Kind() != reflect.Slice {
+		panic("choices variable has to be slice")
+	}
+
+	return func(input interface{}) bool {
+		for i := 0; i < choicesValue.Len(); i++ {
+			element := choicesValue.Index(i).Interface()
+			if same(element, input) {
+				return true
+			}
+		}
+
+		return false
 	}
 }
 
