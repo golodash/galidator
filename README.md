@@ -35,9 +35,9 @@ import (
 func main() {
 	g := galidator.New()
 	validator := g.Validator(galidator.Rules{
-		"Username": g.RuleSet().Required().Min(3).Max(32),
-		"Password": g.RuleSet().Required().Password(),
-		"Email":    g.RuleSet().Required().Email(),
+		"Username": g.R().Required().Min(3).Max(32),
+		"Password": g.R().Required().Password(),
+		"Email":    g.R().Required().Email(),
 	})
 
 	userInput := map[string]string{
@@ -55,7 +55,7 @@ func main() {
 
 Output:
 ```
-map[Password:[password must be at least 8 characters long and contain one lowercase, one uppercase, one special and one number character]]
+map[Password:[Password must be at least 8 characters long and contain one lowercase, one uppercase, one special and one number character]]
 false
 ```
 
@@ -77,9 +77,9 @@ type Person struct {
 func main() {
 	g := galidator.New()
 	validator := g.Validator(galidator.Rules{
-		"Username": g.RuleSet().Required().Min(3).Max(32),
-		"Password": g.RuleSet().Required().Min(5).Password(),
-		"Email":    g.RuleSet().Required().Email(),
+		"Username": g.R().Required().Min(3).Max(32),
+		"Password": g.R().Required().Min(5).Password(),
+		"Email":    g.R().Required().Email(),
 	})
 
 	userInput := Person{
@@ -91,7 +91,7 @@ func main() {
 	errors := validator.Validate(userInput)
 
 	fmt.Println(errors)
-	fmt.Println(errors == g.RuleSet().NonNil())
+	fmt.Println(errors == nil)
 }
 ```
 
@@ -121,10 +121,10 @@ type UserInput struct {
 func main() {
 	g := galidator.New()
 	ordersValidator := g.Validator(galidator.Rules{
-		"Orders": g.RuleSet().Slice().Complex(g.Validator(galidator.Rules{
-			"ObjectName": g.RuleSet().Required().Min(3),
-			"Amount":     g.RuleSet().Min(1).Max(10),
-			"Price":      g.RuleSet().Required().Min(1).Max(500),
+		"Orders": g.R().Slice().Complex(g.Validator(galidator.Rules{
+			"ObjectName": g.R().Required().Min(3),
+			"Amount":     g.R().Min(1).Max(10),
+			"Price":      g.R().Required().Min(1).Max(500),
 		}),
 		),
 	})
@@ -144,7 +144,7 @@ func main() {
 	errors := ordersValidator.Validate(userInput)
 
 	fmt.Println(errors)
-	fmt.Println(errors == g.RuleSet().NonNil())
+	fmt.Println(errors == nil)
 }
 ```
 
@@ -192,9 +192,9 @@ func usernameDuplicateChecker(input interface{}) bool {
 func main() {
 	g := galidator.New()
 	validator := g.Validator(galidator.Rules{
-		"Username": g.RuleSet().Required().Min(3).Max(32).Custom(galidator.Validators{"DuplicateUsername": usernameDuplicateChecker}),
-		"Password": g.RuleSet().Required().Password(),
-		"Email":    g.RuleSet().Required().Email(),
+		"Username": g.R().Required().Min(3).Max(32).Custom(galidator.Validators{"DuplicateUsername": usernameDuplicateChecker}),
+		"Password": g.R().Required().Password(),
+		"Email":    g.R().Required().Email(),
 	}, galidator.Messages{
 		"DuplicateUsername": "$value already exists",
 	})
@@ -214,6 +214,180 @@ func main() {
 
 Output:
 ```
-map[Password:[password must be at least 8 characters long and contain one lowercase, one uppercase, one special and one number character] Username:[mohammad already exists]]
+map[Password:[Password must be at least 8 characters long and contain one lowercase, one uppercase, one special and one number character] Username:[mohammad already exists]]
+false
+```
+
+### OR, XOR Rule
+
+Or operator checks if at least one of the passed rules pass.\
+Note: XOR usage is the same but results are based on XOR but not based on OR operation.
+
+```go
+import (
+	"fmt"
+
+	"github.com/golodash/galidator"
+)
+
+type Request struct {
+	Username string
+	Password string
+}
+
+func main() {
+	g := galidator.New()
+	validator := g.Validator(galidator.Rules{
+		"Username": g.R().Required().OR(g.R().Email(), g.R().Phone()),
+		"Password": g.R().Password().Min(8).Max(100),
+	}, galidator.Messages{
+		"OR": "$field should be a valid email or phone number",
+	})
+
+	userInput := &Request{
+		Username: "not an email or phone number",
+		Password: "12345678Aa!",
+	}
+
+	errors := validator.Validate(userInput)
+
+	fmt.Println(errors)
+	fmt.Println(errors == nil)
+}
+```
+
+Output:
+```
+map[Username:[Username should be a valid email or phone number]]
+false
+```
+
+### Choices
+
+```go
+import (
+	"fmt"
+
+	"github.com/golodash/galidator"
+)
+
+type Request struct {
+	Username string
+	Password string
+	Method   string
+}
+
+func main() {
+	g := galidator.New()
+	validator := g.Validator(galidator.Rules{
+		"Username": g.R().Required(),
+		"Password": g.R().Password().Min(8).Max(100),
+		"Method":   g.R().Required().Choices([]string{"session", "jwt"}),
+	})
+
+	userInput := &Request{
+		Username: "randomEmail@gmail.com",
+		Password: "12345678Aa!",
+		Method:   "invalid method",
+	}
+
+	errors := validator.Validate(userInput)
+
+	fmt.Println(errors)
+	fmt.Println(errors == nil)
+}
+```
+
+Output:
+```
+map[Method:[invalid method does not include in allowed choices: [session, jwt]]]
+false
+```
+
+### WhenExistAll
+
+```go
+import (
+	"fmt"
+
+	"github.com/golodash/galidator"
+)
+
+type Request struct {
+	Option1 string
+	Option2 string
+	Option3 string
+}
+
+func main() {
+	g := galidator.New()
+	validator := g.Validator(galidator.Rules{
+		"Option1": g.R().WhenExistAll("Option2", "Option3"),
+		"Option2": g.R(),
+		"Option3": g.R(),
+	}, galidator.Messages{
+		"OR": "$field should be a valid email or phone number",
+	})
+
+	userInput := &Request{
+		Option1: "",
+		Option2: "data",
+		Option3: "data",
+	}
+
+	errors := validator.Validate(userInput)
+
+	fmt.Println(errors)
+	fmt.Println(errors == nil)
+}
+```
+
+Output:
+```
+map[Option1:[Option1 is required because all of [Option2, Option3] fields are not nil, empty or zero(0, "", '')]]
+false
+```
+
+### WhenExistOne
+
+```go
+import (
+	"fmt"
+
+	"github.com/golodash/galidator"
+)
+
+type Request struct {
+	Option1 string
+	Option2 string
+	Option3 string
+}
+
+func main() {
+	g := galidator.New()
+	validator := g.Validator(galidator.Rules{
+		"Option1": g.R().WhenExistOne("Option2", "Option3"),
+		"Option2": g.R(),
+		"Option3": g.R(),
+	}, galidator.Messages{
+		"OR": "$field should be a valid email or phone number",
+	})
+
+	userInput := &Request{
+		Option1: "",
+		Option2: "",
+		Option3: "data",
+	}
+
+	errors := validator.Validate(userInput)
+
+	fmt.Println(errors)
+	fmt.Println(errors == nil)
+}
+```
+
+Output:
+```
+map[Option1:[Option1 is required because at least one of [Option2, Option3] fields are not nil, empty or zero(0, "", '')]]
 false
 ```
