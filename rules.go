@@ -13,10 +13,10 @@ var defaultValidatorErrorMessages = map[string]string{
 	// Rules
 	"int":       "not an integer value",
 	"float":     "not a float value",
-	"min":       "$fieldS's length must be higher equal to $min",
-	"max":       "$fieldS's length must be lower equal to $max",
-	"len_range": "$fieldS's length must be between $from to $to characters long",
-	"len":       "$fieldS's length must be equal to $length",
+	"min":       "$field's length must be higher equal to $min",
+	"max":       "$field's length must be lower equal to $max",
+	"len_range": "$field's length must be between $from to $to characters long",
+	"len":       "$field's length must be equal to $length",
 	"required":  "required",
 	"non_zero":  "can not be 0",
 	"non_nil":   "can not be nil",
@@ -27,14 +27,14 @@ var defaultValidatorErrorMessages = map[string]string{
 	"map":       "not a map",
 	"struct":    "not a struct",
 	"slice":     "not a slice",
-	"password":  "$fieldS must be at least 8 characters long and contain one lowercase, one uppercase, one special and one number character",
-	"or":        "ruleSets in $fieldS did not pass based on or logic",
-	"xor":       "ruleSets in $fieldS did not pass based on xor logic",
+	"password":  "$field must be at least 8 characters long and contain one lowercase, one uppercase, one special and one number character",
+	"or":        "ruleSets in $field did not pass based on or logic",
+	"xor":       "ruleSets in $field did not pass based on xor logic",
 	"choices":   "$value does not include in allowed choices: $choices",
 
 	// Requires
-	"when_exist_one": "$fieldS is required because one of $choices fields are not nil, empty or zero(0, \"\", '')",
-	"when_exist_all": "$fieldS is required because all of $choices fields are not nil, empty or zero(0, \"\", '')",
+	"when_exist_one": "$field is required because one of $choices fields are not nil, empty or zero(0, \"\", '')",
+	"when_exist_all": "$field is required because all of $choices fields are not nil, empty or zero(0, \"\", '')",
 }
 
 // Returns true if input (can be)/is int
