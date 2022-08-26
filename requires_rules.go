@@ -21,9 +21,8 @@ func whenExistAllRequireRule(fields ...string) func(interface{}) func(interface{
 	return func(all interface{}) func(interface{}) bool {
 		fieldsValues := getValues(all, fields...)
 		return func(input interface{}) bool {
-			inputIsNil := isEmptyNilZero(input)
 			for _, element := range fieldsValues {
-				if isEmptyNilZero(element) && !inputIsNil {
+				if isEmptyNilZero(element) {
 					return true
 				}
 			}

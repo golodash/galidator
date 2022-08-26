@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🐛 fix: WhenExistAll bug fixed
 * 🎉 feat: added WhenExistAll rule function, added Optional rule function
 * 🎉 feat: added WhenExistAll rule function, added Optional function
 * 🎉 feat: requires added core structure of library
