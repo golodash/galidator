@@ -265,9 +265,3 @@ func choicesRule(choices interface{}) func(interface{}) bool {
 		return false
 	}
 }
-
-// func whenExistRule(validator validator, options option) func(interface{}) bool {
-// 	return func(input interface{}) bool {
-// 		validator.GetRules()validator
-// 	}
-// }
