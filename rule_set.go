@@ -3,8 +3,6 @@ package galidator
 import (
 	"fmt"
 	"strings"
-
-	gstrings "github.com/golodash/godash/strings"
 )
 
 type (
@@ -22,6 +20,8 @@ type (
 
 	// A struct to implement ruleSet interface
 	ruleSetS struct {
+		// The name that will be shown in output of the errors
+		name string
 		// Used to validate user's data
 		validators Validators
 		// Used to determine what needs to be required
@@ -145,6 +145,8 @@ type (
 		getChildrenRule() ruleSet
 		// Returns requires
 		getRequires() requires
+		// Returns name
+		getName() string
 	}
 )
 
@@ -260,7 +262,7 @@ func (o *ruleSetS) Custom(validators Validators) ruleSet {
 		if _, ok := o.validators[key]; ok {
 			panic(fmt.Sprintf("%s is duplicate and has to be unique", key))
 		}
-		o.validators[gstrings.SnakeCase(key)] = function
+		o.validators[key] = function
 	}
 	return o
 }
@@ -391,4 +393,8 @@ func (o *ruleSetS) validateDeepValidator(input interface{}) interface{} {
 
 func (o *ruleSetS) getRequires() requires {
 	return o.requires
+}
+
+func (o *ruleSetS) getName() string {
+	return o.name
 }

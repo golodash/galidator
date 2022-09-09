@@ -1,9 +1,5 @@
 package galidator
 
-import (
-	"github.com/golodash/godash/strings"
-)
-
 type (
 	// A struct to implement generator interface
 	generatorS struct{}
@@ -15,9 +11,11 @@ type (
 		// Please use CapitalCase for rules' keys (Important for getting data out of struct types)
 		Validator(rules Rules, messages ...Messages) validator
 		// Generates a ruleSet to validate passed information
-		RuleSet() ruleSet
+		//
+		// Variable name will be used in output of error keys
+		RuleSet(name ...string) ruleSet
 		// An alias for RuleSet function
-		R() ruleSet
+		R(name ...string) ruleSet
 	}
 )
 
@@ -28,24 +26,23 @@ func (o *generatorS) Validator(rules Rules, errorMessages ...Messages) validator
 	}
 
 	for key, message := range messages {
-		updatedKey := strings.SnakeCase(key)
-		if updatedKey == key {
-			continue
-		}
-
-		messages[updatedKey] = message
+		messages[key] = message
 		delete(messages, key)
 	}
 
 	return &validatorS{rules: rules, messages: messages, specificMessages: SpecificMessages{}}
 }
 
-func (o *generatorS) RuleSet() ruleSet {
-	return &ruleSetS{validators: Validators{}, requires: requires{}, options: options{}, isOptional: true, deepValidator: nil, childrenRule: nil}
+func (o *generatorS) RuleSet(name ...string) ruleSet {
+	var output = ""
+	if len(name) != 0 {
+		output = name[0]
+	}
+	return &ruleSetS{name: output, validators: Validators{}, requires: requires{}, options: options{}, isOptional: true, deepValidator: nil, childrenRule: nil}
 }
 
-func (o *generatorS) R() ruleSet {
-	return o.RuleSet()
+func (o *generatorS) R(name ...string) ruleSet {
+	return o.RuleSet(name...)
 }
 
 // A unique instance of generatorS to stop creating unnecessarily multiple instances of a generator

@@ -5,8 +5,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-
-	gStrings "github.com/golodash/godash/strings"
 )
 
 type (
@@ -42,13 +40,12 @@ type (
 
 // Formats and returns error message associated with passed ruleKey
 func getErrorMessage(fieldName string, ruleKey string, value interface{}, options option, messages Messages, specificMessages SpecificMessages) string {
-	snakeCaseFieldName := gStrings.SnakeCase(fieldName)
 	if outMessages, ok := specificMessages[fieldName]; ok {
 		if out, ok := outMessages[ruleKey]; ok {
 			for key, value := range options {
 				out = strings.ReplaceAll(out, "$"+key, value)
 			}
-			return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(out, "$fieldS", snakeCaseFieldName), "$field", fieldName), "$value", fmt.Sprint(value))
+			return strings.ReplaceAll(strings.ReplaceAll(out, "$field", fieldName), "$value", fmt.Sprint(value))
 		}
 	}
 
@@ -56,13 +53,13 @@ func getErrorMessage(fieldName string, ruleKey string, value interface{}, option
 		for key, value := range options {
 			out = strings.ReplaceAll(out, "$"+key, value)
 		}
-		return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(out, "$fieldS", snakeCaseFieldName), "$field", fieldName), "$value", fmt.Sprint(value))
+		return strings.ReplaceAll(strings.ReplaceAll(out, "$field", fieldName), "$value", fmt.Sprint(value))
 	} else {
 		if defaultErrorMessage, ok := defaultValidatorErrorMessages[ruleKey]; ok {
 			for key, value := range options {
 				defaultErrorMessage = strings.ReplaceAll(defaultErrorMessage, "$"+key, value)
 			}
-			return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(defaultErrorMessage, "$fieldS", snakeCaseFieldName), "$field", fieldName), "$value", fmt.Sprint(value))
+			return strings.ReplaceAll(strings.ReplaceAll(defaultErrorMessage, "$field", fieldName), "$value", fmt.Sprint(value))
 		} else {
 			return fmt.Sprintf("error happened but no error message exists on '%s' rule key", ruleKey)
 		}
@@ -93,94 +90,105 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 	case reflect.Struct:
 		for fieldName, ruleSet := range o.rules {
 			valueOnKeyInput := inputValue.FieldByName(fieldName)
-			if valueOnKeyInput.IsValid() {
-				value := valueOnKeyInput.Interface()
-				// Just continue if no requires are set and field is empty, nil or zero
-				requires, isRequired := determineRequires(input, value, ruleSet.getRequires())
-				if (!ruleSet.isRequired() && !isRequired) && isEmptyNilZero(value) {
-					continue
-				}
+			if ruleSet.getName() != "" {
+				fieldName = ruleSet.getName()
+			}
 
-				errors := validate(ruleSet, value, fieldName)
-				dels := []int{}
-				for i, key := range errors {
-					if _, ok := requires[key]; ok {
-						dels = append(dels, i)
-					}
-				}
-				j := 0
-				for _, key := range dels {
-					errors = append(errors[:key-j], errors[key+1-j:]...)
-					j++
-				}
-				if len(errors) != 0 {
-					output[fieldName] = errors
-				}
-
-				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (mapRule(value) || structRule(value) || sliceRule(value)) {
-					data := ruleSet.validateDeepValidator(value)
-
-					if reflect.ValueOf(data).Len() != 0 {
-						output[fieldName] = data
-					}
-				}
-
-				if ruleSet.hasChildrenRule() && output[fieldName] == nil && sliceRule(value) {
-					for i := 0; i < valueOnKeyInput.Len(); i++ {
-						element := valueOnKeyInput.Index(i)
-						childrenRule := ruleSet.getChildrenRule()
-						errors = validate(childrenRule, element.Interface(), fieldName)
-						if len(errors) != 0 {
-							if _, ok := output[fieldName]; !ok {
-								output[fieldName] = map[string][]string{}
-							}
-							output[fieldName].(map[string][]string)[strconv.Itoa(i)] = errors
-						}
-					}
-				}
-			} else {
+			if !valueOnKeyInput.IsValid() {
+				valueOnKeyInput = inputValue.MapIndex(reflect.ValueOf(fieldName))
+			}
+			if !valueOnKeyInput.IsValid() {
 				panic(fmt.Sprintf("value on %s is not valid", fieldName))
+			}
+
+			value := valueOnKeyInput.Interface()
+			// Just continue if no requires are set and field is empty, nil or zero
+			requires, isRequired := determineRequires(input, value, ruleSet.getRequires())
+			if (!ruleSet.isRequired() && !isRequired) && isEmptyNilZero(value) {
+				continue
+			}
+
+			errors := validate(ruleSet, value, fieldName)
+			dels := []int{}
+			for i, key := range errors {
+				if _, ok := requires[key]; ok {
+					dels = append(dels, i)
+				}
+			}
+			j := 0
+			for _, key := range dels {
+				errors = append(errors[:key-j], errors[key+1-j:]...)
+				j++
+			}
+			if len(errors) != 0 {
+				output[fieldName] = errors
+			}
+
+			if ruleSet.hasDeepValidator() && output[fieldName] == nil && (mapRule(value) || structRule(value) || sliceRule(value)) {
+				data := ruleSet.validateDeepValidator(value)
+
+				if reflect.ValueOf(data).Len() != 0 {
+					output[fieldName] = data
+				}
+			}
+
+			if ruleSet.hasChildrenRule() && output[fieldName] == nil && sliceRule(value) {
+				for i := 0; i < valueOnKeyInput.Len(); i++ {
+					element := valueOnKeyInput.Index(i)
+					childrenRule := ruleSet.getChildrenRule()
+					errors = validate(childrenRule, element.Interface(), fieldName)
+					if len(errors) != 0 {
+						if _, ok := output[fieldName]; !ok {
+							output[fieldName] = map[string][]string{}
+						}
+						output[fieldName].(map[string][]string)[strconv.Itoa(i)] = errors
+					}
+				}
 			}
 		}
 	case reflect.Map:
 		for fieldName, ruleSet := range o.rules {
 			valueOnKeyInput := inputValue.MapIndex(reflect.ValueOf(fieldName))
-			if !valueOnKeyInput.IsValid() {
-				valueOnKeyInput = inputValue.MapIndex(reflect.ValueOf(gStrings.SnakeCase(fieldName)))
+			if ruleSet.getName() != "" {
+				fieldName = ruleSet.getName()
 			}
-			if valueOnKeyInput.IsValid() {
-				value := valueOnKeyInput.Interface()
-				if !ruleSet.isRequired() && isEmptyNilZero(value) {
-					continue
-				}
-				errors := validate(ruleSet, value, fieldName)
-				if len(errors) != 0 {
-					output[fieldName] = errors
-				}
 
-				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (mapRule(value) || structRule(value) || sliceRule(value)) {
-					data := ruleSet.validateDeepValidator(value)
-
-					if reflect.ValueOf(data).Len() != 0 {
-						output[fieldName] = data
-					}
-				}
-
-				if ruleSet.hasChildrenRule() && output[fieldName] == nil && sliceRule(value) {
-					for i := 0; i < valueOnKeyInput.Len(); i++ {
-						element := valueOnKeyInput.Index(i)
-						childrenRule := ruleSet.getChildrenRule()
-						errors = validate(childrenRule, element.Interface(), fieldName)
-						if len(errors) != 0 {
-							if _, ok := output[fieldName]; !ok {
-								output[fieldName] = map[string][]string{}
-							}
-							output[fieldName].(map[string][]string)[strconv.Itoa(i)] = errors
-						}
-					}
-				}
-			} else {
+			if !valueOnKeyInput.IsValid() {
+				valueOnKeyInput = inputValue.MapIndex(reflect.ValueOf(fieldName))
+			}
+			if !valueOnKeyInput.IsValid() {
 				panic(fmt.Sprintf("value on %s is not valid", fieldName))
+			}
+
+			value := valueOnKeyInput.Interface()
+			if !ruleSet.isRequired() && isEmptyNilZero(value) {
+				continue
+			}
+			errors := validate(ruleSet, value, fieldName)
+			if len(errors) != 0 {
+				output[fieldName] = errors
+			}
+
+			if ruleSet.hasDeepValidator() && output[fieldName] == nil && (mapRule(value) || structRule(value) || sliceRule(value)) {
+				data := ruleSet.validateDeepValidator(value)
+
+				if reflect.ValueOf(data).Len() != 0 {
+					output[fieldName] = data
+				}
+			}
+
+			if ruleSet.hasChildrenRule() && output[fieldName] == nil && sliceRule(value) {
+				for i := 0; i < valueOnKeyInput.Len(); i++ {
+					element := valueOnKeyInput.Index(i)
+					childrenRule := ruleSet.getChildrenRule()
+					errors = validate(childrenRule, element.Interface(), fieldName)
+					if len(errors) != 0 {
+						if _, ok := output[fieldName]; !ok {
+							output[fieldName] = map[string][]string{}
+						}
+						output[fieldName].(map[string][]string)[strconv.Itoa(i)] = errors
+					}
+				}
 			}
 		}
 	case reflect.Slice:
@@ -211,12 +219,7 @@ func (o *validatorS) AddSpecificMessages(fieldMessages SpecificMessages) validat
 			o.specificMessages[fieldKey] = Messages{}
 		}
 		for key, errorMessage := range errorMessages {
-			updatedKey := gStrings.SnakeCase(key)
-			if updatedKey == key {
-				continue
-			}
-
-			o.specificMessages[fieldKey][updatedKey] = errorMessage
+			o.specificMessages[fieldKey][key] = errorMessage
 			delete(errorMessages, key)
 		}
 	}

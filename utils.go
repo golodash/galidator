@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"math"
 	"reflect"
-
-	gStrings "github.com/golodash/godash/strings"
 )
 
 // Determines the precision of a float number for print
@@ -145,7 +143,7 @@ func getValues(all interface{}, fields ...string) []interface{} {
 		for _, key := range fields {
 			element := allValue.MapIndex(reflect.ValueOf(key))
 			if !element.IsValid() {
-				element = allValue.MapIndex(reflect.ValueOf(gStrings.SnakeCase(key)))
+				element = allValue.MapIndex(reflect.ValueOf(key))
 			}
 
 			if !element.IsValid() {
