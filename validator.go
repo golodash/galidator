@@ -25,6 +25,8 @@ type (
 		messages Messages
 		// Stores custom field error messages sent by user
 		specificMessages SpecificMessages
+		// Default error messages are defined here
+		defaultErrorMessages map[string]string
 	}
 
 	// Validator object
@@ -39,7 +41,7 @@ type (
 )
 
 // Formats and returns error message associated with passed ruleKey
-func getErrorMessage(fieldName string, ruleKey string, value interface{}, options option, messages Messages, specificMessages SpecificMessages) string {
+func getErrorMessage(fieldName string, ruleKey string, value interface{}, options option, messages Messages, specificMessages SpecificMessages, defaultErrorMessages map[string]string) string {
 	if outMessages, ok := specificMessages[fieldName]; ok {
 		if out, ok := outMessages[ruleKey]; ok {
 			for key, value := range options {
@@ -55,7 +57,7 @@ func getErrorMessage(fieldName string, ruleKey string, value interface{}, option
 		}
 		return strings.ReplaceAll(strings.ReplaceAll(out, "$field", fieldName), "$value", fmt.Sprint(value))
 	} else {
-		if defaultErrorMessage, ok := defaultValidatorErrorMessages[ruleKey]; ok {
+		if defaultErrorMessage, ok := defaultErrorMessages[ruleKey]; ok {
 			for key, value := range options {
 				defaultErrorMessage = strings.ReplaceAll(defaultErrorMessage, "$"+key, value)
 			}
@@ -79,7 +81,7 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 		fails := ruleSet.validate(onKeyInput)
 		if len(fails) != 0 {
 			for _, failKey := range fails {
-				halfOutput = append(halfOutput, getErrorMessage(fieldName, failKey, onKeyInput, ruleSet.getOption(failKey), o.messages, o.specificMessages))
+				halfOutput = append(halfOutput, getErrorMessage(fieldName, failKey, onKeyInput, ruleSet.getOption(failKey), o.messages, o.specificMessages, o.defaultErrorMessages))
 			}
 		}
 

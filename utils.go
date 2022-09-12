@@ -177,3 +177,22 @@ func determineRequires(all interface{}, input interface{}, requires requires) (m
 
 	return output, len(output) == len(requires)
 }
+
+func addTypeCheck(r ruleSet, kind reflect.Kind) {
+	switch kind {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
+		reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
+		reflect.Uint32, reflect.Uint64:
+		r.Int()
+	case reflect.Float32, reflect.Float64:
+		r.Float()
+	case reflect.Map:
+		r.Map()
+	case reflect.Slice:
+		r.Slice()
+	case reflect.Struct:
+		r.Struct()
+	case reflect.String:
+		r.String()
+	}
+}

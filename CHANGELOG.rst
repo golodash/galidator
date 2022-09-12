@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: String rule added + default errors can be set when generating generator + struct validation added
 * 🎉 feat: added a name for customizing output of fields
 * 🐛 fix: WhenExistAll bug fixed
 * 🎉 feat: added WhenExistAll rule function, added Optional rule function
