@@ -11,18 +11,14 @@ import (
 
 type (
 	// A struct to implement generator interface
-	generatorS struct {
-		defaultErrors map[string]string
-	}
+	generatorS struct{}
 
 	// An interface to generate a validator or ruleSet
 	generator interface {
 		// Generates a validator interface which can be used to validate struct or map by some rules
 		//
 		// Please use CapitalCase for rules' keys (Important for getting data out of struct types)
-		Validator(rules Rules, messages ...Messages) validator
-		// Generates a validator interface which can be used to validate slice by one rule
-		SliceValidator(r ruleSet, errorMessages ...Messages) validator
+		Validator(rule ruleSet, messages ...Messages) validator
 		// Generates a validator interface which can be used to validate struct or map by some rules
 		//
 		// Please use CapitalCase for rules' keys (Important for getting data out of struct types)
@@ -36,13 +32,13 @@ type (
 	}
 )
 
-func (o *generatorS) Validator(rules Rules, errorMessages ...Messages) validator {
+func (o *generatorS) Validator(rule ruleSet, errorMessages ...Messages) validator {
 	var messages Messages = nil
 	if len(errorMessages) != 0 {
 		messages = errorMessages[0]
 	}
 
-	return &validatorS{rule: nil, rules: rules, messages: messages, specificMessages: SpecificMessages{}, defaultErrorMessages: o.defaultErrors}
+	return &validatorS{rule: rule, rules: nil, messages: messages, specificMessages: SpecificMessages{}}
 }
 
 func (o *generatorS) SliceValidator(r ruleSet, errorMessages ...Messages) validator {
@@ -58,7 +54,7 @@ func (o *generatorS) SliceValidator(r ruleSet, errorMessages ...Messages) valida
 		panic("passed ruleSet has no children")
 	}
 
-	return &validatorS{rule: r, rules: nil, messages: messages, specificMessages: SpecificMessages{}, defaultErrorMessages: o.defaultErrors}
+	return &validatorS{rule: r, rules: nil, messages: messages, specificMessages: SpecificMessages{}}
 }
 
 func (o *generatorS) ValidatorFromStruct(input interface{}) validator {
@@ -86,7 +82,8 @@ func (o *generatorS) ValidatorFromStruct(input interface{}) validator {
 				}
 
 				if element.Type.Kind() == reflect.Struct {
-					r.Complex(o.ValidatorFromStruct(element))
+					// r.Complex(o.ValidatorFromStruct(element))
+					_ = element
 				}
 
 				if element.Type.Kind() == reflect.Slice {
@@ -170,7 +167,7 @@ func (o *generatorS) ValidatorFromStruct(input interface{}) validator {
 		rules[element.Name] = r
 	}
 
-	return o.Validator(rules)
+	return &validatorS{rule: nil, rules: rules, messages: nil, specificMessages: SpecificMessages{}}
 }
 
 func (o *generatorS) RuleSet(name ...string) ruleSet {
@@ -186,16 +183,6 @@ func (o *generatorS) R(name ...string) ruleSet {
 }
 
 // Returns a Validator Generator
-func New(defaultErrors ...Messages) generator {
-	defaultErrorsOutput := map[string]string{}
-	for k, v := range defaultValidatorErrorMessages {
-		defaultErrorsOutput[k] = v
-	}
-	if len(defaultErrors) > 0 {
-		for k, v := range defaultErrors[0] {
-			defaultErrorsOutput[k] = v
-		}
-	}
-
-	return &generatorS{defaultErrors: defaultErrorsOutput}
+func New() generator {
+	return &generatorS{}
 }

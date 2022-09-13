@@ -105,9 +105,9 @@ type (
 		// Adds another deeper layer to validation structure
 		//
 		// Can check struct and map
-		Complex(validator validator) ruleSet
+		Complex(rules Rules) ruleSet
 		// If children of a slice is not struct or map, use this function and otherwise use Complex function after Slice function
-		Children(validator validator) ruleSet
+		Children(rule ruleSet) ruleSet
 		// Checks if input is at least 8 characters long, has one lowercase, one uppercase and one number character
 		//
 		// Note: Field will be required
@@ -137,6 +137,8 @@ type (
 		//
 		// Returns false if the ruleSet can be empty, nil or zero(0, "", '') and is allowed to not pass any validations
 		isRequired() bool
+		// Returns deepValidator
+		getDeepValidator() validator
 		// Returns true if deepValidator is not nil
 		hasDeepValidator() bool
 		// Validates deepValidator
@@ -287,13 +289,15 @@ func (o *ruleSetS) Struct() ruleSet {
 	return o
 }
 
-func (o *ruleSetS) Complex(validator validator) ruleSet {
-	o.deepValidator = validator
+func (o *ruleSetS) Complex(rules Rules) ruleSet {
+	v := &validatorS{rule: nil, rules: rules}
+	o.deepValidator = v
 	return o
 }
 
-func (o *ruleSetS) Children(validator validator) ruleSet {
-	o.childrenValidator = validator
+func (o *ruleSetS) Children(rule ruleSet) ruleSet {
+	v := &validatorS{rule: rule, rules: nil}
+	o.childrenValidator = v
 	return o
 }
 
@@ -389,6 +393,10 @@ func (o *ruleSetS) required() {
 
 func (o *ruleSetS) isRequired() bool {
 	return !o.isOptional
+}
+
+func (o *ruleSetS) getDeepValidator() validator {
+	return o.deepValidator
 }
 
 func (o *ruleSetS) hasDeepValidator() bool {

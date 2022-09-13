@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: fully flexible validator structure
 * 🎉 feat: added slice validation + more complex validations are possible
 * 🎉 feat: String rule added + default errors can be set when generating generator + struct validation added
 * 🎉 feat: added a name for customizing output of fields

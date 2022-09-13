@@ -27,8 +27,6 @@ type (
 		messages Messages
 		// Stores custom field error messages sent by user
 		specificMessages SpecificMessages
-		// Default error messages are defined here
-		defaultErrorMessages map[string]string
 	}
 
 	// Validator object
@@ -39,6 +37,8 @@ type (
 		Validate(input interface{}) interface{}
 		// Adds more specific error messages for specific rules in specific fields
 		AddSpecificMessages(fieldMessages SpecificMessages) validator
+		// Returns Rules
+		getRules() Rules
 	}
 )
 
@@ -83,7 +83,7 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 		fails := ruleSet.validate(onKeyInput)
 		if len(fails) != 0 {
 			for _, failKey := range fails {
-				halfOutput = append(halfOutput, getErrorMessage(fieldName, failKey, onKeyInput, ruleSet.getOption(failKey), o.messages, o.specificMessages, o.defaultErrorMessages))
+				halfOutput = append(halfOutput, getErrorMessage(fieldName, failKey, onKeyInput, ruleSet.getOption(failKey), o.messages, o.specificMessages, defaultValidatorErrorMessages))
 			}
 		}
 
@@ -185,7 +185,7 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 					for i := 0; i < valueOnKeyInput.Len(); i++ {
 						element := valueOnKeyInput.Index(i)
 						errors := ruleSet.validateChildrenValidator(element.Interface())
-						if reflect.ValueOf(errors).Len() != 0 {
+						if reflect.ValueOf(errors).IsValid() && reflect.ValueOf(errors).Len() != 0 {
 							if _, ok := output[fieldName]; !ok {
 								output[fieldName] = map[string]interface{}{}
 							}
@@ -198,25 +198,31 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 			return []string{"invalid input"}
 		}
 	} else if o.rule != nil {
-		if inputValue.Kind() == reflect.Slice {
-			errors := validate(o.rule, input, o.rule.getName())
-			if len(errors) != 0 {
-				return errors
-			}
+		errors := validate(o.rule, input, o.rule.getName())
+		if len(errors) != 0 {
+			return errors
+		}
 
+		switch inputValue.Kind() {
+		case reflect.Slice:
 			if o.rule.hasChildrenValidator() {
 				for i := 0; i < inputValue.Len(); i++ {
 					element := inputValue.Index(i)
 					errors := o.rule.validateChildrenValidator(element.Interface())
-					if reflect.ValueOf(errors).Len() != 0 {
+					if reflect.ValueOf(errors).IsValid() && reflect.ValueOf(errors).Len() != 0 {
 						if _, ok := output[strconv.Itoa(i)]; !ok {
 							output[strconv.Itoa(i)] = errors
 						}
 					}
 				}
 			}
-		} else {
-			return []string{"invalid input"}
+		default:
+			if o.rule.hasDeepValidator() {
+				errors := o.rule.validateDeepValidator(input)
+				if reflect.ValueOf(errors).IsValid() && reflect.ValueOf(errors).Len() != 0 {
+					return errors
+				}
+			}
 		}
 	} else {
 		return []string{"invalid validator"}
@@ -244,4 +250,8 @@ func (o *validatorS) AddSpecificMessages(fieldMessages SpecificMessages) validat
 	}
 
 	return o
+}
+
+func (o *validatorS) getRules() Rules {
+	return o.rules
 }
