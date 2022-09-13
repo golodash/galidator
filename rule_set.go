@@ -35,7 +35,7 @@ type (
 		// map, slice or struct
 		deepValidator validator
 		// Defines type of elements of a slice
-		childrenRule ruleSet
+		childrenValidator validator
 	}
 
 	// An interface with some functions to satisfy validation purpose
@@ -107,7 +107,7 @@ type (
 		// Can check struct and map
 		Complex(validator validator) ruleSet
 		// If children of a slice is not struct or map, use this function and otherwise use Complex function after Slice function
-		Children(ruleSet ruleSet) ruleSet
+		Children(validator validator) ruleSet
 		// Checks if input is at least 8 characters long, has one lowercase, one uppercase and one number character
 		//
 		// Note: Field will be required
@@ -142,9 +142,9 @@ type (
 		// Validates deepValidator
 		validateDeepValidator(input interface{}) interface{}
 		// Returns true if children is not nil
-		hasChildrenRule() bool
-		// Returns children ruleSet
-		getChildrenRule() ruleSet
+		hasChildrenValidator() bool
+		// Validates childrenValidator
+		validateChildrenValidator(input interface{}) interface{}
 		// Returns requires
 		getRequires() requires
 		// Returns name
@@ -292,8 +292,8 @@ func (o *ruleSetS) Complex(validator validator) ruleSet {
 	return o
 }
 
-func (o *ruleSetS) Children(ruleSet ruleSet) ruleSet {
-	o.childrenRule = ruleSet
+func (o *ruleSetS) Children(validator validator) ruleSet {
+	o.childrenValidator = validator
 	return o
 }
 
@@ -345,12 +345,12 @@ func (o *ruleSetS) String() ruleSet {
 	return o
 }
 
-func (o *ruleSetS) hasChildrenRule() bool {
-	return o.childrenRule != nil
+func (o *ruleSetS) hasChildrenValidator() bool {
+	return o.childrenValidator != nil
 }
 
-func (o *ruleSetS) getChildrenRule() ruleSet {
-	return o.childrenRule
+func (o *ruleSetS) validateChildrenValidator(input interface{}) interface{} {
+	return o.childrenValidator.Validate(input)
 }
 
 func (o *ruleSetS) validate(input interface{}) []string {

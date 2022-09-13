@@ -21,6 +21,8 @@ type (
 		//
 		// Please use CapitalCase for rules' keys (Important for getting data out of struct types)
 		Validator(rules Rules, messages ...Messages) validator
+		// Generates a validator interface which can be used to validate slice by one rule
+		SliceValidator(r ruleSet, errorMessages ...Messages) validator
 		// Generates a validator interface which can be used to validate struct or map by some rules
 		//
 		// Please use CapitalCase for rules' keys (Important for getting data out of struct types)
@@ -40,7 +42,23 @@ func (o *generatorS) Validator(rules Rules, errorMessages ...Messages) validator
 		messages = errorMessages[0]
 	}
 
-	return &validatorS{rules: rules, messages: messages, specificMessages: SpecificMessages{}, defaultErrorMessages: o.defaultErrors}
+	return &validatorS{rule: nil, rules: rules, messages: messages, specificMessages: SpecificMessages{}, defaultErrorMessages: o.defaultErrors}
+}
+
+func (o *generatorS) SliceValidator(r ruleSet, errorMessages ...Messages) validator {
+	var messages Messages = nil
+	if len(errorMessages) != 0 {
+		messages = errorMessages[0]
+	}
+
+	if r == nil {
+		panic("nil can not be passed")
+	}
+	if !r.hasChildrenValidator() {
+		panic("passed ruleSet has no children")
+	}
+
+	return &validatorS{rule: r, rules: nil, messages: messages, specificMessages: SpecificMessages{}, defaultErrorMessages: o.defaultErrors}
 }
 
 func (o *generatorS) ValidatorFromStruct(input interface{}) validator {
@@ -73,7 +91,8 @@ func (o *generatorS) ValidatorFromStruct(input interface{}) validator {
 
 				if element.Type.Kind() == reflect.Slice {
 					addTypeCheck(r, element.Type.Kind())
-					r.Children(o.RuleSet())
+					//! Attention Needed
+					// r.Children(o.RuleSet())
 				}
 
 				switch funcName {
@@ -159,7 +178,7 @@ func (o *generatorS) RuleSet(name ...string) ruleSet {
 	if len(name) != 0 {
 		output = name[0]
 	}
-	return &ruleSetS{name: output, validators: Validators{}, requires: requires{}, options: options{}, isOptional: true, deepValidator: nil, childrenRule: nil}
+	return &ruleSetS{name: output, validators: Validators{}, requires: requires{}, options: options{}, isOptional: true, deepValidator: nil, childrenValidator: nil}
 }
 
 func (o *generatorS) R(name ...string) ruleSet {
