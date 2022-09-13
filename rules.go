@@ -3,7 +3,6 @@ package galidator
 import (
 	"net/mail"
 	"reflect"
-	"strconv"
 
 	"github.com/dlclark/regexp2"
 )
@@ -46,12 +45,6 @@ func intRule(input interface{}) bool {
 		reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
 		reflect.Uint32, reflect.Uint64:
 		return true
-	case reflect.String:
-		_, err := strconv.Atoi(input.(string))
-		if err != nil {
-			return false
-		}
-		return true
 	default:
 		return false
 	}
@@ -62,12 +55,6 @@ func floatRule(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	switch inputValue.Kind() {
 	case reflect.Float32, reflect.Float64:
-		return true
-	case reflect.String:
-		_, err := strconv.ParseFloat(input.(string), 64)
-		if err != nil {
-			return false
-		}
 		return true
 	default:
 		return false

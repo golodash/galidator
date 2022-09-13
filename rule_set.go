@@ -43,9 +43,9 @@ type (
 		// Validates all validators defined
 		validate(interface{}) []string
 
-		// Checks if input (can be)/is int
+		// Checks if input is int
 		Int() ruleSet
-		// Checks if input (can be)/is float
+		// Checks if input is float
 		Float() ruleSet
 		// Checks if input acts like: input >= min or len(input) >= min
 		//
