@@ -33,10 +33,11 @@ type (
 	validator interface {
 		// Validates passed data and returns a map of possible validation errors happened on every field with failed validation.
 		//
-		// If no errors found, length of the output will be 0
+		// If no errors found, output will be nil
 		Validate(input interface{}) interface{}
 		// Adds more specific error messages for specific rules in specific fields
-		AddSpecificMessages(fieldMessages SpecificMessages) validator
+		//! Attention Needed
+		// AddSpecificMessages(fieldMessages SpecificMessages) validator
 		// Returns Rules
 		getRules() Rules
 		// Returns rule

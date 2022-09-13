@@ -82,6 +82,7 @@ func (o *generatorS) ValidatorFromStruct(input interface{}) validator {
 				}
 
 				if element.Type.Kind() == reflect.Struct {
+					//! Attention Needed
 					// r.Complex(o.ValidatorFromStruct(element))
 					_ = element
 				}
