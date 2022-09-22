@@ -31,13 +31,14 @@ var defaultValidatorErrorMessages = map[string]string{
 	"xor":       "ruleSets in $field did not pass based on xor logic",
 	"choices":   "$value does not include in allowed choices: $choices",
 	"string":    "not a string value",
+	"type":      "not a $type value",
 
 	// Requires
 	"when_exist_one": "$field is required because at least one of $choices fields are not nil, empty or zero(0, \"\", '')",
 	"when_exist_all": "$field is required because all of $choices fields are not nil, empty or zero(0, \"\", '')",
 }
 
-// Returns true if input (can be)/is int
+// Returns true if input is int
 func intRule(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	switch inputValue.Kind() {
@@ -50,7 +51,7 @@ func intRule(input interface{}) bool {
 	}
 }
 
-// Returns true if input (can be)/is float
+// Returns true if input is float
 func floatRule(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
 	switch inputValue.Kind() {
@@ -58,6 +59,13 @@ func floatRule(input interface{}) bool {
 		return true
 	default:
 		return false
+	}
+}
+
+// Returns true if input type is equal to defined type
+func typeRule(t string) func(interface{}) bool {
+	return func(input interface{}) bool {
+		return reflect.TypeOf(input).String() == t
 	}
 }
 

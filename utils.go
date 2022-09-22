@@ -186,12 +186,8 @@ func addTypeCheck(r ruleSet, kind reflect.Kind) {
 		r.Int()
 	case reflect.Float32, reflect.Float64:
 		r.Float()
-	case reflect.Map:
-		r.Map()
 	case reflect.Slice:
 		r.Slice()
-	case reflect.Struct:
-		r.Struct()
 	case reflect.String:
 		r.String()
 	}

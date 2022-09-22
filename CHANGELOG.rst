@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: added Validator creation based on structs elements tags
 * 🐛 fix: validation bug fixed on slice types being required
 * 🎉 feat: fully flexible validator structure
 * 🎉 feat: added slice validation + more complex validations are possible

@@ -2,6 +2,7 @@ package galidator
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -108,6 +109,8 @@ type (
 		Complex(rules Rules) ruleSet
 		// If children of a slice is not struct or map, use this function and otherwise use Complex function after Slice function
 		Children(rule ruleSet) ruleSet
+		// Checks if input is a Specific type
+		Type(input interface{}) ruleSet
 		// Checks if input is at least 8 characters long, has one lowercase, one uppercase and one number character
 		//
 		// Note: Field will be required
@@ -137,12 +140,18 @@ type (
 		//
 		// Returns false if the ruleSet can be empty, nil or zero(0, "", '') and is allowed to not pass any validations
 		isRequired() bool
+		// Replaces passed validator with existing deepValidator
+		setDeepValidator(input validator)
 		// Returns deepValidator
 		getDeepValidator() validator
 		// Returns true if deepValidator is not nil
 		hasDeepValidator() bool
 		// Validates deepValidator
 		validateDeepValidator(input interface{}) interface{}
+		// Replaces passed validator with existing childrenValidator
+		setChildrenValidator(input validator)
+		// Returns childrenValidator
+		getChildrenValidator() validator
 		// Returns true if children is not nil
 		hasChildrenValidator() bool
 		// Validates childrenValidator
@@ -291,13 +300,26 @@ func (o *ruleSetS) Struct() ruleSet {
 
 func (o *ruleSetS) Complex(rules Rules) ruleSet {
 	v := &validatorS{rule: nil, rules: rules}
-	o.deepValidator = v
+	o.setDeepValidator(v)
 	return o
 }
 
 func (o *ruleSetS) Children(rule ruleSet) ruleSet {
 	v := &validatorS{rule: rule, rules: nil}
 	o.childrenValidator = v
+	return o
+}
+
+func (o *ruleSetS) Type(input interface{}) ruleSet {
+	functionName := "type"
+	switch v := input.(type) {
+	case reflect.Type:
+		o.addOption(functionName, "type", input.(reflect.Type).String())
+		o.validators[functionName] = typeRule(v.String())
+	default:
+		o.addOption(functionName, "type", reflect.TypeOf(input).String())
+		o.validators[functionName] = typeRule(reflect.TypeOf(input).String())
+	}
 	return o
 }
 
@@ -349,6 +371,14 @@ func (o *ruleSetS) String() ruleSet {
 	return o
 }
 
+func (o *ruleSetS) setChildrenValidator(input validator) {
+	o.childrenValidator = input
+}
+
+func (o *ruleSetS) getChildrenValidator() validator {
+	return o.childrenValidator
+}
+
 func (o *ruleSetS) hasChildrenValidator() bool {
 	return o.childrenValidator != nil
 }
@@ -393,6 +423,10 @@ func (o *ruleSetS) required() {
 
 func (o *ruleSetS) isRequired() bool {
 	return !o.isOptional
+}
+
+func (o *ruleSetS) setDeepValidator(input validator) {
+	o.deepValidator = input
 }
 
 func (o *ruleSetS) getDeepValidator() validator {

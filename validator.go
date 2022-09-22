@@ -135,16 +135,17 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (mapRule(value) || structRule(value) || sliceRule(value)) {
 					data := ruleSet.validateDeepValidator(value)
 
-					if reflect.ValueOf(data).Len() != 0 {
+					if reflect.ValueOf(data).IsValid() && reflect.ValueOf(data).Len() != 0 {
 						output[fieldName] = data
 					}
 				}
 
 				if ruleSet.hasChildrenValidator() && output[fieldName] == nil && sliceRule(value) {
+					valueOnKeyInput = reflect.ValueOf(valueOnKeyInput.Interface())
 					for i := 0; i < valueOnKeyInput.Len(); i++ {
 						element := valueOnKeyInput.Index(i)
 						errors := ruleSet.validateChildrenValidator(element.Interface())
-						if reflect.ValueOf(errors).Len() != 0 {
+						if reflect.ValueOf(errors).IsValid() && reflect.ValueOf(errors).Len() != 0 {
 							if _, ok := output[fieldName]; !ok {
 								output[fieldName] = map[string]interface{}{}
 							}
@@ -193,12 +194,13 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (mapRule(value) || structRule(value) || sliceRule(value)) {
 					data := ruleSet.validateDeepValidator(value)
 
-					if reflect.ValueOf(data).Len() != 0 {
+					if reflect.ValueOf(data).IsValid() && reflect.ValueOf(data).Len() != 0 {
 						output[fieldName] = data
 					}
 				}
 
 				if ruleSet.hasChildrenValidator() && output[fieldName] == nil && sliceRule(value) {
+					valueOnKeyInput = reflect.ValueOf(valueOnKeyInput.Interface())
 					for i := 0; i < valueOnKeyInput.Len(); i++ {
 						element := valueOnKeyInput.Index(i)
 						errors := ruleSet.validateChildrenValidator(element.Interface())
