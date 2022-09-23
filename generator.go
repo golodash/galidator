@@ -119,7 +119,7 @@ func (o *generatorS) validator(input interface{}) validator {
 								r.Max(p1)
 							}
 						}
-					case "LenRange", "Lenrange":
+					case "LenRange":
 						if len(parameters) == 2 {
 							if p1, err := strconv.ParseInt(parameters[0], 10, 64); err == nil {
 								if p2, err := strconv.ParseInt(parameters[1], 10, 64); err == nil {
@@ -137,11 +137,11 @@ func (o *generatorS) validator(input interface{}) validator {
 						r.Required()
 					case "Optional":
 						r.Optional()
-					case "NonZero", "Nonzero":
+					case "NonZero":
 						r.NonZero()
-					case "NonNil", "Nonnil":
+					case "NonNil":
 						r.NonNil()
-					case "NonEmpty", "Nonempty":
+					case "NonEmpty":
 						r.NonEmpty()
 					case "Email":
 						r.Email()
@@ -171,9 +171,9 @@ func (o *generatorS) validator(input interface{}) validator {
 							params = append(params, item)
 						}
 						r.Choices(params...)
-					case "WhenExistOne", "Whenexistone":
+					case "WhenExistOne":
 						r.WhenExistOne(parameters...)
-					case "WhenExistAll", "Whenexistall":
+					case "WhenExistAll":
 						r.WhenExistAll(parameters...)
 					case "String":
 						r.String()
