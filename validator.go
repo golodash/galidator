@@ -24,9 +24,9 @@ type (
 		// Stores keys of fields with their rules
 		rules Rules
 		// Stores custom error messages sent by user
-		messages Messages
+		messages *Messages
 		// Stores custom field error messages sent by user
-		specificMessages SpecificMessages
+		specificMessages *SpecificMessages
 	}
 
 	// Validator object
@@ -36,12 +36,15 @@ type (
 		// If no errors found, output will be nil
 		Validate(input interface{}) interface{}
 		// Adds more specific error messages for specific rules in specific fields
-		//! Attention Needed
-		// AddSpecificMessages(fieldMessages SpecificMessages) validator
+		AddSpecificMessages(fieldMessages SpecificMessages) validator
 		// Returns Rules
 		getRules() Rules
 		// Returns rule
 		getRule() ruleSet
+		// Replaces passed messages with existing one
+		setMessages(messages Messages)
+		// Replaces passed SpecificMessages with existing one
+		setSpecificMessages(messages SpecificMessages)
 	}
 )
 
@@ -86,7 +89,15 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 		fails := ruleSet.validate(onKeyInput)
 		if len(fails) != 0 {
 			for _, failKey := range fails {
-				halfOutput = append(halfOutput, getErrorMessage(fieldName, failKey, onKeyInput, ruleSet.getOption(failKey), o.messages, o.specificMessages, defaultValidatorErrorMessages))
+				var m Messages = nil
+				var sm SpecificMessages = nil
+				if o.messages != nil {
+					m = *o.messages
+				}
+				if o.specificMessages != nil {
+					sm = *o.specificMessages
+				}
+				halfOutput = append(halfOutput, getErrorMessage(fieldName, failKey, onKeyInput, ruleSet.getOption(failKey), m, sm, defaultValidatorErrorMessages))
 			}
 		}
 
@@ -259,20 +270,23 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 	return output
 }
 
-func (o *validatorS) AddSpecificMessages(fieldMessages SpecificMessages) validator {
-	for fieldKey, errorMessages := range fieldMessages {
+func (o *validatorS) AddSpecificMessages(specificMessages SpecificMessages) validator {
+	vSpecificMessages := *o.specificMessages
+	for fieldKey, errorMessages := range specificMessages {
 		if _, ok := o.rules[fieldKey]; !ok {
 			continue
 		}
-		if _, ok := o.specificMessages[fieldKey]; !ok {
-			o.specificMessages[fieldKey] = Messages{}
+		if _, ok := vSpecificMessages[fieldKey]; !ok {
+			vSpecificMessages[fieldKey] = Messages{}
 		}
 		for key, errorMessage := range errorMessages {
-			o.specificMessages[fieldKey][key] = errorMessage
+			vSpecificMessages[fieldKey][key] = errorMessage
 			delete(errorMessages, key)
 		}
 	}
+	o.specificMessages = &vSpecificMessages
 
+	deepPassSpecificMessages(o, vSpecificMessages)
 	return o
 }
 
@@ -282,4 +296,12 @@ func (o *validatorS) getRules() Rules {
 
 func (o *validatorS) getRule() ruleSet {
 	return o.rule
+}
+
+func (o *validatorS) setMessages(messages Messages) {
+	o.messages = &messages
+}
+
+func (o *validatorS) setSpecificMessages(specificMessages SpecificMessages) {
+	o.specificMessages = &specificMessages
 }

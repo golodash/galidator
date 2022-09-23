@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🐛 fix: Messages and SpecificMessages work just fine again
 * 🎉 feat: added Validator creation based on structs elements tags
 * 🐛 fix: validation bug fixed on slice types being required
 * 🎉 feat: fully flexible validator structure

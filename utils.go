@@ -192,3 +192,57 @@ func addTypeCheck(r ruleSet, kind reflect.Kind) {
 		r.String()
 	}
 }
+
+func deepPassMessages(v validator, messages Messages) {
+	v.setMessages(messages)
+	r := v.getRule()
+	if r != nil {
+		if v1 := r.getChildrenValidator(); v1 != nil {
+			deepPassMessages(v1, messages)
+		}
+		if v2 := r.getDeepValidator(); v2 != nil {
+			deepPassMessages(v2, messages)
+		}
+	}
+	rs := v.getRules()
+	if rs == nil {
+		return
+	}
+	for _, r := range rs {
+		if r != nil {
+			if v1 := r.getChildrenValidator(); v1 != nil {
+				deepPassMessages(v1, messages)
+			}
+			if v2 := r.getDeepValidator(); v2 != nil {
+				deepPassMessages(v2, messages)
+			}
+		}
+	}
+}
+
+func deepPassSpecificMessages(v validator, specificMessages SpecificMessages) {
+	v.setSpecificMessages(specificMessages)
+	r := v.getRule()
+	if r != nil {
+		if v1 := r.getChildrenValidator(); v1 != nil {
+			deepPassSpecificMessages(v1, specificMessages)
+		}
+		if v2 := r.getDeepValidator(); v2 != nil {
+			deepPassSpecificMessages(v2, specificMessages)
+		}
+	}
+	rs := v.getRules()
+	if rs == nil {
+		return
+	}
+	for _, r := range rs {
+		if r != nil {
+			if v1 := r.getChildrenValidator(); v1 != nil {
+				deepPassSpecificMessages(v1, specificMessages)
+			}
+			if v2 := r.getDeepValidator(); v2 != nil {
+				deepPassSpecificMessages(v2, specificMessages)
+			}
+		}
+	}
+}

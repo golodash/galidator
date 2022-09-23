@@ -35,15 +35,20 @@ func (o *generatorS) Validator(rule interface{}, errorMessages ...Messages) vali
 		messages = errorMessages[0]
 	}
 
+	var output validator = nil
 	switch v := rule.(type) {
 	case ruleSet:
-		return &validatorS{rule: v, rules: nil, messages: messages, specificMessages: SpecificMessages{}}
+		output = &validatorS{rule: v, rules: nil, messages: &messages}
 	default:
 		if reflect.TypeOf(v).Kind() == reflect.Struct {
-			return o.validator(v)
+			output = o.validator(v)
+		} else {
+			panic("'rule' has to be a ruleSet or a struct instance")
 		}
-		panic("'rule' has to be a ruleSet or a struct instance")
 	}
+	deepPassMessages(output, messages)
+
+	return output
 }
 
 func (o *generatorS) validator(input interface{}) validator {
@@ -186,7 +191,7 @@ func (o *generatorS) RuleSet(name ...string) ruleSet {
 	if len(name) != 0 {
 		output = name[0]
 	}
-	return &ruleSetS{name: output, validators: Validators{}, requires: requires{}, options: options{}, isOptional: true, deepValidator: nil, childrenValidator: nil}
+	return &ruleSetS{name: output, validators: Validators{}, requires: requires{}, options: options{}, isOptional: true}
 }
 
 func (o *generatorS) R(name ...string) ruleSet {
