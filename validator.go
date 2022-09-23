@@ -17,7 +17,7 @@ type (
 	// To specify specific errors in specific rules
 	SpecificMessages map[string]Messages
 
-	// A struct to implement validator interface
+	// A struct to implement Validator interface
 	validatorS struct {
 		// Slice validator has this item full
 		rule ruleSet
@@ -29,7 +29,7 @@ type (
 		specificMessages *SpecificMessages
 	}
 
-	// Validator object
+	// Validator interface
 	validator interface {
 		// Validates passed data and returns a map of possible validation errors happened on every field with failed validation.
 		//

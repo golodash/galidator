@@ -1,6 +1,7 @@
 package galidator
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -10,10 +11,14 @@ import (
 
 type (
 	// A struct to implement generator interface
-	generatorS struct{}
+	generatorS struct {
+		customValidators Validators
+	}
 
 	// An interface to generate a validator or ruleSet
 	generator interface {
+		// Call this function before calling Validator function so that assigning custom validators can be possible
+		CustomValidators(validators Validators) generator
 		// Generates a validator interface which can be used to validate struct or map by some rules
 		//
 		// Please use CapitalCase for rules' keys (Important for getting data out of struct types)
@@ -28,6 +33,11 @@ type (
 		R(name ...string) ruleSet
 	}
 )
+
+func (o *generatorS) CustomValidators(validators Validators) generator {
+	o.customValidators = validators
+	return o
+}
 
 func (o *generatorS) Validator(rule interface{}, errorMessages ...Messages) validator {
 	var messages Messages = nil
@@ -85,7 +95,8 @@ func (o *generatorS) validator(input interface{}) validator {
 				filters := strings.Split(fullTag, ",")
 				for j := 0; j < len(filters); j++ {
 					tag := strings.Split(filters[j], "=")
-					funcName := gStrings.PascalCase(tag[0])
+					normalFuncName := strings.TrimSpace(tag[0])
+					funcName := gStrings.PascalCase(normalFuncName)
 					parameters := []string{}
 					if len(tag) == 2 {
 						parameters = strings.Split(tag[1], "&")
@@ -149,17 +160,32 @@ func (o *generatorS) validator(input interface{}) validator {
 					case "Password":
 						r.Password()
 					case "Or", "OR":
+						//! Attention needed
 						r.OR()
 					case "Xor", "XOr", "XOR":
+						//! Attention needed
 						r.XOR()
 					case "Choices":
-						r.XOR()
+						//! Attention needed
+						r.Choices(nil)
 					case "WhenExistOne", "Whenexistone":
+						//! Attention needed
 						r.WhenExistOne()
 					case "WhenExistAll", "Whenexistall":
+						//! Attention needed
 						r.WhenExistAll()
 					case "String":
 						r.String()
+					default:
+						if normalFuncName != "" {
+							if function, ok := o.customValidators[normalFuncName]; ok {
+								r.Custom(Validators{
+									normalFuncName: function,
+								})
+							} else {
+								panic(fmt.Sprintf("%s custom validator did not find, call CustomValidators function before calling Validator function", normalFuncName))
+							}
+						}
 					}
 				}
 			}
