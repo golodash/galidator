@@ -212,6 +212,7 @@ func passwordRule(input interface{}) bool {
 	return regexRule(`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$`)(input)
 }
 
+// If at least one of the passed ruleSets pass, this rule will pass
 func orRule(ruleSets ...ruleSet) func(interface{}) bool {
 	return func(input interface{}) bool {
 		output := false
@@ -228,6 +229,7 @@ func orRule(ruleSets ...ruleSet) func(interface{}) bool {
 	}
 }
 
+// If Xor of the passed ruleSets pass, this rule will pass
 func xorRule(ruleSets ...ruleSet) func(interface{}) bool {
 	return func(input interface{}) bool {
 		output := false
@@ -244,15 +246,11 @@ func xorRule(ruleSets ...ruleSet) func(interface{}) bool {
 	}
 }
 
-func choicesRule(choices interface{}) func(interface{}) bool {
-	choicesValue := reflect.ValueOf(choices)
-	if choicesValue.Type().Kind() != reflect.Slice {
-		panic("choices variable has to be slice")
-	}
-
+// If passed data is not one of choices in choices variable, it fails
+func choicesRule(choices ...interface{}) func(interface{}) bool {
 	return func(input interface{}) bool {
-		for i := 0; i < choicesValue.Len(); i++ {
-			element := choicesValue.Index(i).Interface()
+		for i := 0; i < len(choices); i++ {
+			element := choices[i]
 			if same(element, input) {
 				return true
 			}
@@ -262,6 +260,7 @@ func choicesRule(choices interface{}) func(interface{}) bool {
 	}
 }
 
+// Returns true if input is string
 func stringRule(input interface{}) bool {
 	return reflect.TypeOf(input).Kind() == reflect.String
 }

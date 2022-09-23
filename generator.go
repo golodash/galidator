@@ -166,14 +166,11 @@ func (o *generatorS) validator(input interface{}) validator {
 						//! Attention needed
 						r.XOR()
 					case "Choices":
-						//! Attention needed
-						r.Choices(nil)
+						r.Choices(parameters)
 					case "WhenExistOne", "Whenexistone":
-						//! Attention needed
-						r.WhenExistOne()
+						r.WhenExistOne(parameters...)
 					case "WhenExistAll", "Whenexistall":
-						//! Attention needed
-						r.WhenExistAll()
+						r.WhenExistAll(parameters...)
 					case "String":
 						r.String()
 					default:

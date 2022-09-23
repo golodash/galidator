@@ -122,7 +122,7 @@ type (
 		// Checks if XOR of all ruleSets passes
 		XOR(ruleSets ...ruleSet) ruleSet
 		// Gets a list of values and checks if input is one of them
-		Choices(choices interface{}) ruleSet
+		Choices(choices ...interface{}) ruleSet
 		// Makes field required if at least one of passed fields are not empty, nil or zero(0, "", '')
 		WhenExistOne(choices ...string) ruleSet
 		// Makes field required if all passed fields are not empty, nil or zero(0, "", '')
@@ -348,7 +348,7 @@ func (o *ruleSetS) XOR(ruleSets ...ruleSet) ruleSet {
 	return o
 }
 
-func (o *ruleSetS) Choices(choices interface{}) ruleSet {
+func (o *ruleSetS) Choices(choices ...interface{}) ruleSet {
 	functionName := "choices"
 	o.validators[functionName] = choicesRule(choices)
 	o.addOption(functionName, "choices", strings.ReplaceAll(fmt.Sprint(choices), " ", ", "))
