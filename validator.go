@@ -39,14 +39,13 @@ type (
 	}
 )
 
-// ! SpecificMessages Attention
 // Formats and returns error message associated with passed ruleKey
-func getErrorMessage(fieldName string, ruleKey string, value interface{}, options option, specificMessage string, messages Messages, defaultErrorMessages map[string]string) string {
-	if specificMessage != "" {
+func getErrorMessage(fieldName string, ruleKey string, value interface{}, options option, specificMessage Messages, messages Messages, defaultErrorMessages map[string]string) string {
+	if out, ok := specificMessage["ruleKey"]; len(specificMessage) != 0 && ok {
 		for key, value := range options {
-			specificMessage = strings.ReplaceAll(specificMessage, "$"+key, value)
+			out = strings.ReplaceAll(out, "$"+key, value)
 		}
-		return strings.ReplaceAll(strings.ReplaceAll(specificMessage, "$field", fieldName), "$value", fmt.Sprint(value))
+		return strings.ReplaceAll(strings.ReplaceAll(out, "$field", fieldName), "$value", fmt.Sprint(value))
 	}
 
 	if out, ok := messages[ruleKey]; ok {
@@ -80,11 +79,11 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 		if len(fails) != 0 {
 			for _, failKey := range fails {
 				var m Messages = nil
+				var sm Messages = ruleSet.getSpecificMessages()
 				if o.messages != nil {
 					m = *o.messages
 				}
-				// ! SpecificMessages Attention
-				halfOutput = append(halfOutput, getErrorMessage(fieldName, failKey, onKeyInput, ruleSet.getOption(failKey), "", m, defaultValidatorErrorMessages))
+				halfOutput = append(halfOutput, getErrorMessage(fieldName, failKey, onKeyInput, ruleSet.getOption(failKey), m, sm, defaultValidatorErrorMessages))
 			}
 		}
 

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+
+	gStrings "github.com/golodash/godash/strings"
 )
 
 // Determines the precision of a float number for print
@@ -178,6 +180,7 @@ func determineRequires(all interface{}, input interface{}, requires requires) (m
 	return output, len(output) == len(requires)
 }
 
+// Adds a type check on passed ruleSet based on passed kind
 func addTypeCheck(r ruleSet, kind reflect.Kind) {
 	switch kind {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
@@ -193,6 +196,7 @@ func addTypeCheck(r ruleSet, kind reflect.Kind) {
 	}
 }
 
+// Passes messages to other validators
 func deepPassMessages(v validator, messages Messages) {
 	v.setMessages(messages)
 	r := v.getRule()
@@ -217,5 +221,15 @@ func deepPassMessages(v validator, messages Messages) {
 				deepPassMessages(v2, messages)
 			}
 		}
+	}
+}
+
+// Adds one specific message to passed ruleSet if message is not a empty string
+func addSpecificMessage(r ruleSet, funcName, message string) {
+	funcName = gStrings.SnakeCase(funcName)
+	if message != "" {
+		r.SpecificMessages(Messages{
+			funcName: message,
+		})
 	}
 }

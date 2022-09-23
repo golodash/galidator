@@ -187,6 +187,7 @@ func (o *generatorS) validator(input interface{}) validator {
 							}
 						}
 					}
+					addSpecificMessage(r, funcName, elementT.Tag.Get(normalFuncName))
 				}
 			}
 			rules[elementT.Name] = r

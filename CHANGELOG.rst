@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: adding specificMessages inside a ruleSet is possible now
 * 🎉 feat: custom functions can be defined by elements tags
 * 🐛 fix: Messages and SpecificMessages work just fine again
 * 🎉 feat: added Validator creation based on structs elements tags

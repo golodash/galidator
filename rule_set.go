@@ -29,6 +29,8 @@ type (
 		requires requires
 		// Used in returning error messages
 		options options
+		// Sets messages for specific rules in current ruleSet
+		specificMessages Messages
 		// If isOptional is true, if empty is sent, all errors will be ignored
 		isOptional bool
 		// Holds data for more complex structures, like:
@@ -127,6 +129,10 @@ type (
 		WhenExistAll(choices ...string) ruleSet
 		// Checks if input is a string
 		String() ruleSet
+		// Sets messages for specific rules in current ruleSet
+		SpecificMessages(specificMessages Messages)
+		// Return specificMessages
+		getSpecificMessages() Messages
 
 		// Returns option of the passed ruleKey
 		getOption(ruleKey string) option
@@ -369,6 +375,14 @@ func (o *ruleSetS) String() ruleSet {
 	functionName := "string"
 	o.validators[functionName] = stringRule
 	return o
+}
+
+func (o *ruleSetS) SpecificMessages(specificMessages Messages) {
+	o.specificMessages = specificMessages
+}
+
+func (o *ruleSetS) getSpecificMessages() Messages {
+	return o.specificMessages
 }
 
 func (o *ruleSetS) setChildrenValidator(input validator) {
