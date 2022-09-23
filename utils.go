@@ -219,30 +219,3 @@ func deepPassMessages(v validator, messages Messages) {
 		}
 	}
 }
-
-func deepPassSpecificMessages(v validator, specificMessages SpecificMessages) {
-	v.setSpecificMessages(specificMessages)
-	r := v.getRule()
-	if r != nil {
-		if v1 := r.getChildrenValidator(); v1 != nil {
-			deepPassSpecificMessages(v1, specificMessages)
-		}
-		if v2 := r.getDeepValidator(); v2 != nil {
-			deepPassSpecificMessages(v2, specificMessages)
-		}
-	}
-	rs := v.getRules()
-	if rs == nil {
-		return
-	}
-	for _, r := range rs {
-		if r != nil {
-			if v1 := r.getChildrenValidator(); v1 != nil {
-				deepPassSpecificMessages(v1, specificMessages)
-			}
-			if v2 := r.getDeepValidator(); v2 != nil {
-				deepPassSpecificMessages(v2, specificMessages)
-			}
-		}
-	}
-}

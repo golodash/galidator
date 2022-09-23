@@ -14,9 +14,6 @@ type (
 	// To specify errors for rules
 	Messages map[string]string
 
-	// To specify specific errors in specific rules
-	SpecificMessages map[string]Messages
-
 	// A struct to implement Validator interface
 	validatorS struct {
 		// Slice validator has this item full
@@ -25,8 +22,6 @@ type (
 		rules Rules
 		// Stores custom error messages sent by user
 		messages *Messages
-		// Stores custom field error messages sent by user
-		specificMessages *SpecificMessages
 	}
 
 	// Validator interface
@@ -35,28 +30,23 @@ type (
 		//
 		// If no errors found, output will be nil
 		Validate(input interface{}) interface{}
-		// Adds more specific error messages for specific rules in specific fields
-		AddSpecificMessages(fieldMessages SpecificMessages) validator
 		// Returns Rules
 		getRules() Rules
 		// Returns rule
 		getRule() ruleSet
 		// Replaces passed messages with existing one
 		setMessages(messages Messages)
-		// Replaces passed SpecificMessages with existing one
-		setSpecificMessages(messages SpecificMessages)
 	}
 )
 
+// ! SpecificMessages Attention
 // Formats and returns error message associated with passed ruleKey
-func getErrorMessage(fieldName string, ruleKey string, value interface{}, options option, messages Messages, specificMessages SpecificMessages, defaultErrorMessages map[string]string) string {
-	if outMessages, ok := specificMessages[fieldName]; ok {
-		if out, ok := outMessages[ruleKey]; ok {
-			for key, value := range options {
-				out = strings.ReplaceAll(out, "$"+key, value)
-			}
-			return strings.ReplaceAll(strings.ReplaceAll(out, "$field", fieldName), "$value", fmt.Sprint(value))
+func getErrorMessage(fieldName string, ruleKey string, value interface{}, options option, specificMessage string, messages Messages, defaultErrorMessages map[string]string) string {
+	if specificMessage != "" {
+		for key, value := range options {
+			specificMessage = strings.ReplaceAll(specificMessage, "$"+key, value)
 		}
+		return strings.ReplaceAll(strings.ReplaceAll(specificMessage, "$field", fieldName), "$value", fmt.Sprint(value))
 	}
 
 	if out, ok := messages[ruleKey]; ok {
@@ -90,14 +80,11 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 		if len(fails) != 0 {
 			for _, failKey := range fails {
 				var m Messages = nil
-				var sm SpecificMessages = nil
 				if o.messages != nil {
 					m = *o.messages
 				}
-				if o.specificMessages != nil {
-					sm = *o.specificMessages
-				}
-				halfOutput = append(halfOutput, getErrorMessage(fieldName, failKey, onKeyInput, ruleSet.getOption(failKey), m, sm, defaultValidatorErrorMessages))
+				// ! SpecificMessages Attention
+				halfOutput = append(halfOutput, getErrorMessage(fieldName, failKey, onKeyInput, ruleSet.getOption(failKey), "", m, defaultValidatorErrorMessages))
 			}
 		}
 
@@ -270,26 +257,6 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 	return output
 }
 
-func (o *validatorS) AddSpecificMessages(specificMessages SpecificMessages) validator {
-	vSpecificMessages := *o.specificMessages
-	for fieldKey, errorMessages := range specificMessages {
-		if _, ok := o.rules[fieldKey]; !ok {
-			continue
-		}
-		if _, ok := vSpecificMessages[fieldKey]; !ok {
-			vSpecificMessages[fieldKey] = Messages{}
-		}
-		for key, errorMessage := range errorMessages {
-			vSpecificMessages[fieldKey][key] = errorMessage
-			delete(errorMessages, key)
-		}
-	}
-	o.specificMessages = &vSpecificMessages
-
-	deepPassSpecificMessages(o, vSpecificMessages)
-	return o
-}
-
 func (o *validatorS) getRules() Rules {
 	return o.rules
 }
@@ -300,8 +267,4 @@ func (o *validatorS) getRule() ruleSet {
 
 func (o *validatorS) setMessages(messages Messages) {
 	o.messages = &messages
-}
-
-func (o *validatorS) setSpecificMessages(specificMessages SpecificMessages) {
-	o.specificMessages = &specificMessages
 }
