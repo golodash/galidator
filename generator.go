@@ -166,7 +166,11 @@ func (o *generatorS) validator(input interface{}) validator {
 						//! Attention needed
 						r.XOR()
 					case "Choices":
-						r.Choices(parameters)
+						params := []interface{}{}
+						for _, item := range parameters {
+							params = append(params, item)
+						}
+						r.Choices(params...)
 					case "WhenExistOne", "Whenexistone":
 						r.WhenExistOne(parameters...)
 					case "WhenExistAll", "Whenexistall":

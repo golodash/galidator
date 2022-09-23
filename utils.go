@@ -171,6 +171,9 @@ func getValues(all interface{}, fields ...string) []interface{} {
 // Returns a list of keys for requires which determine not required and a bool which determines if we need to validate or not
 func determineRequires(all interface{}, input interface{}, requires requires) (map[string]interface{}, bool) {
 	output := map[string]interface{}{}
+	if len(requires) == 0 {
+		return output, false
+	}
 	for key, req := range requires {
 		if !req(all)(input) {
 			output[key] = 1

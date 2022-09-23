@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🐛 fix: whenExistAllRequireRule bug fixed
 * 🎉 feat: Choices, WhenExistOne and WhenExistAll are possible by tags now
 * 🎉 feat: adding specificMessages inside a ruleSet is possible now
 * 🎉 feat: custom functions can be defined by elements tags
