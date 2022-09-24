@@ -1,12 +1,8 @@
 package galidator
 
 import (
-	"fmt"
 	"reflect"
-	"strconv"
 	"strings"
-
-	gStrings "github.com/golodash/godash/strings"
 )
 
 type (
@@ -94,100 +90,10 @@ func (o *generatorS) validator(input interface{}) validator {
 			for _, fullTag := range tags {
 				filters := strings.Split(fullTag, ",")
 				for j := 0; j < len(filters); j++ {
-					tag := strings.Split(filters[j], "=")
-					normalFuncName := strings.TrimSpace(tag[0])
-					funcName := gStrings.PascalCase(normalFuncName)
-					parameters := []string{}
-					if len(tag) == 2 {
-						parameters = strings.Split(tag[1], "&")
-					}
+					tag := strings.SplitN(filters[j], "=", 2)
 
-					switch funcName {
-					case "Int":
-						r.Int()
-					case "Float":
-						r.Float()
-					case "Min":
-						if len(parameters) == 1 {
-							if p1, err := strconv.ParseFloat(parameters[0], 64); err == nil {
-								r.Min(p1)
-							}
-						}
-					case "Max":
-						if len(parameters) == 1 {
-							if p1, err := strconv.ParseFloat(parameters[0], 64); err == nil {
-								r.Max(p1)
-							}
-						}
-					case "LenRange":
-						if len(parameters) == 2 {
-							if p1, err := strconv.ParseInt(parameters[0], 10, 64); err == nil {
-								if p2, err := strconv.ParseInt(parameters[1], 10, 64); err == nil {
-									r.LenRange(int(p1), int(p2))
-								}
-							}
-						}
-					case "Len":
-						if len(parameters) == 1 {
-							if p1, err := strconv.ParseInt(parameters[0], 10, 64); err == nil {
-								r.Len(int(p1))
-							}
-						}
-					case "Required":
-						r.Required()
-					case "Optional":
-						r.Optional()
-					case "NonZero":
-						r.NonZero()
-					case "NonNil":
-						r.NonNil()
-					case "NonEmpty":
-						r.NonEmpty()
-					case "Email":
-						r.Email()
-					case "Regex":
-						if len(parameters) > 1 {
-							r.Regex(parameters[0])
-						}
-					case "Phone":
-						r.Phone()
-					case "Map":
-						r.Map()
-					case "Slice":
-						r.Slice()
-					case "Struct":
-						r.Struct()
-					case "Password":
-						r.Password()
-					case "Or", "OR":
-						//! Attention needed
-						r.OR()
-					case "Xor", "XOr", "XOR":
-						//! Attention needed
-						r.XOR()
-					case "Choices":
-						params := []interface{}{}
-						for _, item := range parameters {
-							params = append(params, item)
-						}
-						r.Choices(params...)
-					case "WhenExistOne":
-						r.WhenExistOne(parameters...)
-					case "WhenExistAll":
-						r.WhenExistAll(parameters...)
-					case "String":
-						r.String()
-					default:
-						if normalFuncName != "" {
-							if function, ok := o.customValidators[normalFuncName]; ok {
-								r.Custom(Validators{
-									normalFuncName: function,
-								})
-							} else {
-								panic(fmt.Sprintf("%s custom validator did not find, call CustomValidators function before calling Validator function", normalFuncName))
-							}
-						}
-					}
+					normalFuncName, funcName := applyRules(r, tag, o, true)
+
 					addSpecificMessage(r, funcName, elementT.Tag.Get(normalFuncName))
 				}
 			}
