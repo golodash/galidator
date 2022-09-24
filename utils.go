@@ -239,6 +239,7 @@ func addSpecificMessage(r ruleSet, funcName, message string) {
 	}
 }
 
+// Adds rules which are inside passed slice of strings called tag
 func applyRules(r ruleSet, tag []string, o *generatorS, orXor bool) (normalFuncName, funcName string) {
 	normalFuncName = strings.TrimSpace(tag[0])
 	funcName = gStrings.PascalCase(normalFuncName)
