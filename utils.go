@@ -352,6 +352,8 @@ func applyRules(r ruleSet, tag []string, o *generatorS, orXor bool) (normalFuncN
 		r.WhenExistAll(parameters...)
 	case "String":
 		r.String()
+	case "Children", "Custom", "Complex", "Type":
+		panic(fmt.Sprintf("take a look at documentations, %s rule does not work in tags like this", funcName))
 	default:
 		if normalFuncName != "" {
 			if function, ok := o.customValidators[normalFuncName]; ok {
