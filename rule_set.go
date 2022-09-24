@@ -36,9 +36,9 @@ type (
 		// Holds data for more complex structures, like:
 		//
 		// map, slice or struct
-		deepValidator validator
+		deepValidator Validator
 		// Defines type of elements of a slice
-		childrenValidator validator
+		childrenValidator Validator
 	}
 
 	// An interface with some functions to satisfy validation purpose
@@ -130,7 +130,7 @@ type (
 		// Checks if input is a string
 		String() ruleSet
 		// Sets messages for specific rules in current ruleSet
-		SpecificMessages(specificMessages Messages)
+		SpecificMessages(specificMessages Messages) ruleSet
 		// Return specificMessages
 		getSpecificMessages() Messages
 
@@ -147,17 +147,17 @@ type (
 		// Returns false if the ruleSet can be empty, nil or zero(0, "", '') and is allowed to not pass any validations
 		isRequired() bool
 		// Replaces passed validator with existing deepValidator
-		setDeepValidator(input validator)
+		setDeepValidator(input Validator)
 		// Returns deepValidator
-		getDeepValidator() validator
+		getDeepValidator() Validator
 		// Returns true if deepValidator is not nil
 		hasDeepValidator() bool
 		// Validates deepValidator
 		validateDeepValidator(input interface{}) interface{}
 		// Replaces passed validator with existing childrenValidator
-		setChildrenValidator(input validator)
+		setChildrenValidator(input Validator)
 		// Returns childrenValidator
-		getChildrenValidator() validator
+		getChildrenValidator() Validator
 		// Returns true if children is not nil
 		hasChildrenValidator() bool
 		// Validates childrenValidator
@@ -377,19 +377,20 @@ func (o *ruleSetS) String() ruleSet {
 	return o
 }
 
-func (o *ruleSetS) SpecificMessages(specificMessages Messages) {
+func (o *ruleSetS) SpecificMessages(specificMessages Messages) ruleSet {
 	o.specificMessages = specificMessages
+	return o
 }
 
 func (o *ruleSetS) getSpecificMessages() Messages {
 	return o.specificMessages
 }
 
-func (o *ruleSetS) setChildrenValidator(input validator) {
+func (o *ruleSetS) setChildrenValidator(input Validator) {
 	o.childrenValidator = input
 }
 
-func (o *ruleSetS) getChildrenValidator() validator {
+func (o *ruleSetS) getChildrenValidator() Validator {
 	return o.childrenValidator
 }
 
@@ -439,11 +440,11 @@ func (o *ruleSetS) isRequired() bool {
 	return !o.isOptional
 }
 
-func (o *ruleSetS) setDeepValidator(input validator) {
+func (o *ruleSetS) setDeepValidator(input Validator) {
 	o.deepValidator = input
 }
 
-func (o *ruleSetS) getDeepValidator() validator {
+func (o *ruleSetS) getDeepValidator() Validator {
 	return o.deepValidator
 }
 

@@ -25,7 +25,7 @@ type (
 	}
 
 	// Validator interface
-	validator interface {
+	Validator interface {
 		// Validates passed data and returns a map of possible validation errors happened on every field with failed validation.
 		//
 		// If no errors found, output will be nil

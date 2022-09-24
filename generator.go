@@ -18,9 +18,9 @@ type (
 		// Generates a validator interface which can be used to validate struct or map by some rules
 		//
 		// Please use CapitalCase for rules' keys (Important for getting data out of struct types)
-		Validator(rule interface{}, messages ...Messages) validator
+		Validator(rule interface{}, messages ...Messages) Validator
 		// Generates a validator interface which can be used to validate struct or map or slice by passing an instance of them
-		validator(input interface{}) validator
+		validator(input interface{}) Validator
 		// Generates a ruleSet to validate passed information
 		//
 		// Variable name will be used in output of error keys
@@ -35,13 +35,13 @@ func (o *generatorS) CustomValidators(validators Validators) generator {
 	return o
 }
 
-func (o *generatorS) Validator(rule interface{}, errorMessages ...Messages) validator {
+func (o *generatorS) Validator(rule interface{}, errorMessages ...Messages) Validator {
 	var messages Messages = nil
 	if len(errorMessages) != 0 {
 		messages = errorMessages[0]
 	}
 
-	var output validator = nil
+	var output Validator = nil
 	switch v := rule.(type) {
 	case ruleSet:
 		output = &validatorS{rule: v, rules: nil, messages: &messages}
@@ -57,7 +57,7 @@ func (o *generatorS) Validator(rule interface{}, errorMessages ...Messages) vali
 	return output
 }
 
-func (o *generatorS) validator(input interface{}) validator {
+func (o *generatorS) validator(input interface{}) Validator {
 	for reflect.ValueOf(input).Kind() == reflect.Ptr {
 		input = reflect.ValueOf(input).Elem().Interface()
 	}
