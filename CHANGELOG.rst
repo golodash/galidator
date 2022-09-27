@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* ✅ test: float testcases added
 * ✅ test: int test cases added
 * 🎉 feat: OR and XOR is possible inside tags now
 * 🐛 fix: whenExistAllRequireRule bug fixed
