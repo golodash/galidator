@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* ✅ test: min testcases added
 * ✅ test: float testcases added
 * ✅ test: int test cases added
 * 🎉 feat: OR and XOR is possible inside tags now
