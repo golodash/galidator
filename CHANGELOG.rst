@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* ✅ test: Email testcases added
 * ✅ test: NonEmpty testcases added
 * ✅ test: NonNil testcases added
 * ✅ test: NonZero testcases added
