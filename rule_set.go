@@ -351,7 +351,7 @@ func (o *ruleSetS) XOR(ruleSets ...ruleSet) ruleSet {
 func (o *ruleSetS) Choices(choices ...interface{}) ruleSet {
 	functionName := "choices"
 	o.validators[functionName] = choicesRule(choices...)
-	o.addOption(functionName, "choices", strings.ReplaceAll(fmt.Sprint(choices), " ", ", "))
+	o.addOption(functionName, "choices", "["+strings.ReplaceAll(fmt.Sprint(choices...), " ", ", ")+"]")
 	return o
 }
 

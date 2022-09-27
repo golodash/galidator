@@ -1,7 +1,9 @@
 # Galidator
 
-Galidator is a package validator which implements struct or map validation.\
-At this point, package is at beta phase and I'm still testing the core of galidator.
+Galidator provides general use case for validation purpose.\
+You simply create a validator and validate your data with it.\
+Either it returns `nil` which means that data is valid or not which means that there
+is a problem with passed data and validation has failed.
 
 ## Installation
 
@@ -14,9 +16,7 @@ go get github.com/golodash/galidator
 And then just import the package into your own code.
 
 ```go
-import (
-	"github.com/golodash/galidator"
-)
+import "github.com/golodash/galidator"
 ```
 
 ## Example Usage
@@ -61,7 +61,7 @@ map[password:[password must be at least 8 characters long and contain one lowerc
 false
 ```
 
-We can even validate a struct and get the same result:
+We can even validate a struct by the same validator and get the same result:
 
 ```go
 package main
@@ -99,9 +99,7 @@ func main() {
 }
 ```
 
-Or we can even create our validator by defining struct tags.
-
-**Note**: This is not a complete feature and works just in a single layer.
+Or we can even create the same validator by defining some struct tags.
 
 ```go
 package main
@@ -120,7 +118,7 @@ type Person struct {
 
 func main() {
 	g := galidator.New()
-	validator := g.ValidatorFromStruct(Person{})
+	validator := g.Validator(Person{})
 
 	userInput := Person{
 		Username: "DoctorMK",
@@ -135,67 +133,7 @@ func main() {
 }
 ```
 
-### Lists
-
-Lets assume we need to receive a list of orders, in this case:
-
-**Note**: This example won't work in a tag based validator. (Under Development...)
-
-```go
-package main
-
-import (
-	"fmt"
-
-	"github.com/golodash/galidator"
-)
-
-type Order struct {
-	ObjectName string
-	Amount     int
-	Price      float64
-}
-
-func main() {
-	g := galidator.New()
-	// Implementing a slice of Orders = []Order
-	ordersValidator := g.Validator(g.R().Children(
-		g.R().Complex(galidator.Rules{
-			"ObjectName": g.R("object_name").Min(3),
-			"Amount":     g.R("Amount").Min(1).Max(10),
-			"Price":      g.R("Price").Min(1).Max(500),
-		}),
-	))
-
-	userInput := []Order{
-		{
-			ObjectName: "e",
-			Amount:     3,
-			Price:      2,
-		}, {
-			ObjectName: "Bathroom cleaner",
-			Amount:     -2,
-			Price:      5,
-		},
-	}
-
-	errors := ordersValidator.Validate(userInput)
-
-	fmt.Println(errors)
-	fmt.Println(errors == nil)
-}
-```
-
-Output:
-```
-map[0:map[object_name:[object_name's length must be higher equal to 3]] 1:map[Amount:[Amount's length must be higher equal to 1]]]
-false
-```
-
-### Custom Validators
-
-Lets go back to previous example of sign up a user.\
-In this example, we need to check if the user is inside the database but in this example we just use a list of names instead of a database.
+### Receive a list of users
 
 ```go
 package main
@@ -207,42 +145,26 @@ import (
 )
 
 type Person struct {
-	Username string
-	Password string
-	Email    string
-}
-
-var usernames = []string{
-	"erfan",
-	"ali",
-	"asghar",
-	"mohammad",
-	"james",
-}
-
-func usernameDuplicateChecker(input interface{}) bool {
-	for _, name := range usernames {
-		if name == input.(string) {
-			return false
-		}
-	}
-	return true
+	Username string `json:"username" g:"required,min=3,max=32"`
+	Password string `json:"password" g:"required,min=5,password" password:"$field failed"`
+	Email    string `json:"email" g:"required,email"`
 }
 
 func main() {
 	g := galidator.New()
-	validator := g.Validator(g.R().Complex(galidator.Rules{
-		"Username": g.R("username").Required().Min(3).Max(32).Custom(galidator.Validators{"DuplicateUsername": usernameDuplicateChecker}),
-		"Password": g.R("password").Required().Password(),
-		"Email":    g.R("email").Required().Email(),
-	}), galidator.Messages{
-		"DuplicateUsername": "$value already exists",
-	})
+	validator := g.Validator([]Person{})
 
-	userInput := map[string]string{
-		"username": "mohammad",
-		"password": "123456789",
-		"email":    "james@gmail.com",
+	userInput := []Person{
+		{
+			Username: "DoctorMK",
+			Password: "123456789",
+			Email:    "DoctorMK@gmail.com",
+		},
+		{
+			Username: "Asghar",
+			Password: "123456789mH!@",
+			Email:    "Doctors@gmail.com",
+		},
 	}
 
 	errors := validator.Validate(userInput)
@@ -254,14 +176,11 @@ func main() {
 
 Output:
 ```
-map[Password:[Password must be at least 8 characters long and contain one lowercase, one uppercase, one special and one number character] Username:[mohammad already exists]]
+map[0:map[password:[password failed]]]
 false
 ```
 
-### OR, XOR Rule
-
-Or operator checks if at least one of the passed rules pass.\
-Note: XOR usage is the same but results are based on XOR but not based on OR operation.
+We can create the same validator without tags too:
 
 ```go
 package main
@@ -272,23 +191,26 @@ import (
 	"github.com/golodash/galidator"
 )
 
-type Request struct {
-	Username string
-	Password string
-}
-
 func main() {
 	g := galidator.New()
-	validator := g.Validator(g.R().Complex(galidator.Rules{
-		"Username": g.R().Required().OR(g.R().Email(), g.R().Phone()),
-		"Password": g.R().Password().Min(8).Max(100),
-	}), galidator.Messages{
-		"OR": "$field should be a valid email or phone number",
-	})
+	validator := g.Validator(g.R().Children(
+		g.R().Complex(galidator.Rules{
+			"Username": g.R("username").Required().Min(3).Max(32),
+			"Password": g.R("password").Required().Password().SpecificMessages(galidator.Messages{"password": "$field failed"}),
+			"Email":    g.R("email").Required().Email(),
+		})))
 
-	userInput := &Request{
-		Username: "not an email or phone number",
-		Password: "12345678Aa!",
+	userInput := []map[string]string{
+		{
+			"username": "DoctorMK",
+			"password": "123456789",
+			"email":    "DoctorMK@gmail.com",
+		},
+		{
+			"username": "Asghar",
+			"password": "123456789mH!@",
+			"email":    "Doctors@gmail.com",
+		},
 	}
 
 	errors := validator.Validate(userInput)
@@ -298,13 +220,11 @@ func main() {
 }
 ```
 
-Output:
-```
-map[Username:[ruleSets in Username did not pass based on or logic]]
-false
-```
+### OR
 
-### Choices
+In this example, input has to be either an email address or just a string longer equal to 5 characters or both.
+
+This example OR operator in struct tags can be used like: `g:"required,or=email|string+min=5"`
 
 ```go
 package main
@@ -315,24 +235,135 @@ import (
 	"github.com/golodash/galidator"
 )
 
-type Request struct {
-	Username string
-	Password string
-	Method   string
+func main() {
+	g := galidator.New()
+	validator := g.Validator(g.R().Required().OR(g.R().Email(), g.R().String().Min(5)))
+
+	input := "m@g.com"
+	errors := validator.Validate(input)
+
+	fmt.Println(errors)
+	fmt.Println(errors == nil)
 }
+```
+
+Output:
+```
+<nil>
+true
+```
+
+### XOR
+
+In this example, input has to be either an email address or phone number.
+
+This example XOR operator in struct tags can be used like: `g:"required,xor=email|phone"`
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/golodash/galidator"
+)
 
 func main() {
 	g := galidator.New()
-	validator := g.Validator(g.R().Complex(galidator.Rules{
-		"Username": g.R("username").Required(),
-		"Password": g.R("password").Password().Min(8).Max(100),
-		"Method":   g.R("method").Required().Choices([]string{"session", "jwt"}),
+	validator := g.Validator(g.R().Required().XOR(g.R().Email(), g.R().Phone()))
+
+	input := "m@g.com"
+	errors := validator.Validate(input)
+
+	fmt.Println(errors)
+	fmt.Println(errors == nil)
+}
+```
+
+Output:
+```
+<nil>
+true
+```
+
+### WhenExistAll - WhenExistOne
+
+In this example, if two other struct fields(`Username` and `Password`) are not empty,
+nil or zero, field will act as a required field and all of its rules will get checked.\
+Otherwise, if empty, nil or zero value get passed, because by default fields are
+optional, it does not check other defined rules and assume it passed.\
+You can use this in tags like: `g:"when_exist_all=Username&Password,string" when_exist_all:"when_exist_all failed"`
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/golodash/galidator"
+)
+
+func main() {
+	g := galidator.New()
+	v := g.Validator(g.R().Complex(galidator.Rules{
+		"Username": g.R("username").String(),
+		"Password": g.R("password").String(),
+		"Data":     g.R("data").WhenExistAll("Username", "Password").String().SpecificMessages(galidator.Messages{"when_exist_all": "when_exist_all failed"}),
 	}))
 
-	userInput := &Request{
-		Username: "randomEmail@gmail.com",
-		Password: "12345678Aa!",
-		Method:   "invalid method",
+	errors := v.Validate(map[string]string{
+		"Username": "username",
+		"Password": "password",
+		"Data":     "",
+	})
+
+	fmt.Println(errors)
+	fmt.Println(errors == nil)
+}
+```
+
+Output:
+```
+map[data:[when_exist_all failed]]
+false
+```
+
+### Custom Validator
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/golodash/galidator"
+	"github.com/golodash/godash/slices"
+)
+
+type Person struct {
+	Username string `json:"username" g:"required,min=3,max=32,duplicate_check" duplicate_check:"$field is duplicate"`
+	Password string `json:"password" g:"required,min=5,password"`
+	Email    string `json:"email" g:"required,email"`
+}
+
+var users = []string{
+	"ali",
+	"james",
+	"john",
+}
+
+func duplicate_check(input interface{}) bool {
+	return slices.FindIndex(users, input) == -1
+}
+
+func main() {
+	g := galidator.New().CustomValidators(galidator.Validators{"duplicate_check": duplicate_check})
+	validator := g.Validator(Person{})
+
+	userInput := Person{
+		Username: "ali",
+		Password: "123456789mH!",
+		Email:    "DoctorMK@gmail.com",
 	}
 
 	errors := validator.Validate(userInput)
@@ -340,16 +371,17 @@ func main() {
 	fmt.Println(errors)
 	fmt.Println(errors == nil)
 }
-
 ```
 
 Output:
 ```
-map[method:[invalid method does not include in allowed choices: [session, jwt]]]
+map[username:[username is duplicate]]
 false
 ```
 
-### WhenExistAll
+### LenRange
+
+LenRange can be used in a struct tag like: `g:"len_range=3&5" len_range="len_range failed"`
 
 ```go
 package main
@@ -360,74 +392,11 @@ import (
 	"github.com/golodash/galidator"
 )
 
-type Request struct {
-	Option1 string
-	Option2 string
-	Option3 string
-}
-
 func main() {
 	g := galidator.New()
-	validator := g.Validator(g.R().Complex(galidator.Rules{
-		"Option1": g.R("option_1").WhenExistAll("Option2", "Option3"),
-		"Option2": g.R("option_2"),
-		"Option3": g.R("option_3"),
-	}), galidator.Messages{
-		"OR": "$field should be a valid email or phone number",
-	})
+	validator := g.Validator(g.R().LenRange(3, 5).SpecificMessages(galidator.Messages{"len_range": "len_range failed"}))
 
-	userInput := &Request{
-		Option1: "",
-		Option2: "data",
-		Option3: "data",
-	}
-
-	errors := validator.Validate(userInput)
-
-	fmt.Println(errors)
-	fmt.Println(errors == nil)
-}
-
-```
-
-Output:
-```
-map[option_1:[option_1 is required because all of [Option2, Option3] fields are not nil, empty or zero(0, "", '')]]
-false
-```
-
-### WhenExistOne
-
-```go
-package main
-
-import (
-	"fmt"
-
-	"github.com/golodash/galidator"
-)
-
-type Request struct {
-	Option1 string
-	Option2 string
-	Option3 string
-}
-
-func main() {
-	g := galidator.New()
-	validator := g.Validator(g.R().Complex(galidator.Rules{
-		"Option1": g.R("option_1").WhenExistOne("Option2", "Option3"),
-		"Option2": g.R("option_2"),
-		"Option3": g.R("option_3"),
-	}), galidator.Messages{
-		"OR": "$field should be a valid email or phone number",
-	})
-
-	userInput := &Request{
-		Option1: "",
-		Option2: "",
-		Option3: "data",
-	}
+	userInput := 3
 
 	errors := validator.Validate(userInput)
 
@@ -438,6 +407,11 @@ func main() {
 
 Output:
 ```
-map[option_1:[option_1 is required because at least one of [Option2, Option3] fields are not nil, empty or zero(0, "", '')]]
+[len_range failed]
 false
 ```
+
+## At the end
+
+I don't really like documenting and I didn't really cover many features in these examples.\
+if anyone can do documentations of this project for me in a better way, I will appreciate it.
