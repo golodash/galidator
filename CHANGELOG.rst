@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* ✅ test: Password testcases added
 * ✅ test: Slice testcases added
 * ✅ test: Struct testcases added
 * ✅ test: Map testcases added
