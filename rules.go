@@ -31,8 +31,8 @@ var defaultValidatorErrorMessages = map[string]string{
 	"or":        "ruleSets in $field did not pass based on or logic",
 	"xor":       "ruleSets in $field did not pass based on xor logic",
 	"choices":   "$value does not include in allowed choices: $choices",
-	"string":    "not a string value",
-	"type":      "not a $type value",
+	"string":    "not a string",
+	"type":      "not a $type",
 
 	// Requires
 	"when_exist_one": "$field is required because at least one of $choices fields are not nil, empty or zero(0, \"\", '')",

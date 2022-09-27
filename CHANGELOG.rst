@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* ✅ test: String testcases added
 * ✅ test: Choices testcases added
 * ✅ test: XOR testcases added
 * ✅ test: OR testcases added
