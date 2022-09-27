@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* ✅ test: XOR testcases added
 * ✅ test: OR testcases added
 * ✅ test: Password testcases added
 * ✅ test: Slice testcases added

@@ -6,7 +6,7 @@ import (
 	"github.com/golodash/galidator"
 )
 
-func TestOr(t *testing.T) {
+func TestOR(t *testing.T) {
 	scenarios := []scenario{
 		{
 			name:      "fail-1",
