@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* ✅ test: FromStruct testcase added
 * ✅ test: a complex testcase added
 * ✅ test: WhenExistAll testcases added
 * ✅ test: WhenExistOne testcases added
