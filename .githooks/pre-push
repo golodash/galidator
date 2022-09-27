@@ -3,7 +3,7 @@
 
 import os, sys
 
-packages = ["slices", "maps", "dates", "functions", "languages", "maths", "numbers", "structs", "strings"]
+packages = ["tests"]
 
 for i in range(len(packages)):
     packages[i] = "./" + packages[i]

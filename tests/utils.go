@@ -15,11 +15,6 @@ type scenario struct {
 	expected  interface{}
 }
 
-const (
-	PASS = "PASS"
-	FAIL = "FAIL"
-)
-
 var g = galidator.New()
 
 // Used in test cases to prevent code breaking
