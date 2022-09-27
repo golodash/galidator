@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: validator creation from a slice is possible
 * ✅ test: FromStruct testcase added
 * ✅ test: a complex testcase added
 * ✅ test: WhenExistAll testcases added

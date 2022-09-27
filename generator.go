@@ -46,7 +46,7 @@ func (o *generatorS) Validator(rule interface{}, errorMessages ...Messages) Vali
 	case ruleSet:
 		output = &validatorS{rule: v, rules: nil, messages: &messages}
 	default:
-		if reflect.TypeOf(v).Kind() == reflect.Struct {
+		if reflect.TypeOf(v).Kind() == reflect.Struct || reflect.TypeOf(v).Kind() == reflect.Slice {
 			output = o.validator(v)
 		} else {
 			panic("'rule' has to be a ruleSet or a struct instance")
