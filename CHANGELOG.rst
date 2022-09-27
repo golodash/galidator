@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* ✅ test: Struct testcases added
 * ✅ test: Map testcases added
 * ✅ test: Phone testcases added
 * ✅ test: Regex testcases added
