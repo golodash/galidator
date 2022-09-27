@@ -146,7 +146,7 @@ func requiredRule(input interface{}) bool {
 
 // Returns true if input is not zero(0, "", ”)
 func nonZeroRule(input interface{}) bool {
-	return !reflect.ValueOf(input).IsZero()
+	return !reflect.ValueOf(input).IsValid() || !reflect.ValueOf(input).IsZero()
 }
 
 // Returns true if input is not nil
