@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* ✅ test: Slice testcases added
 * ✅ test: Struct testcases added
 * ✅ test: Map testcases added
 * ✅ test: Phone testcases added
