@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* ✅ test: WhenExistAll testcases added
 * ✅ test: WhenExistOne testcases added
 * ✅ test: Type testcases added
 * ✅ test: String testcases added
