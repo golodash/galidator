@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* ✅ test: Required testcases added
 * ✅ test: Len testcases added
 * ✅ test: LenRange testcases added
 * ✅ test: max testcases added
