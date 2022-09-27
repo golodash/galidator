@@ -40,8 +40,8 @@ type (
 )
 
 // Formats and returns error message associated with passed ruleKey
-func getErrorMessage(fieldName string, ruleKey string, value interface{}, options option, specificMessage Messages, messages Messages, defaultErrorMessages map[string]string) string {
-	if out, ok := specificMessage["ruleKey"]; len(specificMessage) != 0 && ok {
+func getErrorMessage(fieldName string, ruleKey string, value interface{}, options option, messages Messages, specificMessage Messages, defaultErrorMessages map[string]string) string {
+	if out, ok := specificMessage[ruleKey]; len(specificMessage) != 0 && ok {
 		for key, value := range options {
 			out = strings.ReplaceAll(out, "$"+key, value)
 		}

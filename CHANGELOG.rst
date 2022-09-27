@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🐛 fix: specificMessages and messages are fixed
 * ✅ test: min testcases added
 * ✅ test: float testcases added
 * ✅ test: int test cases added
