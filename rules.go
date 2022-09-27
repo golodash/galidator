@@ -141,7 +141,7 @@ func lenRule(length int) func(interface{}) bool {
 // Returns true if input is not 0, "", ”, nil and empty
 func requiredRule(input interface{}) bool {
 	inputValue := reflect.ValueOf(input)
-	return !inputValue.IsZero() && !isNil(input) && !hasZeroItems(input)
+	return inputValue.IsValid() && (!inputValue.IsZero() && !isNil(input) && !hasZeroItems(input))
 }
 
 // Returns true if input is not zero(0, "", ”)
