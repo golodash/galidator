@@ -22,13 +22,7 @@ func determinePrecision(number float64) string {
 
 // Returns true if input is nil
 func isNil(input interface{}) bool {
-	inputValue := reflect.ValueOf(input)
-	switch inputValue.Kind() {
-	case reflect.Slice, reflect.Map:
-		return inputValue.IsNil()
-	default:
-		return false
-	}
+	return input == nil
 }
 
 // Returns true if input is map or slice and has 0 elements
