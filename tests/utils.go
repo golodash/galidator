@@ -22,7 +22,7 @@ func deferTestCases(t *testing.T, crash bool, expected interface{}) {
 	err := recover()
 
 	if err != nil && !crash {
-		t.Errorf("wanted = %v, err = %s", expected, err)
+		t.Errorf("expected = %v, err = %s", expected, err)
 	}
 }
 

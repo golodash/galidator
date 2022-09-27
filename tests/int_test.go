@@ -16,11 +16,18 @@ func TestInt(t *testing.T) {
 			expected:  nil,
 		},
 		{
-			name:      "fail",
+			name:      "fail-1",
 			validator: g.Validator(g.R().Int().SpecificMessages(galidator.Messages{"int": "$value is not int"})),
 			in:        "1",
 			panic:     false,
 			expected:  []string{"1 is not int"},
+		},
+		{
+			name:      "fail-2",
+			validator: g.Validator(g.R().Int().SpecificMessages(galidator.Messages{"int": "$value is not int"})),
+			in:        map[string]string{"1": "1"},
+			panic:     false,
+			expected:  []string{"map[1:1] is not int"},
 		},
 		{
 			name:      "int",

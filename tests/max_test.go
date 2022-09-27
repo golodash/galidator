@@ -9,11 +9,11 @@ import (
 func TestMax(t *testing.T) {
 	scenarios := []scenario{
 		{
-			name:      "pass",
+			name:      "fail-int",
 			validator: g.Validator(g.R().Max(5).SpecificMessages(galidator.Messages{"max": "can be at most $max characters long"})),
-			in:        "111",
+			in:        6,
 			panic:     false,
-			expected:  nil,
+			expected:  []string{"can be at most 5 characters long"},
 		},
 		{
 			name:      "fail-string",
@@ -35,6 +35,13 @@ func TestMax(t *testing.T) {
 			in:        map[string]int{"1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6},
 			panic:     false,
 			expected:  []string{"can be at most 5 characters long"},
+		},
+		{
+			name:      "pass-int",
+			validator: g.Validator(g.R().Max(5).SpecificMessages(galidator.Messages{"max": "can be at most $max characters long"})),
+			in:        5,
+			panic:     false,
+			expected:  nil,
 		},
 		{
 			name:      "pass-string",

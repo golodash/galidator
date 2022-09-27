@@ -9,11 +9,11 @@ import (
 func TestMin(t *testing.T) {
 	scenarios := []scenario{
 		{
-			name:      "pass",
+			name:      "fail-int",
 			validator: g.Validator(g.R().Min(3).SpecificMessages(galidator.Messages{"min": "has to be at least $min characters long"})),
-			in:        "111",
+			in:        2,
 			panic:     false,
-			expected:  nil,
+			expected:  []string{"has to be at least 3 characters long"},
 		},
 		{
 			name:      "fail-string",
@@ -35,6 +35,13 @@ func TestMin(t *testing.T) {
 			in:        map[string]int{"1": 1, "2": 2},
 			panic:     false,
 			expected:  []string{"has to be at least 3 characters long"},
+		},
+		{
+			name:      "pass-int",
+			validator: g.Validator(g.R().Min(3).SpecificMessages(galidator.Messages{"min": "has to be at least $min characters long"})),
+			in:        3,
+			panic:     false,
+			expected:  nil,
 		},
 		{
 			name:      "pass-string",

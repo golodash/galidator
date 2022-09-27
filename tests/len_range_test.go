@@ -16,6 +16,13 @@ func TestLenRange(t *testing.T) {
 			expected:  nil,
 		},
 		{
+			name:      "fail",
+			validator: g.Validator(g.R().LenRange(3, 5).SpecificMessages(galidator.Messages{"len_range": "must be between $from to $to characters long"})),
+			in:        12,
+			panic:     false,
+			expected:  []string{"must be between 3 to 5 characters long"},
+		},
+		{
 			name:      "fail-string",
 			validator: g.Validator(g.R().LenRange(3, 5).SpecificMessages(galidator.Messages{"len_range": "must be between $from to $to characters long"})),
 			in:        "abcdef",
