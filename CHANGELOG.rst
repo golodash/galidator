@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* ✅ test: NonEmpty testcases added
 * ✅ test: NonNil testcases added
 * ✅ test: NonZero testcases added
 * ✅ test: Required testcases added
