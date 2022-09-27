@@ -41,6 +41,13 @@ func TestEmail(t *testing.T) {
 			panic:     false,
 			expected:  []string{"not a valid email address"},
 		},
+		{
+			name:      "fail-4",
+			validator: g.Validator(g.R().Email()),
+			in:        "m.",
+			panic:     false,
+			expected:  []string{"not a valid email address"},
+		},
 	}
 
 	for _, s := range scenarios {

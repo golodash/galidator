@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* ✅ test: Regex testcases added
 * ✅ test: Email testcases added
 * ✅ test: NonEmpty testcases added
 * ✅ test: NonNil testcases added
