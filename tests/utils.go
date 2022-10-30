@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/golodash/galidator"
-	"github.com/golodash/galidator/internal"
+	"github.com/golodash/godash/generals"
 )
 
 type scenario struct {
@@ -26,8 +26,13 @@ func deferTestCases(t *testing.T, crash bool, expected interface{}) {
 	}
 }
 
+// Checks if `expected` and `output` are the same.
+//
+// If they are the same, returns true.
+//
+// If not, raises an error in `t` and returns false.
 func check(t *testing.T, expected, output interface{}) bool {
-	if !internal.Same(output, expected) {
+	if !generals.Same(output, expected) {
 		t.Errorf("expected = %v, output = %v", expected, output)
 		return false
 	}

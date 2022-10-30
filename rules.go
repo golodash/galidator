@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	"github.com/dlclark/regexp2"
-	"github.com/golodash/galidator/internal"
+	"github.com/golodash/godash/generals"
 )
 
 // A map which with rule or require's key will provide the default error message of that rule or require's key
@@ -252,7 +252,7 @@ func choicesRule(choices ...interface{}) func(interface{}) bool {
 	return func(input interface{}) bool {
 		for i := 0; i < len(choices); i++ {
 			element := choices[i]
-			if internal.Same(element, input) {
+			if generals.Same(element, input) {
 				return true
 			}
 		}
