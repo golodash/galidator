@@ -138,9 +138,7 @@ func deepPassMessages(v Validator, messages Messages) {
 func addSpecificMessage(r ruleSet, funcName, message string) {
 	funcName = gStrings.SnakeCase(funcName)
 	if message != "" {
-		r.SpecificMessages(Messages{
-			funcName: message,
-		})
+		r.appendSpecificMessages(funcName, message)
 	}
 }
 

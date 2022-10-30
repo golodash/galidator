@@ -129,6 +129,8 @@ type (
 		WhenExistAll(choices ...string) ruleSet
 		// Checks if input is a string
 		String() ruleSet
+		// Adds a new pair of `key: value` message into existing SpecificMessages variable
+		appendSpecificMessages(key string, value string)
 		// Sets messages for specific rules in current ruleSet
 		SpecificMessages(specificMessages Messages) ruleSet
 		// Return specificMessages
@@ -375,6 +377,16 @@ func (o *ruleSetS) String() ruleSet {
 	functionName := "string"
 	o.validators[functionName] = stringRule
 	return o
+}
+
+func (o *ruleSetS) appendSpecificMessages(key string, value string) {
+	var sm = o.getSpecificMessages()
+	if sm == nil {
+		sm = Messages{}
+	}
+	sm[key] = value
+
+	o.SpecificMessages(sm)
 }
 
 func (o *ruleSetS) SpecificMessages(specificMessages Messages) ruleSet {

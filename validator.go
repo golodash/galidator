@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	gStrings "github.com/golodash/godash/strings"
 )
 
 type (
@@ -41,25 +43,29 @@ type (
 
 // Formats and returns error message associated with passed ruleKey
 func getErrorMessage(fieldName string, ruleKey string, value interface{}, options option, messages Messages, specificMessage Messages, defaultErrorMessages map[string]string) string {
-	if out, ok := specificMessage[ruleKey]; len(specificMessage) != 0 && ok {
+	// Search for error message in specific messages for the rule
+	if out, ok := specificMessage[gStrings.SnakeCase(ruleKey)]; len(specificMessage) != 0 && ok {
 		for key, value := range options {
 			out = strings.ReplaceAll(out, "$"+key, value)
 		}
 		return strings.ReplaceAll(strings.ReplaceAll(out, "$field", fieldName), "$value", fmt.Sprint(value))
 	}
 
+	// Search for error message in general messages for the validator
 	if out, ok := messages[ruleKey]; ok {
 		for key, value := range options {
 			out = strings.ReplaceAll(out, "$"+key, value)
 		}
 		return strings.ReplaceAll(strings.ReplaceAll(out, "$field", fieldName), "$value", fmt.Sprint(value))
 	} else {
+		// If no error message found, search if there is a default error message for rule error
 		if defaultErrorMessage, ok := defaultErrorMessages[ruleKey]; ok {
 			for key, value := range options {
 				defaultErrorMessage = strings.ReplaceAll(defaultErrorMessage, "$"+key, value)
 			}
 			return strings.ReplaceAll(strings.ReplaceAll(defaultErrorMessage, "$field", fieldName), "$value", fmt.Sprint(value))
 		} else {
+			// If no error message found, return that error message doesn't exist
 			return fmt.Sprintf("error happened but no error message exists on '%s' rule key", ruleKey)
 		}
 	}

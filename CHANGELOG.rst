@@ -4,6 +4,9 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🐛 fix: two bugs fixed
+1. Capital letters in tags didn't register right in validator system for error SpecialMessages
+2. More than one special error message in tags, just kept the last one in memory
 
 0.0.0 (2022-09-29)
 ------------------
