@@ -40,6 +40,14 @@ func (o *generatorS) Validator(rule interface{}, errorMessages ...Messages) Vali
 	if len(errorMessages) != 0 {
 		messages = errorMessages[0]
 	}
+	switch rule.(type) {
+	case ruleSet:
+		break
+	default:
+		for reflect.TypeOf(rule).Kind() == reflect.Ptr {
+			rule = reflect.ValueOf(rule).Elem().Interface()
+		}
+	}
 
 	var output Validator = nil
 	switch v := rule.(type) {
@@ -58,10 +66,6 @@ func (o *generatorS) Validator(rule interface{}, errorMessages ...Messages) Vali
 }
 
 func (o *generatorS) validator(input interface{}) Validator {
-	for reflect.ValueOf(input).Kind() == reflect.Ptr {
-		input = reflect.ValueOf(input).Elem().Interface()
-	}
-
 	inputValue := reflect.ValueOf(input)
 	inputType := reflect.TypeOf(input)
 	r := o.RuleSet()

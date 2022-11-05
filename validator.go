@@ -85,7 +85,7 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 			if onKeyInputValue.IsValid() {
 				onKeyInput = onKeyInputValue.Interface()
 			} else {
-				onKeyInput = reflect.New(onKeyInputValue.Type()).Elem().Interface()
+				onKeyInput = nil
 			}
 		}
 

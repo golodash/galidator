@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🐛 fix: fixed buges caused for test cases after fixing the issue
 * 🐛 fix: #1
 
 0.0.1 (2022-10-30)
