@@ -70,6 +70,11 @@ func (o *generatorS) validator(input interface{}) Validator {
 		for i := 0; i < inputType.NumField(); i++ {
 			elementT := inputType.Field(i)
 			element := inputValue.Field(i)
+			for element.Type().Kind() == reflect.Ptr {
+				elementType := element.Type().Elem()
+				element = reflect.New(elementType).Elem()
+				elementT.Type = element.Type()
+			}
 			tags := []string{elementT.Tag.Get("g"), elementT.Tag.Get("galidator")}
 			r = o.RuleSet(elementT.Tag.Get("json"))
 			addTypeCheck(r, elementT.Type.Kind())

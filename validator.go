@@ -80,6 +80,15 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 	inputValue := reflect.ValueOf(input)
 
 	validate := func(ruleSet ruleSet, onKeyInput interface{}, fieldName string) []string {
+		for reflect.ValueOf(onKeyInput).IsValid() && reflect.TypeOf(onKeyInput).Kind() == reflect.Ptr {
+			onKeyInputValue := reflect.ValueOf(onKeyInput).Elem()
+			if onKeyInputValue.IsValid() {
+				onKeyInput = onKeyInputValue.Interface()
+			} else {
+				onKeyInput = reflect.New(onKeyInputValue.Type()).Elem().Interface()
+			}
+		}
+
 		halfOutput := []string{}
 		fails := ruleSet.validate(onKeyInput)
 		if len(fails) != 0 {
