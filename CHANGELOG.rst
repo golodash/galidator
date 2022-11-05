@@ -4,8 +4,11 @@ CHANGELOG
 UNRELEASED
 ----------
 
-* 🐛 fix: fixed buges caused for test cases after fixing the issue
-* 🐛 fix: #1
+
+0.0.2 (2022-11-05)
+------------------
+
+* 🐛 fix: #1, Pointers of different variables when used inside `g.Validator` or `Validator.Validate` methods, didn't work properly.
 
 0.0.1 (2022-10-30)
 ------------------
