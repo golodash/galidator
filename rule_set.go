@@ -413,7 +413,11 @@ func (o *ruleSetS) getSpecificMessages() Messages {
 }
 
 func (o *ruleSetS) setChildrenValidator(input Validator) {
-	o.childrenValidator = input
+	if o.childrenValidator != nil {
+		o.childrenValidator.getRule().appendRuleSet(input.getRule())
+	} else {
+		o.childrenValidator = input
+	}
 }
 
 func (o *ruleSetS) getChildrenValidator() Validator {
@@ -502,9 +506,6 @@ func (o *ruleSetS) appendRuleSet(r ruleSet) ruleSet {
 	rDeepValidator, ok := r.get("deepValidator").(Validator)
 	if ok && rDeepValidator != nil && o.deepValidator == nil {
 		o.deepValidator = rDeepValidator
-	} else if ok && o.deepValidator != nil && rDeepValidator != nil {
-		deepValidatorRuleSet := rDeepValidator.getRule()
-		o.deepValidator.getRule().appendRuleSet(deepValidatorRuleSet)
 	}
 	rChildrenValidator, ok := r.get("childrenValidator").(Validator)
 	if ok && rChildrenValidator != nil && o.childrenValidator == nil {

@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: #1 feature added
 * 🐛 fix: #4
 
 0.0.2 (2022-11-05)

@@ -101,9 +101,9 @@ func (o *generatorS) validator(input interface{}) Validator {
 				for j := 0; j < len(filters); j++ {
 					tag := strings.SplitN(filters[j], "=", 2)
 
-					normalFuncName, funcName, child := applyRules(r, tag, o, true)
+					normalFuncName := applyRules(r, tag, o, true)
 
-					addSpecificMessage(r, funcName, elementT.Tag.Get(normalFuncName), child)
+					addSpecificMessage(r, normalFuncName, elementT.Tag.Get(normalFuncName))
 				}
 			}
 			rules[elementT.Name] = r
