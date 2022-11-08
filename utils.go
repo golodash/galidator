@@ -135,17 +135,29 @@ func deepPassMessages(v Validator, messages Messages) {
 }
 
 // Adds one specific message to passed ruleSet if message is not a empty string
-func addSpecificMessage(r ruleSet, funcName, message string) {
-	funcName = gStrings.SnakeCase(funcName)
+func addSpecificMessage(r ruleSet, funcName, message string, child bool) {
+	funcName = strings.ReplaceAll(strings.ReplaceAll(gStrings.SnakeCase(funcName), "c_", ""), "child_", "")
 	if message != "" {
-		r.appendSpecificMessages(funcName, message)
+		if child {
+			r.getChildrenValidator().getRule().appendSpecificMessages(funcName, message)
+		} else {
+			r.appendSpecificMessages(funcName, message)
+		}
 	}
 }
 
 // Adds rules which are inside passed slice of strings called tag
-func applyRules(r ruleSet, tag []string, o *generatorS, orXor bool) (normalFuncName, funcName string) {
+func applyRules(r ruleSet, tag []string, o *generatorS, orXor bool) (normalFuncName, funcName string, child bool) {
 	normalFuncName = strings.TrimSpace(tag[0])
-	funcName = gStrings.PascalCase(normalFuncName)
+	if splits := strings.Split(normalFuncName, "."); len(splits) == 2 {
+		funcName = gStrings.PascalCase(splits[0]) + "." + gStrings.PascalCase(splits[1])
+		child = true
+	} else if len(splits) == 1 {
+		funcName = gStrings.PascalCase(normalFuncName)
+		child = false
+	} else {
+		panic(fmt.Sprintf("can't understand %s rule", normalFuncName))
+	}
 
 	parameters := []string{}
 	if len(tag) == 2 {
@@ -249,6 +261,12 @@ func applyRules(r ruleSet, tag []string, o *generatorS, orXor bool) (normalFuncN
 			params = append(params, item)
 		}
 		r.Choices(params...)
+	case "Child.Choices", "C.Choices":
+		params := []interface{}{}
+		for _, item := range parameters {
+			params = append(params, item)
+		}
+		r.Children(o.R().Choices(params...))
 	case "WhenExistOne":
 		r.WhenExistOne(parameters...)
 	case "WhenExistAll":

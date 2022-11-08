@@ -3,7 +3,7 @@
 
 import os, sys
 
-packages = ["tests"]
+packages = ["tests", "tests/tags"]
 
 for i in range(len(packages)):
     packages[i] = "./" + packages[i]

@@ -168,6 +168,12 @@ type (
 		getRequires() requires
 		// Returns name
 		getName() string
+		// Returns current validators + r.Validators
+		appendRuleSet(r ruleSet) ruleSet
+		// Returns passed argument name from struct if exist
+		get(name string) interface{}
+		// Sets passed argument value instead of existing in name parameter if exists
+		set(name string, value interface{})
 	}
 )
 
@@ -313,8 +319,12 @@ func (o *ruleSetS) Complex(rules Rules) ruleSet {
 }
 
 func (o *ruleSetS) Children(rule ruleSet) ruleSet {
-	v := &validatorS{rule: rule, rules: nil}
-	o.childrenValidator = v
+	if o.childrenValidator == nil {
+		v := &validatorS{rule: rule, rules: nil}
+		o.childrenValidator = v
+	} else {
+		o.childrenValidator.getRule().appendRuleSet(rule)
+	}
 	return o
 }
 
@@ -353,7 +363,11 @@ func (o *ruleSetS) XOR(ruleSets ...ruleSet) ruleSet {
 func (o *ruleSetS) Choices(choices ...interface{}) ruleSet {
 	functionName := "choices"
 	o.validators[functionName] = choicesRule(choices...)
-	o.addOption(functionName, "choices", "["+strings.ReplaceAll(fmt.Sprint(choices...), " ", ", ")+"]")
+	choicesString := []string{}
+	for i := 0; i < len(choices); i++ {
+		choicesString = append(choicesString, fmt.Sprint(choices[i]))
+	}
+	o.addOption(functionName, "choices", strings.ReplaceAll(fmt.Sprint(choicesString), " ", ", "))
 	return o
 }
 
@@ -474,4 +488,92 @@ func (o *ruleSetS) getRequires() requires {
 
 func (o *ruleSetS) getName() string {
 	return o.name
+}
+
+func (o *ruleSetS) appendRuleSet(r ruleSet) ruleSet {
+	rValidators := r.get("validators").(Validators)
+	for key, value := range rValidators {
+		o.validators[key] = value
+	}
+	rOptions := r.get("options").(options)
+	for key, value := range rOptions {
+		o.options[key] = value
+	}
+	rDeepValidator, ok := r.get("deepValidator").(Validator)
+	if ok && rDeepValidator != nil && o.deepValidator == nil {
+		o.deepValidator = rDeepValidator
+	} else if ok && o.deepValidator != nil && rDeepValidator != nil {
+		deepValidatorRuleSet := rDeepValidator.getRule()
+		o.deepValidator.getRule().appendRuleSet(deepValidatorRuleSet)
+	}
+	rChildrenValidator, ok := r.get("childrenValidator").(Validator)
+	if ok && rChildrenValidator != nil && o.childrenValidator == nil {
+		o.childrenValidator = rChildrenValidator
+	} else if ok && o.childrenValidator != nil && rChildrenValidator != nil {
+		childrenValidatorRuleSet := rChildrenValidator.getRule()
+		o.childrenValidator.getRule().appendRuleSet(childrenValidatorRuleSet)
+	}
+	rSpecificMessages := r.get("specificMessages").(Messages)
+	for key, value := range rSpecificMessages {
+		o.specificMessages[key] = value
+	}
+	if o.isOptional && !r.get("isOptional").(bool) {
+		o.isOptional = false
+	}
+	name := r.get("name").(string)
+	if name != "" && o.name == "" {
+		o.name = name
+	}
+	rRequires := r.get("requires").(requires)
+	for key, value := range rRequires {
+		o.requires[key] = value
+	}
+
+	return o
+}
+
+func (o *ruleSetS) get(name string) interface{} {
+	switch name {
+	case "childrenValidator":
+		return o.childrenValidator
+	case "deepValidator":
+		return o.deepValidator
+	case "isOptional":
+		return o.isOptional
+	case "name":
+		return o.name
+	case "options":
+		return o.options
+	case "requires":
+		return o.requires
+	case "specificMessages":
+		return o.specificMessages
+	case "validators":
+		return o.validators
+	default:
+		panic(fmt.Sprintf("there is no item as %s", name))
+	}
+}
+
+func (o *ruleSetS) set(name string, value interface{}) {
+	switch name {
+	case "childrenValidator":
+		o.childrenValidator = value.(Validator)
+	case "deepValidator":
+		o.deepValidator = value.(Validator)
+	case "isOptional":
+		o.isOptional = value.(bool)
+	case "name":
+		o.name = value.(string)
+	case "options":
+		o.options = value.(options)
+	case "requires":
+		o.requires = value.(requires)
+	case "specificMessages":
+		o.specificMessages = value.(Messages)
+	case "validators":
+		o.validators = value.(Validators)
+	default:
+		panic(fmt.Sprintf("there is no item as %s", name))
+	}
 }
