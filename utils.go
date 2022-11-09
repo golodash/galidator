@@ -107,7 +107,7 @@ func addTypeCheck(r ruleSet, kind reflect.Kind) {
 }
 
 // Passes messages to other validators
-func deepPassMessages(v Validator, messages Messages) {
+func deepPassMessages(v Validator, messages *Messages) {
 	v.setMessages(messages)
 	r := v.getRule()
 	if r != nil {

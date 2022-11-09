@@ -37,7 +37,7 @@ type (
 		// Returns rule
 		getRule() ruleSet
 		// Replaces passed messages with existing one
-		setMessages(messages Messages)
+		setMessages(messages *Messages)
 	}
 )
 
@@ -279,6 +279,6 @@ func (o *validatorS) getRule() ruleSet {
 	return o.rule
 }
 
-func (o *validatorS) setMessages(messages Messages) {
-	o.messages = &messages
+func (o *validatorS) setMessages(messages *Messages) {
+	o.messages = messages
 }

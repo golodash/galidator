@@ -8,13 +8,22 @@ import (
 type (
 	// A struct to implement generator interface
 	generatorS struct {
+		// Custom validators
 		customValidators Validators
+		// Custom error messages
+		messages Messages
 	}
 
 	// An interface to generate a validator or ruleSet
 	generator interface {
-		// Call this function before calling Validator function so that assigning custom validators can be possible
+		// Overrides current validators(if there is one) with passed validators
+		//
+		// Call this method before calling `generator.Validator` method to have effect
 		CustomValidators(validators Validators) generator
+		// Overrides current messages(if there is one) with passed messages
+		//
+		// Call this method before calling `generator.Validator` method to have effect
+		CustomMessages(messages Messages) generator
 		// Generates a validator interface which can be used to validate struct or map by some rules
 		//
 		// Please use CapitalCase for rules' keys (Important for getting data out of struct types)
@@ -35,10 +44,17 @@ func (o *generatorS) CustomValidators(validators Validators) generator {
 	return o
 }
 
+func (o *generatorS) CustomMessages(messages Messages) generator {
+	o.messages = messages
+	return o
+}
+
 func (o *generatorS) Validator(rule interface{}, errorMessages ...Messages) Validator {
-	var messages Messages = nil
+	var messages Messages = o.messages
 	if len(errorMessages) != 0 {
-		messages = errorMessages[0]
+		for key, value := range errorMessages[0] {
+			messages[key] = value
+		}
 	}
 	switch rule.(type) {
 	case ruleSet:
@@ -60,7 +76,7 @@ func (o *generatorS) Validator(rule interface{}, errorMessages ...Messages) Vali
 			panic("'rule' has to be a ruleSet or a struct instance")
 		}
 	}
-	deepPassMessages(output, messages)
+	deepPassMessages(output, &messages)
 
 	return output
 }
@@ -143,5 +159,8 @@ func (o *generatorS) R(name ...string) ruleSet {
 
 // Returns a Validator Generator
 func New() generator {
-	return &generatorS{}
+	return &generatorS{
+		messages:         Messages{},
+		customValidators: Validators{},
+	}
 }

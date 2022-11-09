@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: added CustomMessages method for generator
 * 🎉 feat: #1 feature added
 * 🐛 fix: #4
 
