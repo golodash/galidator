@@ -4,8 +4,12 @@ CHANGELOG
 UNRELEASED
 ----------
 
+
+1.0.0 (2022-11-09)
+------------------
+
 * 🎉 feat: added CustomMessages method for generator
-* 🎉 feat: #1 feature added
+* 🎉 feat: #1 feature added, added `c.` operator in tags to use when need to define rules for children of a slice element.
 * 🐛 fix: #4
 
 0.0.2 (2022-11-05)

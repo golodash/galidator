@@ -1,9 +1,9 @@
 # Galidator
 
 Galidator provides general use case for validation purpose.\
-You simply create a validator and validate your data with it.\
+Just simply create a validator and validate your data with it.\
 Either it returns `nil` which means that data is valid or not which means that there
-is a problem with passed data and validation has failed.
+is/are problem/problems with passed data and validation has failed.
 
 ## Installation
 
@@ -411,7 +411,114 @@ Output:
 false
 ```
 
+### Changing Default Error Messages
+
+1. Changing default error messages in generator layer:
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/golodash/galidator"
+)
+
+func main() {
+	g := galidator.New().CustomMessages(galidator.Messages{
+		"string": "$value is not string",
+	})
+	validator := g.Validator(g.R().String())
+
+	errors := validator.Validate(1)
+
+	fmt.Println(errors)
+	fmt.Println(errors == nil)
+}
+```
+
+output:
+```
+[1 is not string]
+```
+
+2. Changing default error messages in validator layer (This layer overrides generator error messages-if same value that is defined in other layers gets defined in this layer too):
+
+```go
+g := galidator.New().CustomMessages(galidator.Messages{
+   "string": "$value is not string",
+})
+validator := g.Validator(g.R().String(), galidator.Messages{
+   "string": "not",
+})
+```
+
+output:
+```
+[not]
+```
+
+3. Changing default error messages in ruleSet layer (This layer overrides generator and validator error messages-if same value that is defined in other layers gets defined in this layer too):
+
+```go
+g := galidator.New().CustomMessages(galidator.Messages{
+   "string": "$value is not string",
+})
+validator := g.Validator(g.R().String().SpecificMessages(galidator.Messages{
+		"string": "not valid",
+	}), galidator.Messages{
+	"string": "not",
+})
+```
+
+output:
+```
+[not valid]
+```
+
+### Defining `ruleSet` for Children of a Slice in Struct Tags
+
+If you need to define a rule for children of a slice in struct tags, you should use
+some proper prefix for those rules like: `c.` or `child.`\
+And have in mind that with adding two or more of these prefixes, you keep digging in
+deeper layers. like: `child.child.child.min` or `c.c.c.min` or `c.child.c.min` or... means go deep three slices and add `min` rule to children of the last slice.
+
+example:
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/golodash/galidator"
+)
+
+type numbers struct {
+	Numbers []int `g:"c.min=1,c.max=5" c.max:"$value is not <= $max" c.min:"$value is not >= $min"`
+}
+
+func main() {
+	g := galidator.New()
+	validator := g.Validator(numbers{})
+
+	fmt.Println(validator.Validate(numbers{
+		Numbers: []int{
+			1,
+			0,
+			5,
+			35,
+		},
+	}))
+}
+```
+
+output:
+```
+map[Numbers:map[1:[0 is not >= 1] 3:[35 is not <= 5]]]
+```
+
 ## At the end
 
-I don't really like documenting and I didn't really cover many features in these examples.\
+I don't really like documenting and I didn't really cover all features in these examples.\
 if anyone can do documentations of this project for me in a better way, I will appreciate it.
