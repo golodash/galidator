@@ -1,11 +1,13 @@
 package galidator
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
 
+	playgroundValidator "github.com/go-playground/validator/v10"
 	gStrings "github.com/golodash/godash/strings"
 )
 
@@ -26,20 +28,36 @@ type (
 		messages *Messages
 	}
 
+	// Used just in decryptErrors function
+	sliceValidationError []error
+
 	// Validator interface
 	Validator interface {
 		// Validates passed data and returns a map of possible validation errors happened on every field with failed validation.
 		//
 		// If no errors found, output will be nil
 		Validate(input interface{}) interface{}
+		// Decrypts errors returned from gin's Bind process and returns proper error messages
+		DecryptErrors(err error, returnUnmarshalErrorContext ...bool) interface{}
 		// Returns Rules
 		getRules() Rules
 		// Returns rule
 		getRule() ruleSet
 		// Replaces passed messages with existing one
 		setMessages(messages *Messages)
+		// Returns messages
+		getMessages() *Messages
 	}
 )
+
+var (
+	// Error message that will return when UnmarshalTypeError happens
+	UnmarshalError = "unmarshal error"
+)
+
+func (err sliceValidationError) Error() string {
+	return "error"
+}
 
 // Formats and returns error message associated with passed ruleKey
 func getErrorMessage(fieldName string, ruleKey string, value interface{}, options option, messages Messages, specificMessage Messages, defaultErrorMessages map[string]string) string {
@@ -262,6 +280,123 @@ func (o *validatorS) Validate(input interface{}) interface{} {
 		}
 	} else {
 		return []string{"invalid validator"}
+	}
+
+	if len(output) == 0 {
+		return nil
+	}
+
+	return output
+}
+
+func (o *validatorS) getMessages() *Messages {
+	return o.messages
+}
+
+func (o *validatorS) DecryptErrors(err error, returnUnmarshalErrorContext ...bool) interface{} {
+	if err == nil {
+		return nil
+	}
+
+	unmarshalError := false
+	if len(returnUnmarshalErrorContext) > 0 {
+		unmarshalError = returnUnmarshalErrorContext[0]
+	}
+
+	return decryptErrors(err, o, unmarshalError)
+}
+
+func getFieldName(path string) string {
+	return strings.SplitN(path, ".", 2)[0]
+}
+
+func decryptPath(path string, v Validator, errorField playgroundValidator.FieldError) interface{} {
+	var (
+		fieldName = ""
+		output    = map[string]interface{}{}
+	)
+	splits := strings.SplitN(path, ".", 2)
+	fieldName = splits[0]
+	if len(splits) == 2 {
+		path = splits[1]
+	} else {
+		path = ""
+	}
+	if path == "" {
+		if rs := v.getRules(); len(rs) != 0 {
+			if r, ok := rs[fieldName]; ok {
+				if r.getName() != "" {
+					fieldName = r.getName()
+				}
+				return getErrorMessage(fieldName, errorField.Tag(), errorField.Value(), r.getOption(errorField.Tag()), *v.getMessages(), r.getSpecificMessages(), defaultValidatorErrorMessages)
+			} else {
+				panic("error structure does not match with validator structure")
+			}
+		} else {
+			panic("error structure does not match with validator structure")
+		}
+	} else if rs := v.getRules(); len(rs) != 0 {
+		if r, ok := rs[fieldName]; ok {
+			if deep := r.getDeepValidator(); deep != nil {
+				if r.getName() != "" {
+					fieldName = r.getName()
+				}
+				output[fieldName] = decryptPath(path, deep, errorField)
+			} else {
+				panic("error structure does not match with validator structure")
+			}
+		} else {
+			panic("error structure does not match with validator structure")
+		}
+	} else {
+		panic("error structure does not match with validator structure")
+	}
+
+	return output
+}
+
+func decryptErrors(err error, v Validator, unmarshalError bool) interface{} {
+	output := map[string]interface{}{}
+	if e, ok := err.(playgroundValidator.ValidationErrors); ok {
+		for i := 0; i < len(e); i++ {
+			errorField := e[i]
+			splits := strings.SplitN(errorField.StructNamespace(), ".", 2)
+			path := splits[1]
+			out := decryptPath(path, v, errorField)
+			if outMap, ok := out.(map[string]interface{}); ok && len(outMap) != 0 {
+				for key, value := range outMap {
+					output[key] = value
+				}
+			} else if outString, ok := out.(string); ok {
+				name := getFieldName(path)
+				if r := v.getRules()[name]; r != nil && r.getName() != "" {
+					name = r.getName()
+				}
+				output[name] = outString
+			}
+		}
+	} else if e, ok := err.(sliceValidationError); ok {
+		for i := 0; i < len(e); i++ {
+			if r := v.getRule(); r != nil {
+				if deep := r.getDeepValidator(); deep != nil {
+					if out := decryptErrors(e[i], deep, unmarshalError); out != nil {
+						output[strconv.Itoa(i)] = out
+					}
+				} else {
+					panic("error structure does not match with validator structure")
+				}
+			} else {
+				panic("error structure does not match with validator structure")
+			}
+		}
+	} else if e, ok := err.(*json.UnmarshalTypeError); ok {
+		if unmarshalError {
+			return e.Error()
+		} else {
+			return UnmarshalError
+		}
+	} else {
+		panic("passed error is not supported, errors returned from methods like BindJson(in gin framework) is supported")
 	}
 
 	if len(output) == 0 {

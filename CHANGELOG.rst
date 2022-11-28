@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: support for errors returned from gin's Bind actions added
 
 1.0.0 (2022-11-09)
 ------------------

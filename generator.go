@@ -122,6 +122,14 @@ func (o *generatorS) validator(input interface{}) Validator {
 					addSpecificMessage(r, normalFuncName, elementT.Tag.Get(normalFuncName))
 				}
 			}
+
+			// Support for binding tag that is used for Bind actions
+			if bindingTags := elementT.Tag.Get("binding"); bindingTags != "" {
+				splits := strings.Split(bindingTags, ",")
+				for j := 0; j < len(splits); j++ {
+					addSpecificMessage(r, splits[j], elementT.Tag.Get(splits[j]))
+				}
+			}
 			rules[elementT.Name] = r
 		}
 
