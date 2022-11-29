@@ -518,6 +518,54 @@ output:
 map[Numbers:map[1:[0 is not >= 1] 3:[35 is not <= 5]]]
 ```
 
+### Use Galidator to Change Gin's Bind Method Error Output
+
+You can choose not to use galidator and it's validation process but instead use `Bind` method or other
+acronym's for `Bind` like: `BindJson` for validation process and just use galidator to change output
+error messages of it.
+
+Example:
+
+```go
+type login struct {
+	Username string `json:"username" binding:"required" required:"$field is required"`
+	Password string `json:"password"`
+}
+
+var (
+	g = galidator.New()
+	validator = g.Validator(login{})
+)
+
+func test(c *gin.Context) {
+	req := &login{}
+
+	// Parse json
+	if err := c.BindJSON(req); err != nil {
+		c.JSON(400, gin.H{
+			// This is the part which generates that output
+			"message": validator.DecryptErrors(err),
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"good": 200,
+	})
+}
+
+func main() {
+	r := gin.Default()
+	r.POST("/", test)
+	r.Run("127.0.0.1:3000")
+}
+```
+
+If you don't send `username` or send it empty in request body, this message returns:
+```
+{"message":{"username":"username is required"}}
+```
+
 ## At the end
 
 I don't really like documenting and I didn't really cover all features in these examples.\

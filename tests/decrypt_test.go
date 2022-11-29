@@ -57,7 +57,7 @@ func TestDecryptErrors(t *testing.T) {
 		check(t, "{\"message\":\"unmarshal error\"}", string(responseData))
 	})
 	t.Run("fine", func(t *testing.T) {
-		jsonValue, _ := json.Marshal(login{Username: ""})
+		jsonValue, _ := json.Marshal(login{Username: "sd"})
 		req, _ := http.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)

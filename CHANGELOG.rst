@@ -4,8 +4,12 @@ CHANGELOG
 UNRELEASED
 ----------
 
+
+1.1.0 (2022-11-29)
+------------------
+
 * ✅ test: test cases for new feature added
-* 🎉 feat: support for errors returned from gin's Bind actions added
+* 🎉 feat: support for errors returned from [gin](https://github.com/gin-gonic/gin)'s Bind actions added
 
 1.0.0 (2022-11-09)
 ------------------
