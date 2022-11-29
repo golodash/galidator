@@ -12,7 +12,7 @@ import (
 )
 
 type login struct {
-	Username string `json:"username" binding:"required" required:"this is required"`
+	Username string `json:"username" binding:"required" required:"$field is required"`
 	Password string `json:"password"`
 }
 
@@ -46,7 +46,7 @@ func TestDecryptErrors(t *testing.T) {
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
 		responseData, _ := ioutil.ReadAll(w.Body)
-		check(t, "{\"message\":{\"username\":\"this is required\"}}", string(responseData))
+		check(t, "{\"message\":{\"username\":\"username is required\"}}", string(responseData))
 	})
 	t.Run("wrong_data", func(t *testing.T) {
 		jsonValue, _ := json.Marshal([]login{{Username: "dasewae"}})
@@ -57,7 +57,7 @@ func TestDecryptErrors(t *testing.T) {
 		check(t, "{\"message\":\"unmarshal error\"}", string(responseData))
 	})
 	t.Run("fine", func(t *testing.T) {
-		jsonValue, _ := json.Marshal(login{Username: "dasewae"})
+		jsonValue, _ := json.Marshal(login{Username: ""})
 		req, _ := http.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
