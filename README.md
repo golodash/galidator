@@ -36,7 +36,7 @@ import (
 
 func main() {
 	g := galidator.New()
-	validator := g.Validator(g.R().Complex(galidator.Rules{
+	validator := g.Validator(g.ComplexValidator(galidator.Rules{
 		"Username": g.R("username").Required().Min(3).Max(32),
 		"Password": g.R("password").Required().Password(),
 		"Email":    g.R("email").Required().Email(),
@@ -194,7 +194,7 @@ import (
 func main() {
 	g := galidator.New()
 	validator := g.Validator(g.R().Children(
-		g.R().Complex(galidator.Rules{
+		g.ComplexValidator(galidator.Rules{
 			"Username": g.R("username").Required().Min(3).Max(32),
 			"Password": g.R("password").Required().Password().SpecificMessages(galidator.Messages{"password": "$field failed"}),
 			"Email":    g.R("email").Required().Email(),
@@ -305,7 +305,7 @@ import (
 
 func main() {
 	g := galidator.New()
-	v := g.Validator(g.R().Complex(galidator.Rules{
+	v := g.Validator(g.ComplexValidator(galidator.Rules{
 		"Username": g.R("username").String(),
 		"Password": g.R("password").String(),
 		"Data":     g.R("data").WhenExistAll("Username", "Password").String().SpecificMessages(galidator.Messages{"when_exist_all": "when_exist_all failed"}),

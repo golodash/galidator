@@ -4,6 +4,10 @@ CHANGELOG
 UNRELEASED
 ----------
 
+
+1.1.1 (2022-12-11)
+------------------
+
 * ✅ test: added test cases for ComplexValidator method
 * 🎉 feat: ComplexValidator added to Generator for creating a complex(struct or map) from zero level
 
