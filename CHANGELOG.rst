@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: ComplexValidator added to Generator for creating a complex(struct or map) from zero level
 
 1.1.0 (2022-11-29)
 ------------------

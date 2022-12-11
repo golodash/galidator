@@ -36,6 +36,8 @@ type (
 		RuleSet(name ...string) ruleSet
 		// An alias for RuleSet function
 		R(name ...string) ruleSet
+		// Generates a complex validator to validate maps and structs
+		ComplexValidator(rules Rules, messages ...Messages) Validator
 	}
 )
 
@@ -163,6 +165,17 @@ func (o *generatorS) RuleSet(name ...string) ruleSet {
 
 func (o *generatorS) R(name ...string) ruleSet {
 	return o.RuleSet(name...)
+}
+
+func (o *generatorS) ComplexValidator(rules Rules, errorMessages ...Messages) Validator {
+	var messages Messages = o.messages
+	if len(errorMessages) != 0 {
+		for key, value := range errorMessages[0] {
+			messages[key] = value
+		}
+	}
+
+	return &validatorS{rule: nil, rules: rules, messages: &messages}
 }
 
 // Returns a Validator Generator
