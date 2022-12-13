@@ -570,3 +570,7 @@ If you don't send `username` or send it empty in request body, this message retu
 
 I don't really like documenting and I didn't really cover all features in these examples.\
 if anyone can do documentations of this project for me in a better way, I will appreciate it.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=golodash/galidator&type=Date)](https://star-history.com/#golodash/galidator&Date)
