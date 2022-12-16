@@ -38,6 +38,12 @@ type (
 		// If no errors found, output will be nil
 		Validate(input interface{}) interface{}
 		// Decrypts errors returned from gin's Bind process and returns proper error messages
+		//
+		// If returnUnmarshalErrorContext is true (default is true), if an error happened when
+		// unmarshal process was happening, `UnmarshalError` message will return like: {"message":"unmarshal error"}
+		//
+		// If returnUnmarshalErrorContext is false, actual error message which tells you what went wrong
+		// will return
 		DecryptErrors(err error, returnUnmarshalErrorContext ...bool) interface{}
 		// Returns Rules
 		getRules() Rules
@@ -50,7 +56,7 @@ type (
 	}
 )
 
-var (
+const (
 	// Error message that will return when UnmarshalTypeError happens
 	UnmarshalError = "unmarshal error"
 )

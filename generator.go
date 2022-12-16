@@ -3,6 +3,8 @@ package galidator
 import (
 	"reflect"
 	"strings"
+
+	"github.com/golodash/godash/generals"
 )
 
 type (
@@ -24,10 +26,12 @@ type (
 		//
 		// Call this method before calling `generator.Validator` method to have effect
 		CustomMessages(messages Messages) generator
-		// Generates a validator interface which can be used to validate struct or map by some rules
+		// Generates a validator interface which can be used to validate struct or map by some rules.
+		//
+		// `input` can be a ruleSet or a struct instance.
 		//
 		// Please use CapitalCase for rules' keys (Important for getting data out of struct types)
-		Validator(rule interface{}, messages ...Messages) Validator
+		Validator(input interface{}, messages ...Messages) Validator
 		// Generates a validator interface which can be used to validate struct or map or slice by passing an instance of them
 		validator(input interface{}) Validator
 		// Generates a ruleSet to validate passed information
@@ -70,7 +74,7 @@ func (o *generatorS) Validator(rule interface{}, errorMessages ...Messages) Vali
 	var output Validator = nil
 	switch v := rule.(type) {
 	case ruleSet:
-		output = &validatorS{rule: v, rules: nil, messages: &messages}
+		output = &validatorS{rule: v, rules: nil, messages: nil}
 	default:
 		if reflect.TypeOf(v).Kind() == reflect.Struct || reflect.TypeOf(v).Kind() == reflect.Slice {
 			output = o.validator(v)
@@ -78,7 +82,7 @@ func (o *generatorS) Validator(rule interface{}, errorMessages ...Messages) Vali
 			panic("'rule' has to be a ruleSet or a struct instance")
 		}
 	}
-	deepPassMessages(output, &messages)
+	deepPassMessages(output, generals.Duplicate(messages).(Messages))
 
 	return output
 }
@@ -174,14 +178,26 @@ func (o *generatorS) ComplexValidator(rules Rules, errorMessages ...Messages) Va
 			messages[key] = value
 		}
 	}
+	output := &validatorS{rule: nil, rules: rules, messages: nil}
 
-	return &validatorS{rule: nil, rules: rules, messages: &messages}
+	deepPassMessages(output, generals.Duplicate(messages).(Messages))
+	return output
 }
 
-// Returns a Validator Generator
-func New() generator {
+// Returns a new Generator
+func NewGenerator() generator {
 	return &generatorS{
 		messages:         Messages{},
 		customValidators: Validators{},
 	}
+}
+
+// An alias for `NewGenerator` funcion
+func New() generator {
+	return NewGenerator()
+}
+
+// An alias for `NewGenerator` funcion
+func G() generator {
+	return NewGenerator()
 }

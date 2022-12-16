@@ -2,7 +2,7 @@
 
 Galidator provides general use case for validation purpose.\
 Just simply create a validator and validate your data with it.\
-Either it returns `nil` which means that data is valid or not which means that there
+Either it returns `nil` which means that data is valid and your rules all passed or not which means that there
 is/are problem/problems with passed data and validation has failed.
 
 ## Installation
@@ -19,7 +19,144 @@ And then just import the package into your own code.
 import "github.com/golodash/galidator"
 ```
 
-## Example Usage
+## Generator
+
+### What is a Generator?
+
+Generator is a validator generator which creates them under some common circumstances.\
+For example, with `generator.CustomMessages` method you can change default error messages of rules for every other validator that is gonna get created with this generator.
+
+With this mechanism, you can change some default behavior even before attempting to create your validator.
+
+### How to Create A Generator?
+
+```go
+var g = galidator.NewGenerator()
+or
+var g = galidator.New()
+or
+var g = galidator.G()
+```
+
+All three does the same.
+
+## Validator
+
+### What is a Validator?
+
+Validator is a `galidator.Validator` interface that gets created under some circumstances that its generator defines + common environmental variables of galidator defines + your specified rules.
+
+### How to Create a Validator?
+
+To create a validator, first you need to create a unique generator instance and then use generator to call a method to create your validator.
+
+1. `Validator(input interface{}, messages ...Messages) Validator`:
+   1. `input` can be a `ruleSet`. (which gets created by `generator.R() or generator.RuleSet()`)\
+	Example down here accepts just an email string:
+	```go
+	var g = galidator.G()
+	var validator = g.Validator(g.R().Email())
+	```
+   2. `input` can be a `struct instance` with tags that define rules on every field.\
+    Example down here accepts a map or a struct which has a `Email` key and a value which is a valid email:
+	```go
+	type user struct {
+		Email string `galidator:"email"` // instead of `galidator:"email"`, `g:"email"` can be used
+	}
+	var g = galidator.G()
+	var validator = g.Validator(user{})
+	```
+   3. `messages` input type is obvious and is used to replace common error messages on rules for just this validator.
+
+2. `ComplexValidator(rules Rules, messages ...Messages) Validator`:
+   - Generates a struct/map validator.\
+	Mostly used for complex scenarios that start with a struct or map view.
+	```go
+	var g = galidator.G()
+	var validator = g.ComplexValidator(galidator.Rules{
+		"Name":        g.RuleSet("name").Required(),
+		"Description": g.RuleSet("description").Required(),
+	})
+	```
+
+### How to Validate?
+
+Simply just create your validator with one of the top discussed methods and then:
+
+```go
+var g = galidator.G()
+var emailValidator = g.Validator(g.R().Email())
+
+func main() {
+	input1 := "valid@email.com"
+	input2 := "invalidEmail.com"
+
+	output1 := emailValidator.Validate(input1)
+	output2 := emailValidator.Validate(input2)
+
+	fmt.Println(output1)
+	fmt.Println(output2)
+}
+```
+
+output:
+```
+<nil>
+[not a valid email address]
+```
+
+And that's it, just to get better, see more examples down here.
+
+## Just For [Gin](https://github.com/gin-gonic/gin) Users
+
+### Use Galidator Just to Customize [Gin](https://github.com/gin-gonic/gin)'s Bind Method Error Outputs
+
+You can choose not to use galidator and it's validation process but instead use `Bind` method of [Gin](https://github.com/gin-gonic/gin) or other acronym's for `Bind` like: `BindJson` for validation process and just use galidator to change output error messages of it.
+
+Example of using galidator inside a gin project:
+
+```go
+type login struct {
+	Username string `json:"username" binding:"required" required:"$field is required"`
+	Password string `json:"password"`
+}
+
+var (
+	g = galidator.New()
+	validator = g.Validator(login{})
+)
+
+func test(c *gin.Context) {
+	req := &login{}
+
+	// Parse json
+	if err := c.BindJSON(req); err != nil {
+		c.JSON(400, gin.H{
+			// This is the part which generates that output
+			"message": validator.DecryptErrors(err),
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"good": 200,
+	})
+}
+
+func main() {
+	r := gin.Default()
+	r.POST("/", test)
+	r.Run("127.0.0.1:3000")
+}
+```
+
+If you don't send `username` or send it empty in json request body, this message returns:
+```
+{"message":{"username":"username is required"}}
+```
+
+
+## Examples
 
 ### Simple Usage(Register a User)
 
@@ -517,59 +654,6 @@ output:
 ```
 map[Numbers:map[1:[0 is not >= 1] 3:[35 is not <= 5]]]
 ```
-
-### Use Galidator to Change Gin's Bind Method Error Output
-
-You can choose not to use galidator and it's validation process but instead use `Bind` method or other
-acronym's for `Bind` like: `BindJson` for validation process and just use galidator to change output
-error messages of it.
-
-Example:
-
-```go
-type login struct {
-	Username string `json:"username" binding:"required" required:"$field is required"`
-	Password string `json:"password"`
-}
-
-var (
-	g = galidator.New()
-	validator = g.Validator(login{})
-)
-
-func test(c *gin.Context) {
-	req := &login{}
-
-	// Parse json
-	if err := c.BindJSON(req); err != nil {
-		c.JSON(400, gin.H{
-			// This is the part which generates that output
-			"message": validator.DecryptErrors(err),
-		})
-		return
-	}
-
-	c.JSON(200, gin.H{
-		"good": 200,
-	})
-}
-
-func main() {
-	r := gin.Default()
-	r.POST("/", test)
-	r.Run("127.0.0.1:3000")
-}
-```
-
-If you don't send `username` or send it empty in request body, this message returns:
-```
-{"message":{"username":"username is required"}}
-```
-
-## At the end
-
-I don't really like documenting and I didn't really cover all features in these examples.\
-if anyone can do documentations of this project for me in a better way, I will appreciate it.
 
 ## Star History
 
