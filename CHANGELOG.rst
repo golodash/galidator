@@ -4,6 +4,11 @@ CHANGELOG
 UNRELEASED
 ----------
 
+1.1.2 (2022-12-16)
+------------------
+
+* 🐛 fix: some odd behaviors of creating a validator from a generator fixed
+* 📖 docs: documentation updated
 
 1.1.1 (2022-12-11)
 ------------------
