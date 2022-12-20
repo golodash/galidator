@@ -3,7 +3,7 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -45,7 +45,7 @@ func TestDecryptErrors(t *testing.T) {
 		req, _ := http.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
-		responseData, _ := ioutil.ReadAll(w.Body)
+		responseData, _ := io.ReadAll(w.Body)
 		check(t, "{\"message\":{\"username\":\"username is required\"}}", string(responseData))
 	})
 	t.Run("wrong_data", func(t *testing.T) {
@@ -53,7 +53,7 @@ func TestDecryptErrors(t *testing.T) {
 		req, _ := http.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
-		responseData, _ := ioutil.ReadAll(w.Body)
+		responseData, _ := io.ReadAll(w.Body)
 		check(t, "{\"message\":\"unmarshal error\"}", string(responseData))
 	})
 	t.Run("fine", func(t *testing.T) {
@@ -61,7 +61,7 @@ func TestDecryptErrors(t *testing.T) {
 		req, _ := http.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
-		responseData, _ := ioutil.ReadAll(w.Body)
+		responseData, _ := io.ReadAll(w.Body)
 		check(t, "{\"good\":200}", string(responseData))
 	})
 }
