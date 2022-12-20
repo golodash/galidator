@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: translator feature added
 1.1.2 (2022-12-16)
 ------------------
 

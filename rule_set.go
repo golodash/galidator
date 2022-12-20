@@ -155,7 +155,7 @@ type (
 		// Returns true if deepValidator is not nil
 		hasDeepValidator() bool
 		// Validates deepValidator
-		validateDeepValidator(input interface{}) interface{}
+		validateDeepValidator(input interface{}, translator func(string) string) interface{}
 		// Replaces passed validator with existing childrenValidator
 		setChildrenValidator(input Validator)
 		// Returns childrenValidator
@@ -163,7 +163,7 @@ type (
 		// Returns true if children is not nil
 		hasChildrenValidator() bool
 		// Validates childrenValidator
-		validateChildrenValidator(input interface{}) interface{}
+		validateChildrenValidator(input interface{}, translator func(string) string) interface{}
 		// Returns requires
 		getRequires() requires
 		// Returns name
@@ -428,8 +428,8 @@ func (o *ruleSetS) hasChildrenValidator() bool {
 	return o.childrenValidator != nil
 }
 
-func (o *ruleSetS) validateChildrenValidator(input interface{}) interface{} {
-	return o.childrenValidator.Validate(input)
+func (o *ruleSetS) validateChildrenValidator(input interface{}, translator func(string) string) interface{} {
+	return o.childrenValidator.Validate(input, translator)
 }
 
 func (o *ruleSetS) validate(input interface{}) []string {
@@ -482,8 +482,8 @@ func (o *ruleSetS) hasDeepValidator() bool {
 	return o.deepValidator != nil
 }
 
-func (o *ruleSetS) validateDeepValidator(input interface{}) interface{} {
-	return o.deepValidator.Validate(input)
+func (o *ruleSetS) validateDeepValidator(input interface{}, translator func(string) string) interface{} {
+	return o.deepValidator.Validate(input, translator)
 }
 
 func (o *ruleSetS) getRequires() requires {
