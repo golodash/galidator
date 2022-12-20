@@ -107,9 +107,9 @@ output:
 
 And that's it, just to get better, see more examples down here.
 
-## Just For [Gin](https://github.com/gin-gonic/gin) Users
+# Just For [Gin](https://github.com/gin-gonic/gin) Users
 
-### Use Galidator Just to Customize [Gin](https://github.com/gin-gonic/gin)'s Bind Method Error Outputs
+## 1. Use Galidator Just to Customize [Gin](https://github.com/gin-gonic/gin)'s Bind Method Error Outputs
 
 You can choose not to use galidator and it's validation process but instead use `Bind` method of [Gin](https://github.com/gin-gonic/gin) or other acronym's for `Bind` like: `BindJson` for validation process and just use galidator to change output error messages of it.
 
@@ -122,7 +122,7 @@ type login struct {
 }
 
 var (
-	g = galidator.New()
+	g = galidator.G()
 	validator = g.Validator(login{})
 )
 
@@ -155,10 +155,88 @@ If you don't send `username` or send it empty in json request body, this message
 {"message":{"username":"username is required"}}
 ```
 
+## 2. Translate Error Output to Different Languages in [Gin]((https://github.com/gin-gonic/gin))
 
-## Examples
+If you need to translate output error messages for different languages in a gin project, use this template:
 
-### Simple Usage(Register a User)
+```go
+type login struct {
+	Username string `json:"username" g:"required" required:"$field is required"`
+	Password string `json:"password"`
+}
+
+var (
+	g            = galidator.New()
+	validator    = g.Validator(login{})
+	// Persian Language Dictionary
+	faDictionary = map[string]string{
+		"$field is required": "$field نمیتواند خالی باشد",
+	}
+)
+
+// Persian Language Translator
+func PersianTranslator(input string) string {
+	if translated, ok := faDictionary[input]; ok {
+		return translated
+	}
+	return input
+}
+
+// Middleware that assigns a translator requested by user
+func customizeTranslator(c *gin.Context) {
+	languageCode := c.GetHeader("Accept-Language")
+	if languageCode == "fa" {
+		c.Set("translator", PersianTranslator)
+	} else {
+		c.Set("translator", func(input string) string { return input })
+	}
+	c.Next()
+}
+
+// Main Handler
+func loginHandler(c *gin.Context) {
+	req := &login{}
+	translator := c.MustGet("translator").(func(string) string)
+
+	// Parse json
+	if err := c.BindJSON(req); err != nil {
+		c.JSON(400, gin.H{
+			"message": "bad json",
+		})
+		return
+	}
+
+	// Validation
+	if errors := validator.Validate(req, translator); errors != nil {
+		c.JSON(400, gin.H{
+			"errors":  errors,
+			"message": "bad inputs",
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"good": 200,
+	})
+}
+
+func main() {
+	r := gin.Default()
+	groupWithMiddleware := r.Group("/", customizeTranslator)
+	groupWithMiddleware.POST("/", loginHandler)
+	r.Run("127.0.0.1:3000")
+}
+```
+
+Now if you make a post request to http://127.0.0.1:3000 url when having `Accept-Language` header with `fa` value assigned to it, and in request body do not specify username field or specify it's value as an empty string, this will be the output:
+
+```
+{"errors":{"username":["username نمیتواند خالی باشد"]},"message": "bad inputs"}
+```
+
+# Examples
+
+## Simple Usage(Register a User)
 
 Lets validate a register form:
 
@@ -270,7 +348,7 @@ func main() {
 }
 ```
 
-### Receive a list of users
+## Receive a list of users
 
 ```go
 package main
@@ -357,7 +435,7 @@ func main() {
 }
 ```
 
-### OR
+## OR
 
 In this example, input has to be either an email address or just a string longer equal to 5 characters or both.
 
@@ -390,7 +468,7 @@ Output:
 true
 ```
 
-### XOR
+## XOR
 
 In this example, input has to be either an email address or phone number.
 
@@ -423,7 +501,7 @@ Output:
 true
 ```
 
-### WhenExistAll - WhenExistOne
+## WhenExistAll - WhenExistOne
 
 In this example, if two other struct fields(`Username` and `Password`) are not empty,
 nil or zero, field will act as a required field and all of its rules will get checked.\
@@ -465,7 +543,7 @@ map[data:[when_exist_all failed]]
 false
 ```
 
-### Custom Validator
+## Custom Validator
 
 ```go
 package main
@@ -516,7 +594,7 @@ map[username:[username is duplicate]]
 false
 ```
 
-### LenRange
+## LenRange
 
 LenRange can be used in a struct tag like: `g:"len_range=3&5" len_range="len_range failed"`
 
@@ -548,7 +626,7 @@ Output:
 false
 ```
 
-### Changing Default Error Messages
+## Changing Default Error Messages
 
 1. Changing default error messages in generator layer:
 
@@ -613,7 +691,7 @@ output:
 [not valid]
 ```
 
-### Defining `ruleSet` for Children of a Slice in Struct Tags
+## Defining `ruleSet` for Children of a Slice in Struct Tags
 
 If you need to define a rule for children of a slice in struct tags, you should use
 some proper prefix for those rules like: `c.` or `child.`\
@@ -655,6 +733,38 @@ output:
 map[Numbers:map[1:[0 is not >= 1] 3:[35 is not <= 5]]]
 ```
 
-## Star History
+## Translator
+
+When calling `Validator.Validate` method with your data, you can pass a translator function to translate output of error messages to your desired language.
+
+For example:
+
+```go
+var (
+	g = galidator.G()
+	validator = g.Validator(g.R().Required())
+	translates = map[string]string{
+    	"required": "this is required and it is translated",
+	}
+)
+
+func translator(input string) string {
+	if out, ok := translates[input]; ok {
+		return out
+	}
+	return input
+}
+
+func main() {
+	fmt.Println(validator.Validate(nil, translator))
+}
+```
+
+output:
+```go
+[this is required and it is translated]
+```
+
+# Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=golodash/galidator&type=Date)](https://star-history.com/#golodash/galidator&Date)
