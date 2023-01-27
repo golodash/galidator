@@ -47,6 +47,10 @@ type (
 		// If returnUnmarshalErrorContext is false, actual error message which tells you what went wrong
 		// will return
 		DecryptErrors(err error, returnUnmarshalErrorContext ...bool) interface{}
+		// Sets passed default values if value field is nil
+		SetDefaultOnNil(input interface{}, defaultValue interface{})
+		// Sets passed default values if value field is zero
+		SetDefault(input interface{}, defaultValue interface{})
 		// Returns Rules
 		getRules() Rules
 		// Returns rule
@@ -148,7 +152,7 @@ func (o *validatorS) Validate(input interface{}, translator ...Translator) inter
 				}
 
 				if !valueOnKeyInput.IsValid() {
-					valueOnKeyInput = inputValue.MapIndex(reflect.ValueOf(fieldName))
+					valueOnKeyInput = inputValue.FieldByName(fieldName)
 				}
 				if !valueOnKeyInput.IsValid() {
 					panic(fmt.Sprintf("value on %s is not valid", fieldName))
@@ -319,6 +323,111 @@ func (o *validatorS) DecryptErrors(err error, returnUnmarshalErrorContext ...boo
 	}
 
 	return decryptErrors(err, o, unmarshalError)
+}
+
+func (o *validatorS) SetDefaultOnNil(input interface{}, defaultValue interface{}) {
+	if reflect.TypeOf(input).Kind() != reflect.Ptr {
+		panic("Please send data as a pointer like: &input")
+	}
+
+	o.setDefaultOn(input, defaultValue, true, false)
+}
+
+func (o *validatorS) SetDefault(input interface{}, defaultValue interface{}) {
+	if reflect.TypeOf(input).Kind() != reflect.Ptr {
+		panic("Please send data as a pointer like: &input")
+	}
+
+	o.setDefaultOn(input, defaultValue, false, true)
+}
+
+func (o *validatorS) setDefaultOn(input interface{}, defaultInput interface{}, onNil, onZero bool) {
+	inputValue := reflect.ValueOf(input).Elem()
+	defaultValue := reflect.ValueOf(defaultInput)
+
+	if o.rules != nil {
+		switch inputValue.Type().Kind() {
+		case reflect.Struct:
+			for fieldName, ruleSet := range o.rules {
+				valueOnKeyInput := inputValue.FieldByName(fieldName)
+				valueOnDefaultKeyInput := defaultValue.FieldByName(fieldName)
+				if ruleSet.getName() != "" {
+					fieldName = ruleSet.getName()
+				}
+
+				if !valueOnKeyInput.IsValid() {
+					valueOnKeyInput = inputValue.FieldByName(fieldName)
+				}
+				if !valueOnDefaultKeyInput.IsValid() {
+					valueOnDefaultKeyInput = defaultValue.FieldByName(fieldName)
+				}
+				if !valueOnKeyInput.IsValid() || !valueOnDefaultKeyInput.IsValid() {
+					panic(fmt.Sprintf("value on %s is not valid", fieldName))
+				}
+
+				value := valueOnKeyInput.Interface()
+				if (onNil && isNil(value)) || (onZero && !nonZeroRule(value)) {
+					valueOnKeyInput.Set(valueOnDefaultKeyInput)
+				} else {
+					if ruleSet.hasDeepValidator() && (mapRule(value) || structRule(value) || sliceRule(value)) {
+						deepValidator := ruleSet.getDeepValidator()
+
+						if onNil {
+							deepValidator.SetDefaultOnNil(valueOnKeyInput.Interface(), valueOnDefaultKeyInput.Interface())
+						} else if onZero {
+							deepValidator.SetDefault(valueOnKeyInput.Interface(), valueOnDefaultKeyInput.Interface())
+						}
+					}
+				}
+			}
+		case reflect.Map:
+			for fieldName, ruleSet := range o.rules {
+				valueOnKeyInput := inputValue.MapIndex(reflect.ValueOf(fieldName))
+				valueOnDefaultKeyInput := defaultValue.MapIndex(reflect.ValueOf(fieldName))
+				if ruleSet.getName() != "" {
+					fieldName = ruleSet.getName()
+				}
+
+				if !valueOnKeyInput.IsValid() {
+					valueOnKeyInput = inputValue.MapIndex(reflect.ValueOf(fieldName))
+				}
+				if !valueOnDefaultKeyInput.IsValid() {
+					valueOnDefaultKeyInput = defaultValue.MapIndex(reflect.ValueOf(fieldName))
+				}
+				if !valueOnKeyInput.IsValid() || !valueOnDefaultKeyInput.IsValid() {
+					panic(fmt.Sprintf("value on %s is not valid", fieldName))
+				}
+
+				value := valueOnKeyInput.Interface()
+				if (onNil && isNil(value)) || (onZero && !nonZeroRule(value)) {
+					valueOnKeyInput.Set(valueOnDefaultKeyInput)
+				} else {
+					if ruleSet.hasDeepValidator() && (mapRule(value) || structRule(value) || sliceRule(value)) {
+						deepValidator := ruleSet.getDeepValidator()
+
+						if onNil {
+							deepValidator.SetDefaultOnNil(valueOnKeyInput.Interface(), valueOnDefaultKeyInput.Interface())
+						} else if onZero {
+							deepValidator.SetDefault(valueOnKeyInput.Interface(), valueOnDefaultKeyInput.Interface())
+						}
+					}
+				}
+			}
+		default:
+			return
+		}
+	} else if o.rule != nil {
+		value := inputValue.Interface()
+		if o.rule.hasDeepValidator() && (mapRule(value) || structRule(value) || sliceRule(value)) {
+			deepValidator := o.rule.getDeepValidator()
+
+			if onNil {
+				deepValidator.SetDefaultOnNil(value, defaultInput)
+			} else if onZero {
+				deepValidator.SetDefault(value, defaultInput)
+			}
+		}
+	}
 }
 
 func getFieldName(path string) string {

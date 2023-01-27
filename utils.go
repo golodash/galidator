@@ -22,7 +22,7 @@ func determinePrecision(number float64) string {
 
 // Returns true if input is nil
 func isNil(input interface{}) bool {
-	return input == nil
+	return !reflect.ValueOf(input).IsValid() || input == nil || (reflect.TypeOf(input).Kind() == reflect.Ptr && reflect.ValueOf(input).IsNil())
 }
 
 // Returns true if input is map or slice and has 0 elements

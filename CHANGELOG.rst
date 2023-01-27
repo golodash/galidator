@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: added a new function to use in patch method
 
 1.2.0 (2022-12-20)
 ------------------
