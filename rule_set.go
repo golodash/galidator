@@ -129,6 +129,7 @@ type (
 		WhenExistAll(choices ...string) ruleSet
 		// Checks if input is a string
 		String() ruleSet
+
 		// Adds a new pair of `key: value` message into existing SpecificMessages variable
 		appendSpecificMessages(key string, value string)
 		// Sets messages for specific rules in current ruleSet
@@ -155,7 +156,7 @@ type (
 		// Returns true if deepValidator is not nil
 		hasDeepValidator() bool
 		// Validates deepValidator
-		validateDeepValidator(input interface{}, translator func(string) string) interface{}
+		validateDeepValidator(input interface{}, translator Translator) interface{}
 		// Replaces passed validator with existing childrenValidator
 		setChildrenValidator(input Validator)
 		// Returns childrenValidator
@@ -163,7 +164,7 @@ type (
 		// Returns true if children is not nil
 		hasChildrenValidator() bool
 		// Validates childrenValidator
-		validateChildrenValidator(input interface{}, translator func(string) string) interface{}
+		validateChildrenValidator(input interface{}, translator Translator) interface{}
 		// Returns requires
 		getRequires() requires
 		// Returns name
@@ -428,7 +429,7 @@ func (o *ruleSetS) hasChildrenValidator() bool {
 	return o.childrenValidator != nil
 }
 
-func (o *ruleSetS) validateChildrenValidator(input interface{}, translator func(string) string) interface{} {
+func (o *ruleSetS) validateChildrenValidator(input interface{}, translator Translator) interface{} {
 	return o.childrenValidator.Validate(input, translator)
 }
 
@@ -482,7 +483,7 @@ func (o *ruleSetS) hasDeepValidator() bool {
 	return o.deepValidator != nil
 }
 
-func (o *ruleSetS) validateDeepValidator(input interface{}, translator func(string) string) interface{} {
+func (o *ruleSetS) validateDeepValidator(input interface{}, translator Translator) interface{} {
 	return o.deepValidator.Validate(input, translator)
 }
 

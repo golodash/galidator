@@ -18,6 +18,8 @@ type (
 	// To specify errors for rules
 	Messages map[string]string
 
+	Translator func(string) string
+
 	// A struct to implement Validator interface
 	validatorS struct {
 		// Slice validator has this item full
@@ -36,7 +38,7 @@ type (
 		// Validates passed data and returns a map of possible validation errors happened on every field with failed validation.
 		//
 		// If no errors found, output will be nil
-		Validate(input interface{}, translator ...func(string) string) interface{}
+		Validate(input interface{}, translator ...Translator) interface{}
 		// Decrypts errors returned from gin's Bind process and returns proper error messages
 		//
 		// If returnUnmarshalErrorContext is true (default is true), if an error happened when
@@ -93,11 +95,11 @@ func getRawErrorMessage(ruleKey string, messages Messages, specificMessage Messa
 	}
 }
 
-func (o *validatorS) Validate(input interface{}, translator ...func(string) string) interface{} {
+func (o *validatorS) Validate(input interface{}, translator ...Translator) interface{} {
 	for reflect.ValueOf(input).Kind() == reflect.Ptr {
 		input = reflect.ValueOf(input).Elem().Interface()
 	}
-	var t func(string) string = nil
+	var t Translator = nil
 	if len(translator) != 0 {
 		t = translator[0]
 	}
