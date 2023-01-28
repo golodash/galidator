@@ -4,7 +4,13 @@ CHANGELOG
 UNRELEASED
 ----------
 
-* 🎉 feat: added a new function to use in patch method
+
+1.3.0 (2023-01-28)
+------------------
+
+* 🎉 feat: added new functions to use in patch method or other scenarios:
+1. `SetDefaultOnNil` is added which is used in PATCH method.
+2. `SetDefault` is added which is used in scenarios that you want to have default passed values in nil, zero or empty of element positions.
 
 1.2.0 (2022-12-20)
 ------------------

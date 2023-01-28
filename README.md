@@ -234,6 +234,59 @@ Now if you make a post request to http://127.0.0.1:3000 url when having `Accept-
 {"errors":{"username":["username نمیتواند خالی باشد"]},"message": "bad inputs"}
 ```
 
+## 3. Making Ease of PATCH method with Galidator in [Gin]((https://github.com/gin-gonic/gin))
+
+1. Make all your field types pointer. (string -> *string)
+2. Use `SetDefaultOnNil` method which is accessible from a `Validator` instance.
+   - Have in mind to pass pointer to a struct variable into `SetDefaultOnNil` method.
+3. Done... items are nil if user did not send them to api and will be filled with default values which programmer passed them.
+
+```go
+type article struct {
+	Title   *string `json:"title"`
+	Content *string `json:"content"`
+}
+
+var (
+	title    = "This is first"
+	content  = "This is the content"
+	articles = []article{
+		{Title: &title, Content: &content},
+	}
+	g         = galidator.G()
+	validator = g.Validator(article{})
+)
+
+func patchArticle(c *gin.Context) {
+	req := &article{}
+	id, _ := strconv.Atoi(c.Param("id"))
+	defaults := articles[id]
+
+	c.BindJSON(req)
+	if err := validator.Validate(req); err == nil {
+		// This is the part to set default value for nil fields
+		validator.SetDefaultOnNil(req, defaults)
+		// This is update action
+		articles[id] = *req
+	} else {
+		c.JSON(400, gin.H{
+			"message": "error in validation",
+		})
+	}
+
+	c.JSON(200, gin.H{
+		"good": 200,
+		"data": req,
+	})
+}
+
+func main() {
+	r := gin.Default()
+	r.PATCH("/comments/:id", patchArticle)
+	r.Run("127.0.0.1:3000")
+}
+```
+
 # Examples
 
 ## Simple Usage(Register a User)
