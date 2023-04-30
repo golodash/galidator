@@ -4,6 +4,10 @@ CHANGELOG
 UNRELEASED
 ----------
 
+
+1.3.1 (2023-04-30)
+------------------
+
 * 🐛 fix: mixed a bug in phonenumber verification rule and made it better
 
 1.3.0 (2023-01-28)
