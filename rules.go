@@ -6,6 +6,7 @@ import (
 
 	"github.com/dlclark/regexp2"
 	"github.com/golodash/godash/generals"
+	"github.com/nyaruka/phonenumbers"
 )
 
 // A map which with rule or require's key will provide the default error message of that rule or require's key
@@ -175,7 +176,8 @@ func emailRule(input interface{}) bool {
 
 // Returns true if input is a valid phone number
 func phoneRule(input interface{}) bool {
-	return regexRule(`((\+|\(|0)?\d{1,3})?((\s|\)|\-))?(\d{10})$`)(input)
+	parsedNumber, err := phonenumbers.Parse(input.(string), "IR")
+	return err == nil && phonenumbers.IsValidNumber(parsedNumber)
 }
 
 // Returns true if input matches the passed pattern
