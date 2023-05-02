@@ -4,6 +4,10 @@ CHANGELOG
 UNRELEASED
 ----------
 
+
+1.3.2 (2023-05-02)
+------------------
+
 * 🐛 fix: phone number rule will be just valid with international phone numbers formats
 
 1.3.1 (2023-04-30)
