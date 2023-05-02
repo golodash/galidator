@@ -24,7 +24,7 @@ var defaultValidatorErrorMessages = map[string]string{
 	"non_empty": "can not be empty",
 	"email":     "not a valid email address",
 	"regex":     "$value does not pass /$pattern/ pattern",
-	"phone":     "$value is not a valid phone number",
+	"phone":     "$value is not a valid international phone number format",
 	"map":       "not a map",
 	"struct":    "not a struct",
 	"slice":     "not a slice",
@@ -176,7 +176,11 @@ func emailRule(input interface{}) bool {
 
 // Returns true if input is a valid phone number
 func phoneRule(input interface{}) bool {
-	parsedNumber, err := phonenumbers.Parse(input.(string), "IR")
+	InternationalPhoneRegex := regexp2.MustCompile(`^\+\d+`, regexp2.None)
+	if ok, err := InternationalPhoneRegex.MatchString(input.(string)); !ok || err != nil {
+		return false
+	}
+	parsedNumber, err := phonenumbers.Parse(input.(string), "")
 	return err == nil && phonenumbers.IsValidNumber(parsedNumber)
 }
 
