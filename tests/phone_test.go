@@ -50,6 +50,13 @@ func TestPhone(t *testing.T) {
 			panic:     false,
 			expected:  []string{"phone failed"},
 		},
+		{
+			name:      "fail-3",
+			validator: g.Validator(g.R().Phone().SpecificMessages(galidator.Messages{"phone": "phone failed"})),
+			in:        "+989 10 015 4789",
+			panic:     false,
+			expected:  []string{"phone failed"},
+		},
 	}
 
 	for _, s := range scenarios {

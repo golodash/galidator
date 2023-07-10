@@ -4,6 +4,9 @@ CHANGELOG
 UNRELEASED
 ----------
 
+1.3.3 (2023-07-10)
+------------------
+
 * 🐛 fix: fixed problem on Phone number rule + fixed bug on setDefaultOn function
 
 1.3.2 (2023-05-02)
