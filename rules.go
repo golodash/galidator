@@ -176,7 +176,7 @@ func emailRule(input interface{}) bool {
 
 // Returns true if input is a valid phone number
 func phoneRule(input interface{}) bool {
-	InternationalPhoneRegex := regexp2.MustCompile(`^\+\d+`, regexp2.None)
+	InternationalPhoneRegex := regexp2.MustCompile(`^\+\d+$`, regexp2.None)
 	if ok, err := InternationalPhoneRegex.MatchString(input.(string)); !ok || err != nil {
 		return false
 	}

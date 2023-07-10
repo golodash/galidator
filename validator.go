@@ -342,8 +342,16 @@ func (o *validatorS) SetDefault(input interface{}, defaultValue interface{}) {
 }
 
 func (o *validatorS) setDefaultOn(input interface{}, defaultInput interface{}, onNil, onZero bool) {
-	inputValue := reflect.ValueOf(input).Elem()
+	inputValue := reflect.ValueOf(input)
 	defaultValue := reflect.ValueOf(defaultInput)
+
+	for inputValue.Kind() == reflect.Ptr {
+		inputValue = inputValue.Elem()
+	}
+
+	for defaultValue.Kind() == reflect.Ptr {
+		defaultValue = defaultValue.Elem()
+	}
 
 	if o.rules != nil {
 		switch inputValue.Type().Kind() {
@@ -367,6 +375,12 @@ func (o *validatorS) setDefaultOn(input interface{}, defaultInput interface{}, o
 
 				value := valueOnKeyInput.Interface()
 				if (onNil && isNil(value)) || (onZero && !nonZeroRule(value)) {
+					if valueOnKeyInput.Kind() != reflect.Ptr {
+						panic(fmt.Sprintf("value on %s on the side you want to copy defaults on nil(first input) has to be pointer", fieldName))
+					}
+					if valueOnDefaultKeyInput.Kind() != reflect.Ptr {
+						valueOnDefaultKeyInput = valueOnDefaultKeyInput.Addr()
+					}
 					valueOnKeyInput.Set(valueOnDefaultKeyInput)
 				} else {
 					if ruleSet.hasDeepValidator() && (mapRule(value) || structRule(value) || sliceRule(value)) {
