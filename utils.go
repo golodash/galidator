@@ -156,7 +156,11 @@ func applyRules(r ruleSet, tag []string, o *generatorS, orXor bool) (normalFuncN
 		if r.getChildrenValidator() == nil {
 			r.Children(o.R())
 		}
-		applyRules(r.getChildrenValidator().getRule(), []string{splits[1], tag[1]}, o, orXor)
+		if len(tag) > 1 {
+			applyRules(r.getChildrenValidator().getRule(), []string{splits[1], tag[1]}, o, orXor)
+		} else {
+			applyRules(r.getChildrenValidator().getRule(), []string{splits[1]}, o, orXor)
+		}
 		return normalFuncName
 	} else if len(splits) == 1 {
 		funcName = gStrings.PascalCase(normalFuncName)
