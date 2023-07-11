@@ -4,7 +4,12 @@ CHANGELOG
 UNRELEASED
 ----------
 
+
+1.3.3 (2023-07-11)
+------------------
+
 * 🐛 fix: children rules can now have no value (they had before for some reason)
+
 1.3.3 (2023-07-10)
 ------------------
 
