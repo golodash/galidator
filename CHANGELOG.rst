@@ -4,6 +4,10 @@ CHANGELOG
 UNRELEASED
 ----------
 
+
+1.3.5 (2023-08-19)
+------------------
+
 * 🐛 fix: bug fixed on setting error messages for conflicted keys in tags
 
 1.3.4 (2023-07-11)

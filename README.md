@@ -155,6 +155,16 @@ If you don't send `username` or send it empty in json request body, this message
 {"message":{"username":"username is required"}}
 ```
 
+**Note**: In cases which there is a conflict of names for rule messages(like `json`, `json` tag is used for output in json and if you want to add error message of json for it, you can't use `json` tag, so the solution is to use `_json` tag)
+
+Example:
+
+```go
+type login struct {
+	Field string `json:"field" binding:"required,json" _json:"$field is not json"`
+}
+```
+
 ## 2. Translate Error Output to Different Languages in [Gin]((https://github.com/gin-gonic/gin))
 
 If you need to translate output error messages for different languages in a gin project, use this template:
