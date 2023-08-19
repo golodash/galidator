@@ -133,7 +133,11 @@ func (o *generatorS) validator(input interface{}) Validator {
 			if bindingTags := elementT.Tag.Get("binding"); bindingTags != "" {
 				splits := strings.Split(bindingTags, ",")
 				for j := 0; j < len(splits); j++ {
-					addSpecificMessage(r, splits[j], elementT.Tag.Get(splits[j]))
+					value := elementT.Tag.Get("_" + splits[j])
+					if value == "" {
+						value = elementT.Tag.Get(splits[j])
+					}
+					addSpecificMessage(r, splits[j], value)
 				}
 			}
 			rules[elementT.Name] = r
