@@ -42,8 +42,15 @@ var defaultValidatorErrorMessages = map[string]string{
 	"when_not_exist_all": "$field is required because all of $choices fields are nil, empty or zero(0, \"\", '')",
 }
 
+func isValid(input interface{}) bool {
+	return reflect.ValueOf(input).IsValid()
+}
+
 // Returns true if input is int
 func intRule(input interface{}) bool {
+	if !isValid(input) {
+		return false
+	}
 	inputValue := reflect.ValueOf(input)
 	switch inputValue.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
@@ -57,6 +64,9 @@ func intRule(input interface{}) bool {
 
 // Returns true if input is float
 func floatRule(input interface{}) bool {
+	if !isValid(input) {
+		return false
+	}
 	inputValue := reflect.ValueOf(input)
 	switch inputValue.Kind() {
 	case reflect.Float32, reflect.Float64:
@@ -69,13 +79,16 @@ func floatRule(input interface{}) bool {
 // Returns true if input type is equal to defined type
 func typeRule(t string) func(interface{}) bool {
 	return func(input interface{}) bool {
-		return reflect.TypeOf(input).String() == t
+		return isValid(input) && reflect.TypeOf(input).String() == t
 	}
 }
 
 // Returns true if: input >= min or len(input) >= min
 func minRule(min float64) func(interface{}) bool {
 	return func(input interface{}) bool {
+		if !isValid(input) {
+			return false
+		}
 		inputValue := reflect.ValueOf(input)
 		switch inputValue.Kind() {
 		case reflect.String, reflect.Map, reflect.Slice:
@@ -93,6 +106,9 @@ func minRule(min float64) func(interface{}) bool {
 // Returns true if: input <= max or len(input) <= max
 func maxRule(max float64) func(interface{}) bool {
 	return func(input interface{}) bool {
+		if !isValid(input) {
+			return false
+		}
 		inputValue := reflect.ValueOf(input)
 		switch inputValue.Kind() {
 		case reflect.String, reflect.Map, reflect.Slice:
@@ -113,6 +129,9 @@ func maxRule(max float64) func(interface{}) bool {
 // If to == -1, no check on to config will happen
 func lenRangeRule(from, to int) func(interface{}) bool {
 	return func(input interface{}) bool {
+		if !isValid(input) {
+			return false
+		}
 		inputValue := reflect.ValueOf(input)
 		switch inputValue.Kind() {
 		case reflect.String, reflect.Map, reflect.Slice:
@@ -131,6 +150,9 @@ func lenRangeRule(from, to int) func(interface{}) bool {
 // Returns true if len(input) is equal to passed length
 func lenRule(length int) func(interface{}) bool {
 	return func(input interface{}) bool {
+		if !isValid(input) {
+			return false
+		}
 		inputValue := reflect.ValueOf(input)
 		switch inputValue.Kind() {
 		case reflect.String, reflect.Map, reflect.Slice:
@@ -143,13 +165,12 @@ func lenRule(length int) func(interface{}) bool {
 
 // Returns true if input is not 0, "", ”, nil and empty
 func requiredRule(input interface{}) bool {
-	inputValue := reflect.ValueOf(input)
-	return inputValue.IsValid() && (!inputValue.IsZero() && !isNil(input) && !hasZeroItems(input))
+	return !isNil(input) && !reflect.ValueOf(input).IsZero() && !hasZeroItems(input)
 }
 
 // Returns true if input is not zero(0, "", ”)
 func nonZeroRule(input interface{}) bool {
-	return !reflect.ValueOf(input).IsValid() || !reflect.ValueOf(input).IsZero()
+	return !isValid(input) || !reflect.ValueOf(input).IsZero()
 }
 
 // Returns true if input is not nil
@@ -164,6 +185,9 @@ func nonEmptyRule(input interface{}) bool {
 
 // Returns true if input is a valid email
 func emailRule(input interface{}) bool {
+	if !isValid(input) {
+		return false
+	}
 	switch reflect.ValueOf(input).Kind() {
 	case reflect.String:
 		_, err := mail.ParseAddress(input.(string))
@@ -178,6 +202,9 @@ func emailRule(input interface{}) bool {
 
 // Returns true if input is a valid phone number
 func phoneRule(input interface{}) bool {
+	if !isValid(input) {
+		return false
+	}
 	InternationalPhoneRegex := regexp2.MustCompile(`^\+\d+$`, regexp2.None)
 	if ok, err := InternationalPhoneRegex.MatchString(input.(string)); !ok || err != nil {
 		return false
@@ -190,6 +217,9 @@ func phoneRule(input interface{}) bool {
 func regexRule(pattern string) func(interface{}) bool {
 	regex := regexp2.MustCompile(pattern, regexp2.None)
 	return func(input interface{}) bool {
+		if !isValid(input) {
+			return false
+		}
 		inputValue := reflect.ValueOf(input)
 		switch inputValue.Kind() {
 		case reflect.String:
@@ -203,21 +233,33 @@ func regexRule(pattern string) func(interface{}) bool {
 
 // Returns true if input is a map
 func mapRule(input interface{}) bool {
+	if !isValid(input) {
+		return false
+	}
 	return reflect.TypeOf(input).Kind() == reflect.Map
 }
 
 // Returns true if input is a struct
 func structRule(input interface{}) bool {
+	if !isValid(input) {
+		return false
+	}
 	return reflect.TypeOf(input).Kind() == reflect.Struct
 }
 
 // Returns true if input is a slice
 func sliceRule(input interface{}) bool {
+	if !isValid(input) {
+		return false
+	}
 	return reflect.TypeOf(input).Kind() == reflect.Slice
 }
 
 // Returns true if input is at least 8 characters long, has one lowercase, one uppercase, one special and one number character
 func passwordRule(input interface{}) bool {
+	if !isValid(input) {
+		return false
+	}
 	return regexRule(`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$`)(input)
 }
 
@@ -271,5 +313,8 @@ func choicesRule(choices ...interface{}) func(interface{}) bool {
 
 // Returns true if input is string
 func stringRule(input interface{}) bool {
+	if !isValid(input) {
+		return false
+	}
 	return reflect.TypeOf(input).Kind() == reflect.String
 }

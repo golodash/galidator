@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🐛 fix: WhenNotExistAll and WhenNotExistOne were not usable in tags + Validator does not add a type check validator anymore + bug fixed on after passing required
 
 1.4.0 (2023-08-20)
 ------------------

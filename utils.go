@@ -90,22 +90,6 @@ func determineRequires(all interface{}, input interface{}, requires requires) (m
 	return output, len(output) == len(requires)
 }
 
-// Adds a type check on passed ruleSet based on passed kind
-func addTypeCheck(r ruleSet, kind reflect.Kind) {
-	switch kind {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
-		reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
-		reflect.Uint32, reflect.Uint64:
-		r.Int()
-	case reflect.Float32, reflect.Float64:
-		r.Float()
-	case reflect.Slice:
-		r.Slice()
-	case reflect.String:
-		r.String()
-	}
-}
-
 // Passes messages to other validators
 func deepPassMessages(v Validator, messages *Messages) {
 	v.setMessages(messages)

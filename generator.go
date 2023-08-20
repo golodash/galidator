@@ -101,7 +101,6 @@ func (o *generatorS) validator(input interface{}) Validator {
 			}
 			tags := []string{elementT.Tag.Get("g"), elementT.Tag.Get("galidator")}
 			r = o.RuleSet(elementT.Tag.Get("json"))
-			addTypeCheck(r, elementT.Type.Kind())
 
 			if elementT.Type.Kind() == reflect.Struct || elementT.Type.Kind() == reflect.Map {
 				validator := o.validator(element.Interface())
