@@ -4,12 +4,12 @@ CHANGELOG
 UNRELEASED
 ----------
 
-* 🎉 feat: field names will get translatoed
 
-.. 1.4.0 (2023-08-20)
-.. ------------------
+1.4.0 (2023-08-20)
+------------------
 
 * ✅ test: test cases updated for new features
+* 🎉 feat: field names will get translated
 * 🎉 feat: ability to pass custom validators from generators to ruleSet is now possible
 * 🎉 feat: added AlwaysCheckRules method in ruleSet
 * 🎉 feat: added WhenNotExistOne + WhenNotExistAll

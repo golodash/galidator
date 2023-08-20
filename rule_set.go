@@ -53,8 +53,6 @@ type (
 		// Checks if input is float
 		Float() ruleSet
 		// Checks if input acts like: input >= min or len(input) >= min
-		//
-		// Note: If min > 0, field will be required
 		Min(min float64) ruleSet
 		// Checks if input acts like: input <= max or len(input) <= max
 		Max(max float64) ruleSet
@@ -62,22 +60,12 @@ type (
 		//
 		// If from == -1, no check on from will happen
 		// If to == -1, no check on to will happen
-		//
-		// Note: If from > 0, field will be required
 		LenRange(from int, to int) ruleSet
 		// Checks if input acts like: len(input) == length
-		//
-		// Note: If length > 0, field will be required
 		Len(length int) ruleSet
 		// Makes this field required, Checks if input is not zero(0, "", ''), nil or empty
-		//
-		// Note: Field will be required
 		Required() ruleSet
 		// Makes this field optional
-		//
-		// Note: Use this after functions that make fields required automatically
-		//
-		// Note: Field will be optional
 		Optional() ruleSet
 		// If data is zero(0, "", ''), nil or empty, all validation rules will be checked anyway
 		//
@@ -105,14 +93,12 @@ type (
 		// Checks if input is a valid email address
 		Email() ruleSet
 		// Validates inputs with passed pattern
-		//
-		// Note: If pattern does not pass empty string, it will be required
 		Regex(pattern string) ruleSet
 		// Checks if input is a valid phone number
 		Phone() ruleSet
 		// Adds custom validators
 		Custom(validators Validators) ruleSet
-		// Adds one custom validator which is registed before
+		// Adds one custom validator which is registered before in generator
 		RegisteredCustom(validatorKeys ...string) ruleSet
 		// Checks if input is a map
 		Map() ruleSet
@@ -129,8 +115,6 @@ type (
 		// Checks if input is a Specific type
 		Type(input interface{}) ruleSet
 		// Checks if input is at least 8 characters long, has one lowercase, one uppercase and one number character
-		//
-		// Note: Field will be required
 		Password() ruleSet
 		// Checks if at least one of passed ruleSets pass its own validation check
 		OR(ruleSets ...ruleSet) ruleSet

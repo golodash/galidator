@@ -79,7 +79,11 @@ func getFormattedErrorMessage(message string, fieldName string, value interface{
 	for key, value := range options {
 		message = strings.ReplaceAll(message, "$"+key, value)
 	}
-	return strings.ReplaceAll(strings.ReplaceAll(message, "$field", fieldName), "$value", t(fmt.Sprint(value)))
+	newValue := fmt.Sprint(value)
+	if t != nil {
+		newValue = t(newValue)
+	}
+	return strings.ReplaceAll(strings.ReplaceAll(message, "$field", fieldName), "$value", newValue)
 }
 
 // Formats and returns error message associated with passed ruleKey
