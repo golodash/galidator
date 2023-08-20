@@ -111,7 +111,7 @@ func (o *generatorS) validator(input interface{}) Validator {
 			} else if elementT.Type.Kind() == reflect.Slice {
 				child := elementT.Type.Elem()
 				if child.Kind() != reflect.Slice && child.Kind() != reflect.Struct && child.Kind() != reflect.Map {
-					r.Children(o.R().Type(child))
+					r.Children(o.R().setGeneratorCustomValidators(&o.customValidators).Type(child))
 				} else {
 					validator := o.validator(reflect.Zero(elementT.Type.Elem()).Interface())
 					r.setChildrenValidator(validator)
@@ -147,7 +147,7 @@ func (o *generatorS) validator(input interface{}) Validator {
 	} else if inputType.Kind() == reflect.Slice {
 		child := inputType.Elem()
 		if child.Kind() != reflect.Slice && child.Kind() != reflect.Struct && child.Kind() != reflect.Map {
-			r.Children(o.R().Type(child))
+			r.Children(o.R().setGeneratorCustomValidators(&o.customValidators).Type(child))
 		} else {
 			validator := o.validator(reflect.Zero(child).Interface())
 			r.setChildrenValidator(validator)

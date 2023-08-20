@@ -154,7 +154,7 @@ func applyRules(r ruleSet, tag []string, o *generatorS, orXor bool) (normalFuncN
 	splits := strings.SplitN(normalFuncName, ".", 2)
 	if firstElementSnake := gStrings.SnakeCase(splits[0]); len(splits) > 1 && (firstElementSnake == "c" || firstElementSnake == "child") {
 		if r.getChildrenValidator() == nil {
-			r.Children(o.R())
+			r.Children(o.R().setGeneratorCustomValidators(&o.customValidators))
 		}
 		if len(tag) > 1 {
 			applyRules(r.getChildrenValidator().getRule(), []string{splits[1], tag[1]}, o, orXor)
@@ -235,7 +235,7 @@ func applyRules(r ruleSet, tag []string, o *generatorS, orXor bool) (normalFuncN
 			rules := []ruleSet{}
 			parametersSeparated := strings.Split(tag[1], "|")
 			for _, parameters := range parametersSeparated {
-				rule := o.R()
+				rule := o.R().setGeneratorCustomValidators(&o.customValidators)
 				parameter := strings.Split(parameters, "+")
 				for _, p := range parameter {
 					applyRules(rule, strings.SplitN(p, "=", 2), o, false)
@@ -252,7 +252,7 @@ func applyRules(r ruleSet, tag []string, o *generatorS, orXor bool) (normalFuncN
 			rules := []ruleSet{}
 			parametersSeparated := strings.Split(tag[1], "|")
 			for _, parameters := range parametersSeparated {
-				rule := o.R()
+				rule := o.R().setGeneratorCustomValidators(&o.customValidators)
 				parameter := strings.Split(parameters, "+")
 				for _, p := range parameter {
 					applyRules(rule, strings.SplitN(p, "=", 2), o, false)

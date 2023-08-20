@@ -39,6 +39,8 @@ type (
 		deepValidator Validator
 		// Defines type of elements of a slice
 		childrenValidator Validator
+		// Custom validators which is defined in generator
+		customValidators *Validators
 	}
 
 	// An interface with some functions to satisfy validation purpose
@@ -110,6 +112,8 @@ type (
 		Phone() ruleSet
 		// Adds custom validators
 		Custom(validators Validators) ruleSet
+		// Adds one custom validator which is registed before
+		RegisteredCustom(validatorKeys ...string) ruleSet
 		// Checks if input is a map
 		Map() ruleSet
 		// Checks if input is a slice
@@ -190,6 +194,8 @@ type (
 		get(name string) interface{}
 		// Sets passed argument value instead of existing in name parameter if exists
 		set(name string, value interface{})
+		// Sets custom validators which are defined in generator
+		setGeneratorCustomValidators(validators *Validators) ruleSet
 	}
 )
 
@@ -295,6 +301,21 @@ func (o *ruleSetS) Custom(validators Validators) ruleSet {
 			panic(fmt.Sprintf("%s is duplicate and has to be unique", key))
 		}
 		o.validators[key] = function
+	}
+	return o
+}
+
+func (o *ruleSetS) RegisteredCustom(validatorKeys ...string) ruleSet {
+	for _, key := range validatorKeys {
+		vs := *o.customValidators
+		if _, ok := o.validators[key]; ok {
+			panic(fmt.Sprintf("%s is duplicate and has to be unique", key))
+		}
+		if function, ok := vs[key]; ok {
+			o.validators[key] = function
+		} else {
+			panic(fmt.Sprintf("%s custom validator doesn't exist, it is really defined in generator?", key))
+		}
 	}
 	return o
 }
@@ -597,4 +618,9 @@ func (o *ruleSetS) set(name string, value interface{}) {
 	default:
 		panic(fmt.Sprintf("there is no item as %s", name))
 	}
+}
+
+func (o *ruleSetS) setGeneratorCustomValidators(validators *Validators) ruleSet {
+	o.customValidators = validators
+	return o
 }
