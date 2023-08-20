@@ -15,7 +15,10 @@ type scenario struct {
 	expected  interface{}
 }
 
-var g = galidator.New()
+var g = galidator.New().CustomValidators(galidator.Validators{
+	"custom_validator":        func(i interface{}) bool { return false },
+	"second_custom_validator": func(i interface{}) bool { return false },
+}).CustomMessages(galidator.Messages{"custom_validator": "custom error", "second_custom_validator": "second custom error"})
 
 // Used in test cases to prevent code breaking
 func deferTestCases(t *testing.T, crash bool, expected interface{}) {

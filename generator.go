@@ -62,7 +62,7 @@ func (o *generatorS) Validator(rule interface{}, errorMessages ...Messages) Vali
 			messages[key] = value
 		}
 	}
-	switch rule.(type) {
+	switch rule := rule.(type) {
 	case ruleSet:
 		break
 	default:
@@ -111,7 +111,7 @@ func (o *generatorS) validator(input interface{}) Validator {
 			} else if elementT.Type.Kind() == reflect.Slice {
 				child := elementT.Type.Elem()
 				if child.Kind() != reflect.Slice && child.Kind() != reflect.Struct && child.Kind() != reflect.Map {
-					r.Children(o.R().setGeneratorCustomValidators(&o.customValidators).Type(child))
+					r.Children(o.R().Type(child))
 				} else {
 					validator := o.validator(reflect.Zero(elementT.Type.Elem()).Interface())
 					r.setChildrenValidator(validator)
@@ -147,7 +147,7 @@ func (o *generatorS) validator(input interface{}) Validator {
 	} else if inputType.Kind() == reflect.Slice {
 		child := inputType.Elem()
 		if child.Kind() != reflect.Slice && child.Kind() != reflect.Struct && child.Kind() != reflect.Map {
-			r.Children(o.R().setGeneratorCustomValidators(&o.customValidators).Type(child))
+			r.Children(o.R().Type(child))
 		} else {
 			validator := o.validator(reflect.Zero(child).Interface())
 			r.setChildrenValidator(validator)
@@ -172,7 +172,7 @@ func (o *generatorS) RuleSet(name ...string) ruleSet {
 }
 
 func (o *generatorS) R(name ...string) ruleSet {
-	return o.RuleSet(name...)
+	return o.RuleSet(name...).setGeneratorCustomValidators(&o.customValidators)
 }
 
 func (o *generatorS) ComplexValidator(rules Rules, errorMessages ...Messages) Validator {

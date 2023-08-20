@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* ✅ test: CustomValidatorsFromGenerators test case added
 * 🎉 feat: ability to pass custom from generators to ruleSet is not possible
 * 🎉 feat: added AlwaysCheckRules method
 * 🎉 feat: added WhenNotExistOne + WhenNotExistAll
