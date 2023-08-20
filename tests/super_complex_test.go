@@ -6,10 +6,10 @@ import (
 	"github.com/golodash/galidator"
 )
 
-func TestComplexAsFuck(t *testing.T) {
+func TestSuperComplex(t *testing.T) {
 	v := g.Validator(g.R().Slice().Children(
 		g.R().Map().Complex(galidator.Rules{
-			"id":    g.R().Int().Min(1),
+			"id":    g.R().Int().Min(1).AlwaysCheckRules(),
 			"rules": g.R().Slice().Children(g.R().Choices("1", "2", "3")),
 			"users": g.R().Slice().Children(g.R().Complex(galidator.Rules{
 				"name": g.R().String(),

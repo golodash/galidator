@@ -77,6 +77,17 @@ type (
 		//
 		// Note: Field will be optional
 		Optional() ruleSet
+		// If data is zero(0, "", ''), nil or empty, all validation rules will be checked anyway
+		//
+		// Note: Validations will not work by default if the value is zero(0, "", ''), nil or empty
+		//
+		// # Note: `Required`, `NonZero`, `NonNil` and `NonEmpty` will call this method by default
+		//
+		// Note: If not used, when an int is 0 and min is 5, min function will not activate
+		//
+		// Note: Field will be validated anyway from now on but if `Optional` method is called
+		// after calling this method in continue of the current ruleSet chain, it has no effect
+		AlwaysCheckRules() ruleSet
 		// Checks if input is not zero(0, "", '')
 		//
 		// Note: Field will be required
@@ -199,9 +210,6 @@ func (o *ruleSetS) Min(min float64) ruleSet {
 	o.validators[functionName] = minRule(min)
 	precision := determinePrecision(min)
 	o.addOption(functionName, "min", fmt.Sprintf("%."+precision+"f", min))
-	if min > 0 {
-		o.required()
-	}
 	return o
 }
 
@@ -218,9 +226,6 @@ func (o *ruleSetS) LenRange(from, to int) ruleSet {
 	o.validators[functionName] = lenRangeRule(from, to)
 	o.addOption(functionName, "from", fmt.Sprintf("%d", from))
 	o.addOption(functionName, "to", fmt.Sprintf("%d", to))
-	if from > 0 {
-		o.required()
-	}
 	return o
 }
 
@@ -228,17 +233,18 @@ func (o *ruleSetS) Len(length int) ruleSet {
 	functionName := "len"
 	o.validators[functionName] = lenRule(length)
 	o.addOption(functionName, "length", fmt.Sprint(length))
-	if length > 0 {
-		o.required()
-	}
+	return o
+}
+
+func (o *ruleSetS) AlwaysCheckRules() ruleSet {
+	o.required()
 	return o
 }
 
 func (o *ruleSetS) Required() ruleSet {
 	functionName := "required"
 	o.validators[functionName] = requiredRule
-	o.required()
-	return o
+	return o.AlwaysCheckRules()
 }
 
 func (o *ruleSetS) Optional() ruleSet {
@@ -249,22 +255,19 @@ func (o *ruleSetS) Optional() ruleSet {
 func (o *ruleSetS) NonZero() ruleSet {
 	functionName := "non_zero"
 	o.validators[functionName] = nonZeroRule
-	o.required()
-	return o
+	return o.AlwaysCheckRules()
 }
 
 func (o *ruleSetS) NonNil() ruleSet {
 	functionName := "non_nil"
 	o.validators[functionName] = nonNilRule
-	o.required()
-	return o
+	return o.AlwaysCheckRules()
 }
 
 func (o *ruleSetS) NonEmpty() ruleSet {
 	functionName := "non_empty"
 	o.validators[functionName] = nonEmptyRule
-	o.required()
-	return o
+	return o.AlwaysCheckRules()
 }
 
 func (o *ruleSetS) Email() ruleSet {
@@ -277,9 +280,6 @@ func (o *ruleSetS) Regex(pattern string) ruleSet {
 	functionName := "regex"
 	o.validators[functionName] = regexRule(pattern)
 	o.addOption(functionName, "pattern", pattern)
-	if !regexRule(pattern)("") {
-		o.required()
-	}
 	return o
 }
 
@@ -349,7 +349,6 @@ func (o *ruleSetS) Type(input interface{}) ruleSet {
 func (o *ruleSetS) Password() ruleSet {
 	functionName := "password"
 	o.validators[functionName] = passwordRule
-	o.required()
 	return o
 }
 
