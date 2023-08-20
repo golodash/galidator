@@ -107,8 +107,8 @@ func addTypeCheck(r ruleSet, kind reflect.Kind) {
 }
 
 // Passes messages to other validators
-func deepPassMessages(v Validator, messages Messages) {
-	v.setMessages(&messages)
+func deepPassMessages(v Validator, messages *Messages) {
+	v.setMessages(messages)
 	r := v.getRule()
 	if r != nil {
 		if v1 := r.getChildrenValidator(); v1 != nil {
@@ -274,6 +274,10 @@ func applyRules(r ruleSet, tag []string, o *generatorS, orXor bool) (normalFuncN
 		r.WhenExistOne(parameters...)
 	case "WhenExistAll":
 		r.WhenExistAll(parameters...)
+	case "WhenNotExistOne":
+		r.WhenNotExistOne(parameters...)
+	case "WhenNotExistAll":
+		r.WhenNotExistAll(parameters...)
 	case "String":
 		r.String()
 	case "Children", "Custom", "Complex", "Type":

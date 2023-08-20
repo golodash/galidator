@@ -71,11 +71,15 @@ func (err sliceValidationError) Error() string {
 	return "error"
 }
 
-func getFormattedErrorMessage(message string, fieldName string, value interface{}, options option) string {
+func getFormattedErrorMessage(message string, fieldName string, value interface{}, options option, translator ...Translator) string {
+	var t Translator = nil
+	if len(translator) != 0 {
+		t = translator[0]
+	}
 	for key, value := range options {
 		message = strings.ReplaceAll(message, "$"+key, value)
 	}
-	return strings.ReplaceAll(strings.ReplaceAll(message, "$field", fieldName), "$value", fmt.Sprint(value))
+	return strings.ReplaceAll(strings.ReplaceAll(message, "$field", fieldName), "$value", t(fmt.Sprint(value)))
 }
 
 // Formats and returns error message associated with passed ruleKey
@@ -134,7 +138,7 @@ func (o *validatorS) Validate(input interface{}, translator ...Translator) inter
 				if t != nil {
 					message = t(message)
 				}
-				message = getFormattedErrorMessage(message, fieldName, onKeyInput, ruleSet.getOption(failKey))
+				message = getFormattedErrorMessage(message, fieldName, onKeyInput, ruleSet.getOption(failKey), t)
 				halfOutput = append(halfOutput, message)
 			}
 		}
@@ -450,11 +454,10 @@ func getFieldName(path string) string {
 
 func decryptPath(path string, v Validator, errorField playgroundValidator.FieldError) interface{} {
 	var (
-		fieldName = ""
+		splits    = strings.SplitN(path, ".", 2)
+		fieldName = splits[0]
 		output    = map[string]interface{}{}
 	)
-	splits := strings.SplitN(path, ".", 2)
-	fieldName = splits[0]
 	if len(splits) == 2 {
 		path = splits[1]
 	} else {

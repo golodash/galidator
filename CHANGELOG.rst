@@ -4,9 +4,14 @@ CHANGELOG
 UNRELEASED
 ----------
 
-* ✅ test: CustomValidatorsFromGenerators test case added
-* 🎉 feat: ability to pass custom from generators to ruleSet is not possible
-* 🎉 feat: added AlwaysCheckRules method
+* 🎉 feat: field names will get translatoed
+
+.. 1.4.0 (2023-08-20)
+.. ------------------
+
+* ✅ test: test cases updated for new features
+* 🎉 feat: ability to pass custom validators from generators to ruleSet is now possible
+* 🎉 feat: added AlwaysCheckRules method in ruleSet
 * 🎉 feat: added WhenNotExistOne + WhenNotExistAll
 
 1.3.5 (2023-08-19)

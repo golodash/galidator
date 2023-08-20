@@ -3,8 +3,6 @@ package galidator
 import (
 	"reflect"
 	"strings"
-
-	"github.com/golodash/godash/generals"
 )
 
 type (
@@ -82,7 +80,7 @@ func (o *generatorS) Validator(rule interface{}, errorMessages ...Messages) Vali
 			panic("'rule' has to be a ruleSet or a struct instance")
 		}
 	}
-	deepPassMessages(output, generals.Duplicate(messages).(Messages))
+	deepPassMessages(output, &messages)
 
 	return output
 }
@@ -118,14 +116,19 @@ func (o *generatorS) validator(input interface{}) Validator {
 				}
 			}
 
+			// Add messages of rules
 			for _, fullTag := range tags {
 				filters := strings.Split(fullTag, ",")
 				for j := 0; j < len(filters); j++ {
 					tag := strings.SplitN(filters[j], "=", 2)
 
 					normalFuncName := applyRules(r, tag, o, true)
+					value := elementT.Tag.Get("_" + normalFuncName)
+					if value == "" {
+						value = elementT.Tag.Get(normalFuncName)
+					}
 
-					addSpecificMessage(r, normalFuncName, elementT.Tag.Get(normalFuncName))
+					addSpecificMessage(r, normalFuncName, value)
 				}
 			}
 
@@ -168,11 +171,12 @@ func (o *generatorS) RuleSet(name ...string) ruleSet {
 	if len(name) != 0 {
 		output = name[0]
 	}
-	return &ruleSetS{name: output, validators: Validators{}, requires: requires{}, options: options{}, isOptional: true}
+	ruleSet := &ruleSetS{name: output, validators: Validators{}, requires: requires{}, options: options{}, isOptional: true}
+	return ruleSet.setGeneratorCustomValidators(&o.customValidators)
 }
 
 func (o *generatorS) R(name ...string) ruleSet {
-	return o.RuleSet(name...).setGeneratorCustomValidators(&o.customValidators)
+	return o.RuleSet(name...)
 }
 
 func (o *generatorS) ComplexValidator(rules Rules, errorMessages ...Messages) Validator {
@@ -184,7 +188,7 @@ func (o *generatorS) ComplexValidator(rules Rules, errorMessages ...Messages) Va
 	}
 	output := &validatorS{rule: nil, rules: rules, messages: nil}
 
-	deepPassMessages(output, generals.Duplicate(messages).(Messages))
+	deepPassMessages(output, &messages)
 	return output
 }
 

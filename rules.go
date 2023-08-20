@@ -36,8 +36,10 @@ var defaultValidatorErrorMessages = map[string]string{
 	"type":      "not a $type",
 
 	// Requires
-	"when_exist_one": "$field is required because at least one of $choices fields are not nil, empty or zero(0, \"\", '')",
-	"when_exist_all": "$field is required because all of $choices fields are not nil, empty or zero(0, \"\", '')",
+	"when_exist_one":     "$field is required because at least one of $choices fields are not nil, empty or zero(0, \"\", '')",
+	"when_exist_all":     "$field is required because all of $choices fields are not nil, empty or zero(0, \"\", '')",
+	"when_not_exist_one": "$field is required because at least one of $choices fields are nil, empty or zero(0, \"\", '')",
+	"when_not_exist_all": "$field is required because all of $choices fields are nil, empty or zero(0, \"\", '')",
 }
 
 // Returns true if input is int
