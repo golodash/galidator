@@ -127,6 +127,10 @@ type (
 		WhenExistOne(choices ...string) ruleSet
 		// Makes field required if all passed fields are not empty, nil or zero(0, "", '')
 		WhenExistAll(choices ...string) ruleSet
+		// Makes field required if at least one of passed fields are empty, nil or zero(0, "", '')
+		WhenNotExistOne(choices ...string) ruleSet
+		// Makes field required if all passed fields are empty, nil or zero(0, "", '')
+		WhenNotExistAll(choices ...string) ruleSet
 		// Checks if input is a string
 		String() ruleSet
 
@@ -383,6 +387,22 @@ func (o *ruleSetS) WhenExistOne(choices ...string) ruleSet {
 func (o *ruleSetS) WhenExistAll(choices ...string) ruleSet {
 	functionName := "when_exist_all"
 	o.requires[functionName] = whenExistAllRequireRule(choices...)
+	o.validators[functionName] = requiredRule
+	o.addOption(functionName, "choices", strings.ReplaceAll(fmt.Sprint(choices), " ", ", "))
+	return o
+}
+
+func (o *ruleSetS) WhenNotExistOne(choices ...string) ruleSet {
+	functionName := "when_not_exist_one"
+	o.requires[functionName] = whenNotExistOneRequireRule(choices...)
+	o.validators[functionName] = requiredRule
+	o.addOption(functionName, "choices", strings.ReplaceAll(fmt.Sprint(choices), " ", ", "))
+	return o
+}
+
+func (o *ruleSetS) WhenNotExistAll(choices ...string) ruleSet {
+	functionName := "when_not_exist_all"
+	o.requires[functionName] = whenNotExistAllRequireRule(choices...)
 	o.validators[functionName] = requiredRule
 	o.addOption(functionName, "choices", strings.ReplaceAll(fmt.Sprint(choices), " ", ", "))
 	return o
