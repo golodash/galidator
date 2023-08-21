@@ -167,6 +167,7 @@ func (o *validatorS) Validate(input interface{}, translator ...Translator) inter
 					panic(fmt.Sprintf("value on %s is not valid", fieldName))
 				}
 
+				// If not exported
 				if !found || typeOnKeyInput.PkgPath != "" {
 					break
 				}

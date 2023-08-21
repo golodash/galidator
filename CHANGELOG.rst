@@ -4,6 +4,10 @@ CHANGELOG
 UNRELEASED
 ----------
 
+
+1.4.2 (2023-08-21)
+------------------
+
 * 🐛 fix: unexported fields will get ignored to prevent unwanted behavior
 
 1.4.1 (2023-08-20)
