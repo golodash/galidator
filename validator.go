@@ -155,6 +155,7 @@ func (o *validatorS) Validate(input interface{}, translator ...Translator) inter
 		case reflect.Struct:
 			for fieldName, ruleSet := range o.rules {
 				valueOnKeyInput := inputValue.FieldByName(fieldName)
+				typeOnKeyInput, found := inputValue.Type().FieldByName(fieldName)
 				if ruleSet.getName() != "" {
 					fieldName = ruleSet.getName()
 				}
@@ -166,6 +167,9 @@ func (o *validatorS) Validate(input interface{}, translator ...Translator) inter
 					panic(fmt.Sprintf("value on %s is not valid", fieldName))
 				}
 
+				if !found || typeOnKeyInput.PkgPath != "" {
+					break
+				}
 				value := valueOnKeyInput.Interface()
 				// Just continue if no requires are set and field is empty, nil or zero
 				requires, isRequired := determineRequires(input, value, ruleSet.getRequires())
