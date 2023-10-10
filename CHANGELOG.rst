@@ -5,6 +5,11 @@ UNRELEASED
 ----------
 
 
+1.4.3 (2023-10-10)
+------------------
+
+* 🐛 fix: add custom messages for rules with params is now possible
+
 1.4.2 (2023-08-21)
 ------------------
 
