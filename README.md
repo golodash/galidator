@@ -10,13 +10,13 @@ is/are problem/problems with passed data and validation has failed.
 Just use `go get` for installation:
 
 ```
-go get github.com/golodash/galidator
+go get github.com/golodash/galidator/v2
 ```
 
 And then just import the package into your own code.
 
 ```go
-import "github.com/golodash/galidator"
+import "github.com/golodash/galidator/v2"
 ```
 
 ## Generator
@@ -314,7 +314,7 @@ import (
 	"fmt"
 	"context"
 
-	"github.com/golodash/galidator"
+	"github.com/golodash/galidator/v2"
 )
 
 func main() {
@@ -353,7 +353,7 @@ import (
 	"fmt"
 	"context"
 
-	"github.com/golodash/galidator"
+	"github.com/golodash/galidator/v2"
 )
 
 type Person struct {
@@ -392,7 +392,7 @@ import (
 	"fmt"
 	"context"
 
-	"github.com/golodash/galidator"
+	"github.com/golodash/galidator/v2"
 )
 
 type Person struct {
@@ -427,7 +427,7 @@ import (
 	"fmt"
 	"context"
 
-	"github.com/golodash/galidator"
+	"github.com/golodash/galidator/v2"
 )
 
 type Person struct {
@@ -475,7 +475,7 @@ import (
 	"fmt"
 	"context"
 
-	"github.com/golodash/galidator"
+	"github.com/golodash/galidator/v2"
 )
 
 func main() {
@@ -520,7 +520,7 @@ import (
 	"fmt"
 	"context"
 
-	"github.com/golodash/galidator"
+	"github.com/golodash/galidator/v2"
 )
 
 func main() {
@@ -554,7 +554,7 @@ import (
 	"fmt"
 	"context"
 
-	"github.com/golodash/galidator"
+	"github.com/golodash/galidator/v2"
 )
 
 func main() {
@@ -590,7 +590,7 @@ import (
 	"fmt"
 	"context"
 
-	"github.com/golodash/galidator"
+	"github.com/golodash/galidator/v2"
 )
 
 func main() {
@@ -627,7 +627,7 @@ import (
 	"fmt"
 	"context"
 
-	"github.com/golodash/galidator"
+	"github.com/golodash/galidator/v2"
 	"github.com/golodash/godash/slices"
 )
 
@@ -681,7 +681,7 @@ import (
 	"fmt"
 	"context"
 
-	"github.com/golodash/galidator"
+	"github.com/golodash/galidator/v2"
 )
 
 func main() {
@@ -714,7 +714,7 @@ import (
 	"fmt"
 	"context"
 
-	"github.com/golodash/galidator"
+	"github.com/golodash/galidator/v2"
 )
 
 func main() {
@@ -785,7 +785,7 @@ import (
 	"fmt"
 	"context"
 
-	"github.com/golodash/galidator"
+	"github.com/golodash/galidator/v2"
 )
 
 type numbers struct {

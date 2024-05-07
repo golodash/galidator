@@ -1,4 +1,4 @@
-module github.com/golodash/galidator
+module github.com/golodash/galidator/v2
 
 go 1.17
 

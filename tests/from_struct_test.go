@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/golodash/galidator"
+	"github.com/golodash/galidator/v2"
 	"github.com/golodash/godash/slices"
 )
 
