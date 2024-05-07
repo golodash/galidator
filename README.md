@@ -91,8 +91,8 @@ func main() {
 	input1 := "valid@email.com"
 	input2 := "invalidEmail.com"
 
-	output1 := emailValidator.Validate(input1)
-	output2 := emailValidator.Validate(input2)
+	output1 := emailValidator.Validate(context.TODO(), input1)
+	output2 := emailValidator.Validate(context.TODO(), input2)
 
 	fmt.Println(output1)
 	fmt.Println(output2)
@@ -106,6 +106,10 @@ output:
 ```
 
 And that's it, just to get better, see more examples down here.
+
+## What is the Usecase of Sending a context to Validate function?
+
+In web development, sometimes we need to share some data with our custom validators and this is the way we do it, we record it in the context and send it to the validator which can read the sent data in out custom validators by calling `ctx.Value(key)` method.
 
 # Just For [Gin](https://github.com/gin-gonic/gin) Users
 
@@ -217,7 +221,7 @@ func loginHandler(c *gin.Context) {
 	}
 
 	// Validation
-	if errors := validator.Validate(req, translator); errors != nil {
+	if errors := validator.Validate(context.TODO(), req, translator); errors != nil {
 		c.JSON(400, gin.H{
 			"errors":  errors,
 			"message": "bad inputs",
@@ -273,7 +277,7 @@ func patchArticle(c *gin.Context) {
 	defaults := articles[id]
 
 	c.BindJSON(req)
-	if err := validator.Validate(req); err == nil {
+	if err := validator.Validate(context.TODO(), req); err == nil {
 		// This is the part to set default value for nil fields
 		validator.SetDefaultOnNil(req, defaults)
 		// This is update action
@@ -308,6 +312,7 @@ package main
 
 import (
 	"fmt"
+	"context"
 
 	"github.com/golodash/galidator"
 )
@@ -326,7 +331,7 @@ func main() {
 		"email":    "DoctorMK@gmail.com",
 	}
 
-	errors := validator.Validate(userInput)
+	errors := validator.Validate(context.TODO(), userInput)
 
 	fmt.Println(errors)
 	fmt.Println(errors == nil)
@@ -346,6 +351,7 @@ package main
 
 import (
 	"fmt"
+	"context"
 
 	"github.com/golodash/galidator"
 )
@@ -370,7 +376,7 @@ func main() {
 		Email:    "DoctorMK@gmail.com",
 	}
 
-	errors := validator.Validate(userInput)
+	errors := validator.Validate(context.TODO(), userInput)
 
 	fmt.Println(errors)
 	fmt.Println(errors == nil)
@@ -384,6 +390,7 @@ package main
 
 import (
 	"fmt"
+	"context"
 
 	"github.com/golodash/galidator"
 )
@@ -404,7 +411,7 @@ func main() {
 		Email:    "DoctorMK@gmail.com",
 	}
 
-	errors := validator.Validate(userInput)
+	errors := validator.Validate(context.TODO(), userInput)
 
 	fmt.Println(errors)
 	fmt.Println(errors == nil)
@@ -418,6 +425,7 @@ package main
 
 import (
 	"fmt"
+	"context"
 
 	"github.com/golodash/galidator"
 )
@@ -445,7 +453,7 @@ func main() {
 		},
 	}
 
-	errors := validator.Validate(userInput)
+	errors := validator.Validate(context.TODO(), userInput)
 
 	fmt.Println(errors)
 	fmt.Println(errors == nil)
@@ -465,6 +473,7 @@ package main
 
 import (
 	"fmt"
+	"context"
 
 	"github.com/golodash/galidator"
 )
@@ -491,7 +500,7 @@ func main() {
 		},
 	}
 
-	errors := validator.Validate(userInput)
+	errors := validator.Validate(context.TODO(), userInput)
 
 	fmt.Println(errors)
 	fmt.Println(errors == nil)
@@ -509,6 +518,7 @@ package main
 
 import (
 	"fmt"
+	"context"
 
 	"github.com/golodash/galidator"
 )
@@ -518,7 +528,7 @@ func main() {
 	validator := g.Validator(g.R().Required().OR(g.R().Email(), g.R().String().Min(5)))
 
 	input := "m@g.com"
-	errors := validator.Validate(input)
+	errors := validator.Validate(context.TODO(), input)
 
 	fmt.Println(errors)
 	fmt.Println(errors == nil)
@@ -542,6 +552,7 @@ package main
 
 import (
 	"fmt"
+	"context"
 
 	"github.com/golodash/galidator"
 )
@@ -551,7 +562,7 @@ func main() {
 	validator := g.Validator(g.R().Required().XOR(g.R().Email(), g.R().Phone()))
 
 	input := "m@g.com"
-	errors := validator.Validate(input)
+	errors := validator.Validate(context.TODO(), input)
 
 	fmt.Println(errors)
 	fmt.Println(errors == nil)
@@ -577,6 +588,7 @@ package main
 
 import (
 	"fmt"
+	"context"
 
 	"github.com/golodash/galidator"
 )
@@ -589,7 +601,7 @@ func main() {
 		"Data":     g.R("data").WhenExistAll("Username", "Password").String().SpecificMessages(galidator.Messages{"when_exist_all": "when_exist_all failed"}),
 	})
 
-	errors := v.Validate(map[string]string{
+	errors := v.Validate(context.TODO(), map[string]string{
 		"Username": "username",
 		"Password": "password",
 		"Data":     "",
@@ -613,6 +625,7 @@ package main
 
 import (
 	"fmt"
+	"context"
 
 	"github.com/golodash/galidator"
 	"github.com/golodash/godash/slices"
@@ -630,7 +643,7 @@ var users = []string{
 	"john",
 }
 
-func duplicate_check(input interface{}) bool {
+func duplicate_check(ctx context.Context, input interface{}) bool {
 	return slices.FindIndex(users, input) == -1
 }
 
@@ -644,7 +657,7 @@ func main() {
 		Email:    "DoctorMK@gmail.com",
 	}
 
-	errors := validator.Validate(userInput)
+	errors := validator.Validate(context.TODO(), userInput)
 
 	fmt.Println(errors)
 	fmt.Println(errors == nil)
@@ -666,6 +679,7 @@ package main
 
 import (
 	"fmt"
+	"context"
 
 	"github.com/golodash/galidator"
 )
@@ -676,7 +690,7 @@ func main() {
 
 	userInput := 3
 
-	errors := validator.Validate(userInput)
+	errors := validator.Validate(context.TODO(), userInput)
 
 	fmt.Println(errors)
 	fmt.Println(errors == nil)
@@ -698,6 +712,7 @@ package main
 
 import (
 	"fmt"
+	"context"
 
 	"github.com/golodash/galidator"
 )
@@ -708,7 +723,7 @@ func main() {
 	})
 	validator := g.Validator(g.R().String())
 
-	errors := validator.Validate(1)
+	errors := validator.Validate(context.TODO(), 1)
 
 	fmt.Println(errors)
 	fmt.Println(errors == nil)
@@ -768,6 +783,7 @@ package main
 
 import (
 	"fmt"
+	"context"
 
 	"github.com/golodash/galidator"
 )
@@ -780,7 +796,7 @@ func main() {
 	g := galidator.New()
 	validator := g.Validator(numbers{})
 
-	fmt.Println(validator.Validate(numbers{
+	fmt.Println(validator.Validate(context.TODO(), numbers{
 		Numbers: []int{
 			1,
 			0,
@@ -819,7 +835,7 @@ func translator(input string) string {
 }
 
 func main() {
-	fmt.Println(validator.Validate(nil, translator))
+	fmt.Println(validator.Validate(context.TODO(), translator))
 }
 ```
 
