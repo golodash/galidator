@@ -1,6 +1,7 @@
 package galidator
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
@@ -14,7 +15,7 @@ type (
 	options map[string]option
 
 	// A map full of validators which is assigned for a single key in a validator struct
-	Validators map[string]func(interface{}) bool
+	Validators map[string]func(ctx context.Context, input interface{}) bool
 
 	// A map full of field require determining
 	requires map[string]func(interface{}) func(interface{}) bool
@@ -46,7 +47,7 @@ type (
 	// An interface with some functions to satisfy validation purpose
 	ruleSet interface {
 		// Validates all validators defined
-		validate(interface{}) []string
+		validate(context.Context, interface{}) []string
 
 		// Checks if input is int
 		Int() ruleSet
@@ -159,7 +160,7 @@ type (
 		// Returns true if deepValidator is not nil
 		hasDeepValidator() bool
 		// Validates deepValidator
-		validateDeepValidator(input interface{}, translator Translator) interface{}
+		validateDeepValidator(ctx context.Context, input interface{}, translator Translator) interface{}
 		// Replaces passed validator with existing childrenValidator
 		setChildrenValidator(input Validator)
 		// Returns childrenValidator
@@ -167,7 +168,7 @@ type (
 		// Returns true if children is not nil
 		hasChildrenValidator() bool
 		// Validates childrenValidator
-		validateChildrenValidator(input interface{}, translator Translator) interface{}
+		validateChildrenValidator(ctx context.Context, input interface{}, translator Translator) interface{}
 		// Returns requires
 		getRequires() requires
 		// Returns name
@@ -453,14 +454,14 @@ func (o *ruleSetS) hasChildrenValidator() bool {
 	return o.childrenValidator != nil
 }
 
-func (o *ruleSetS) validateChildrenValidator(input interface{}, translator Translator) interface{} {
-	return o.childrenValidator.Validate(input, translator)
+func (o *ruleSetS) validateChildrenValidator(ctx context.Context, input interface{}, translator Translator) interface{} {
+	return o.childrenValidator.Validate(ctx, input, translator)
 }
 
-func (o *ruleSetS) validate(input interface{}) []string {
+func (o *ruleSetS) validate(ctx context.Context, input interface{}) []string {
 	fails := []string{}
 	for key, vFunction := range o.validators {
-		if !vFunction(input) {
+		if !vFunction(ctx, input) {
 			fails = append(fails, key)
 		}
 	}
@@ -507,8 +508,8 @@ func (o *ruleSetS) hasDeepValidator() bool {
 	return o.deepValidator != nil
 }
 
-func (o *ruleSetS) validateDeepValidator(input interface{}, translator Translator) interface{} {
-	return o.deepValidator.Validate(input, translator)
+func (o *ruleSetS) validateDeepValidator(ctx context.Context, input interface{}, translator Translator) interface{} {
+	return o.deepValidator.Validate(ctx, input, translator)
 }
 
 func (o *ruleSetS) getRequires() requires {

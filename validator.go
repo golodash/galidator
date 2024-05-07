@@ -1,6 +1,7 @@
 package galidator
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -39,7 +40,7 @@ type (
 		// Validates passed data and returns a map of possible validation errors happened on every field with failed validation.
 		//
 		// If no errors found, output will be nil
-		Validate(input interface{}, translator ...Translator) interface{}
+		Validate(ctx context.Context, input interface{}, translator ...Translator) interface{}
 		// Decrypts errors returned from gin's Bind process and returns proper error messages
 		//
 		// If returnUnmarshalErrorContext is true (default is true), if an error happened when
@@ -108,7 +109,7 @@ func getRawErrorMessage(ruleKey string, messages Messages, specificMessage Messa
 	}
 }
 
-func (o *validatorS) Validate(input interface{}, translator ...Translator) interface{} {
+func (o *validatorS) Validate(ctx context.Context, input interface{}, translator ...Translator) interface{} {
 	for reflect.ValueOf(input).Kind() == reflect.Ptr {
 		input = reflect.ValueOf(input).Elem().Interface()
 	}
@@ -131,7 +132,7 @@ func (o *validatorS) Validate(input interface{}, translator ...Translator) inter
 		}
 
 		halfOutput := []string{}
-		fails := ruleSet.validate(onKeyInput)
+		fails := ruleSet.validate(ctx, onKeyInput)
 		if len(fails) != 0 {
 			for _, failKey := range fails {
 				var m Messages = nil
@@ -195,19 +196,19 @@ func (o *validatorS) Validate(input interface{}, translator ...Translator) inter
 					output[fieldName] = errors
 				}
 
-				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (mapRule(value) || structRule(value) || sliceRule(value)) {
-					data := ruleSet.validateDeepValidator(value, t)
+				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (mapRule(ctx, value) || structRule(ctx, value) || sliceRule(ctx, value)) {
+					data := ruleSet.validateDeepValidator(ctx, value, t)
 
 					if reflect.ValueOf(data).IsValid() && reflect.ValueOf(data).Len() != 0 {
 						output[fieldName] = data
 					}
 				}
 
-				if ruleSet.hasChildrenValidator() && output[fieldName] == nil && sliceRule(value) {
+				if ruleSet.hasChildrenValidator() && output[fieldName] == nil && sliceRule(ctx, value) {
 					valueOnKeyInput = reflect.ValueOf(valueOnKeyInput.Interface())
 					for i := 0; i < valueOnKeyInput.Len(); i++ {
 						element := valueOnKeyInput.Index(i)
-						errors := ruleSet.validateChildrenValidator(element.Interface(), t)
+						errors := ruleSet.validateChildrenValidator(ctx, element.Interface(), t)
 						if reflect.ValueOf(errors).IsValid() && reflect.ValueOf(errors).Len() != 0 {
 							if _, ok := output[fieldName]; !ok {
 								output[fieldName] = map[string]interface{}{}
@@ -254,19 +255,19 @@ func (o *validatorS) Validate(input interface{}, translator ...Translator) inter
 					output[fieldName] = errors
 				}
 
-				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (mapRule(value) || structRule(value) || sliceRule(value)) {
-					data := ruleSet.validateDeepValidator(value, t)
+				if ruleSet.hasDeepValidator() && output[fieldName] == nil && (mapRule(ctx, value) || structRule(ctx, value) || sliceRule(ctx, value)) {
+					data := ruleSet.validateDeepValidator(ctx, value, t)
 
 					if reflect.ValueOf(data).IsValid() && reflect.ValueOf(data).Len() != 0 {
 						output[fieldName] = data
 					}
 				}
 
-				if ruleSet.hasChildrenValidator() && output[fieldName] == nil && sliceRule(value) {
+				if ruleSet.hasChildrenValidator() && output[fieldName] == nil && sliceRule(ctx, value) {
 					valueOnKeyInput = reflect.ValueOf(valueOnKeyInput.Interface())
 					for i := 0; i < valueOnKeyInput.Len(); i++ {
 						element := valueOnKeyInput.Index(i)
-						errors := ruleSet.validateChildrenValidator(element.Interface(), t)
+						errors := ruleSet.validateChildrenValidator(ctx, element.Interface(), t)
 						if reflect.ValueOf(errors).IsValid() && reflect.ValueOf(errors).Len() != 0 {
 							if _, ok := output[fieldName]; !ok {
 								output[fieldName] = map[string]interface{}{}
@@ -294,7 +295,7 @@ func (o *validatorS) Validate(input interface{}, translator ...Translator) inter
 			if o.rule.hasChildrenValidator() {
 				for i := 0; i < inputValue.Len(); i++ {
 					element := inputValue.Index(i)
-					errors := o.rule.validateChildrenValidator(element.Interface(), t)
+					errors := o.rule.validateChildrenValidator(ctx, element.Interface(), t)
 
 					if reflect.ValueOf(errors).IsValid() && reflect.ValueOf(errors).Len() != 0 {
 						if _, ok := output[strconv.Itoa(i)]; !ok {
@@ -305,7 +306,7 @@ func (o *validatorS) Validate(input interface{}, translator ...Translator) inter
 			}
 		default:
 			if o.rule.hasDeepValidator() {
-				errors := o.rule.validateDeepValidator(input, t)
+				errors := o.rule.validateDeepValidator(ctx, input, t)
 				if reflect.ValueOf(errors).IsValid() && reflect.ValueOf(errors).Len() != 0 {
 					return errors
 				}
@@ -388,7 +389,7 @@ func (o *validatorS) setDefaultOn(input interface{}, defaultInput interface{}, o
 				}
 
 				value := valueOnKeyInput.Interface()
-				if (onNil && isNil(value)) || (onZero && !nonZeroRule(value)) {
+				if (onNil && isNil(value)) || (onZero && !nonZeroRule(nil, value)) {
 					if valueOnKeyInput.Kind() != reflect.Ptr {
 						panic(fmt.Sprintf("value on %s on the side you want to copy defaults on nil(first input) has to be pointer", fieldName))
 					}
@@ -397,7 +398,7 @@ func (o *validatorS) setDefaultOn(input interface{}, defaultInput interface{}, o
 					}
 					valueOnKeyInput.Set(valueOnDefaultKeyInput)
 				} else {
-					if ruleSet.hasDeepValidator() && (mapRule(value) || structRule(value) || sliceRule(value)) {
+					if ruleSet.hasDeepValidator() && (mapRule(nil, value) || structRule(nil, value) || sliceRule(nil, value)) {
 						deepValidator := ruleSet.getDeepValidator()
 
 						if onNil {
@@ -427,10 +428,10 @@ func (o *validatorS) setDefaultOn(input interface{}, defaultInput interface{}, o
 				}
 
 				value := valueOnKeyInput.Interface()
-				if (onNil && isNil(value)) || (onZero && !nonZeroRule(value)) {
+				if (onNil && isNil(value)) || (onZero && !nonZeroRule(context.TODO(), value)) {
 					valueOnKeyInput.Set(valueOnDefaultKeyInput)
 				} else {
-					if ruleSet.hasDeepValidator() && (mapRule(value) || structRule(value) || sliceRule(value)) {
+					if ruleSet.hasDeepValidator() && (mapRule(context.TODO(), value) || structRule(context.TODO(), value) || sliceRule(context.TODO(), value)) {
 						deepValidator := ruleSet.getDeepValidator()
 
 						if onNil {
@@ -446,7 +447,7 @@ func (o *validatorS) setDefaultOn(input interface{}, defaultInput interface{}, o
 		}
 	} else if o.rule != nil {
 		value := inputValue.Interface()
-		if o.rule.hasDeepValidator() && (mapRule(value) || structRule(value) || sliceRule(value)) {
+		if o.rule.hasDeepValidator() && (mapRule(context.TODO(), value) || structRule(context.TODO(), value) || sliceRule(context.TODO(), value)) {
 			deepValidator := o.rule.getDeepValidator()
 
 			if onNil {

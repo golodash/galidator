@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"testing"
 )
 
@@ -68,7 +69,7 @@ func TestNonEmpty(t *testing.T) {
 		t.Run(s.name, func(t *testing.T) {
 			defer deferTestCases(t, s.panic, s.expected)
 
-			output := s.validator.Validate(s.in)
+			output := s.validator.Validate(context.TODO(), s.in)
 			check(t, s.expected, output)
 		})
 	}

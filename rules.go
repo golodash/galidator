@@ -1,6 +1,7 @@
 package galidator
 
 import (
+	"context"
 	"net/mail"
 	"reflect"
 
@@ -47,7 +48,7 @@ func isValid(input interface{}) bool {
 }
 
 // Returns true if input is int
-func intRule(input interface{}) bool {
+func intRule(ctx context.Context, input interface{}) bool {
 	if !isValid(input) {
 		return false
 	}
@@ -63,7 +64,7 @@ func intRule(input interface{}) bool {
 }
 
 // Returns true if input is float
-func floatRule(input interface{}) bool {
+func floatRule(ctx context.Context, input interface{}) bool {
 	if !isValid(input) {
 		return false
 	}
@@ -77,15 +78,15 @@ func floatRule(input interface{}) bool {
 }
 
 // Returns true if input type is equal to defined type
-func typeRule(t string) func(interface{}) bool {
-	return func(input interface{}) bool {
+func typeRule(t string) func(context.Context, interface{}) bool {
+	return func(ctx context.Context, input interface{}) bool {
 		return isValid(input) && reflect.TypeOf(input).String() == t
 	}
 }
 
 // Returns true if: input >= min or len(input) >= min
-func minRule(min float64) func(interface{}) bool {
-	return func(input interface{}) bool {
+func minRule(min float64) func(context.Context, interface{}) bool {
+	return func(ctx context.Context, input interface{}) bool {
 		if !isValid(input) {
 			return false
 		}
@@ -104,8 +105,8 @@ func minRule(min float64) func(interface{}) bool {
 }
 
 // Returns true if: input <= max or len(input) <= max
-func maxRule(max float64) func(interface{}) bool {
-	return func(input interface{}) bool {
+func maxRule(max float64) func(context.Context, interface{}) bool {
+	return func(ctx context.Context, input interface{}) bool {
 		if !isValid(input) {
 			return false
 		}
@@ -127,8 +128,8 @@ func maxRule(max float64) func(interface{}) bool {
 //
 // If from == -1, no check on from config will happen
 // If to == -1, no check on to config will happen
-func lenRangeRule(from, to int) func(interface{}) bool {
-	return func(input interface{}) bool {
+func lenRangeRule(from, to int) func(context.Context, interface{}) bool {
+	return func(ctx context.Context, input interface{}) bool {
 		if !isValid(input) {
 			return false
 		}
@@ -148,8 +149,8 @@ func lenRangeRule(from, to int) func(interface{}) bool {
 }
 
 // Returns true if len(input) is equal to passed length
-func lenRule(length int) func(interface{}) bool {
-	return func(input interface{}) bool {
+func lenRule(length int) func(context.Context, interface{}) bool {
+	return func(ctx context.Context, input interface{}) bool {
 		if !isValid(input) {
 			return false
 		}
@@ -164,27 +165,27 @@ func lenRule(length int) func(interface{}) bool {
 }
 
 // Returns true if input is not 0, "", ”, nil and empty
-func requiredRule(input interface{}) bool {
+func requiredRule(ctx context.Context, input interface{}) bool {
 	return !isNil(input) && !reflect.ValueOf(input).IsZero() && !hasZeroItems(input)
 }
 
 // Returns true if input is not zero(0, "", ”)
-func nonZeroRule(input interface{}) bool {
+func nonZeroRule(ctx context.Context, input interface{}) bool {
 	return !isValid(input) || !reflect.ValueOf(input).IsZero()
 }
 
 // Returns true if input is not nil
-func nonNilRule(input interface{}) bool {
+func nonNilRule(ctx context.Context, input interface{}) bool {
 	return !isNil(input)
 }
 
 // Returns true if input has items
-func nonEmptyRule(input interface{}) bool {
+func nonEmptyRule(ctx context.Context, input interface{}) bool {
 	return !hasZeroItems(input)
 }
 
 // Returns true if input is a valid email
-func emailRule(input interface{}) bool {
+func emailRule(ctx context.Context, input interface{}) bool {
 	if !isValid(input) {
 		return false
 	}
@@ -201,7 +202,7 @@ func emailRule(input interface{}) bool {
 }
 
 // Returns true if input is a valid phone number
-func phoneRule(input interface{}) bool {
+func phoneRule(ctx context.Context, input interface{}) bool {
 	if !isValid(input) {
 		return false
 	}
@@ -214,9 +215,9 @@ func phoneRule(input interface{}) bool {
 }
 
 // Returns true if input matches the passed pattern
-func regexRule(pattern string) func(interface{}) bool {
+func regexRule(pattern string) func(context.Context, interface{}) bool {
 	regex := regexp2.MustCompile(pattern, regexp2.None)
-	return func(input interface{}) bool {
+	return func(ctx context.Context, input interface{}) bool {
 		if !isValid(input) {
 			return false
 		}
@@ -232,7 +233,7 @@ func regexRule(pattern string) func(interface{}) bool {
 }
 
 // Returns true if input is a map
-func mapRule(input interface{}) bool {
+func mapRule(ctx context.Context, input interface{}) bool {
 	if !isValid(input) {
 		return false
 	}
@@ -240,7 +241,7 @@ func mapRule(input interface{}) bool {
 }
 
 // Returns true if input is a struct
-func structRule(input interface{}) bool {
+func structRule(ctx context.Context, input interface{}) bool {
 	if !isValid(input) {
 		return false
 	}
@@ -248,7 +249,7 @@ func structRule(input interface{}) bool {
 }
 
 // Returns true if input is a slice
-func sliceRule(input interface{}) bool {
+func sliceRule(ctx context.Context, input interface{}) bool {
 	if !isValid(input) {
 		return false
 	}
@@ -256,16 +257,16 @@ func sliceRule(input interface{}) bool {
 }
 
 // Returns true if input is at least 8 characters long, has one lowercase, one uppercase, one special and one number character
-func passwordRule(input interface{}) bool {
+func passwordRule(ctx context.Context, input interface{}) bool {
 	if !isValid(input) {
 		return false
 	}
-	return regexRule(`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$`)(input)
+	return regexRule(`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$`)(ctx, input)
 }
 
 // If at least one of the passed ruleSets pass, this rule will pass
-func orRule(ruleSets ...ruleSet) func(interface{}) bool {
-	return func(input interface{}) bool {
+func orRule(ruleSets ...ruleSet) func(context.Context, interface{}) bool {
+	return func(ctx context.Context, input interface{}) bool {
 		output := false
 
 		if len(ruleSets) == 0 {
@@ -273,7 +274,7 @@ func orRule(ruleSets ...ruleSet) func(interface{}) bool {
 		}
 
 		for _, ruleSet := range ruleSets {
-			output = len(ruleSet.validate(input)) == 0 || output
+			output = len(ruleSet.validate(ctx, input)) == 0 || output
 		}
 
 		return output
@@ -281,8 +282,8 @@ func orRule(ruleSets ...ruleSet) func(interface{}) bool {
 }
 
 // If Xor of the passed ruleSets pass, this rule will pass
-func xorRule(ruleSets ...ruleSet) func(interface{}) bool {
-	return func(input interface{}) bool {
+func xorRule(ruleSets ...ruleSet) func(context.Context, interface{}) bool {
+	return func(ctx context.Context, input interface{}) bool {
 		output := false
 
 		if len(ruleSets) == 0 {
@@ -290,7 +291,7 @@ func xorRule(ruleSets ...ruleSet) func(interface{}) bool {
 		}
 
 		for _, ruleSet := range ruleSets {
-			output = len(ruleSet.validate(input)) == 0 != output
+			output = len(ruleSet.validate(ctx, input)) == 0 != output
 		}
 
 		return output
@@ -298,8 +299,8 @@ func xorRule(ruleSets ...ruleSet) func(interface{}) bool {
 }
 
 // If passed data is not one of choices in choices variable, it fails
-func choicesRule(choices ...interface{}) func(interface{}) bool {
-	return func(input interface{}) bool {
+func choicesRule(choices ...interface{}) func(context.Context, interface{}) bool {
+	return func(ctx context.Context, input interface{}) bool {
 		for i := 0; i < len(choices); i++ {
 			element := choices[i]
 			if generals.Same(element, input) {
@@ -312,7 +313,7 @@ func choicesRule(choices ...interface{}) func(interface{}) bool {
 }
 
 // Returns true if input is string
-func stringRule(input interface{}) bool {
+func stringRule(ctx context.Context, input interface{}) bool {
 	if !isValid(input) {
 		return false
 	}

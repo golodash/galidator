@@ -1,6 +1,7 @@
 package galidator
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"reflect"
@@ -40,7 +41,7 @@ func hasZeroItems(input interface{}) bool {
 
 // A helper function to use inside code
 func isEmptyNilZero(input interface{}) bool {
-	return !requiredRule(input)
+	return !requiredRule(context.TODO(), input)
 }
 
 // Returns values of passed fields from passed struct or map

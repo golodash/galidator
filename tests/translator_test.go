@@ -1,6 +1,9 @@
 package tests
 
-import "testing"
+import (
+	"context"
+	"testing"
+)
 
 var translates = map[string]string{
 	"required": "this is required which is translated",
@@ -56,7 +59,7 @@ func TestTranslator(t *testing.T) {
 		t.Run(s.name, func(t *testing.T) {
 			defer deferTestCases(t, s.panic, s.expected)
 
-			output := s.validator.Validate(s.in, testTranslator)
+			output := s.validator.Validate(context.TODO(), s.in, testTranslator)
 			check(t, s.expected, output)
 		})
 	}

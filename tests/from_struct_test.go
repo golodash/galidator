@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golodash/galidator"
@@ -21,7 +22,7 @@ var choices = []string{
 	"1", "2", "3",
 }
 
-func custom_choices(input interface{}) bool {
+func custom_choices(ctx context.Context, input interface{}) bool {
 	for _, item := range input.([]string) {
 		if slices.FindIndex(choices, item) == -1 {
 			return false
@@ -95,7 +96,7 @@ func TestFromStruct(t *testing.T) {
 		t.Run(s.name, func(t *testing.T) {
 			defer deferTestCases(t, s.panic, s.expected)
 
-			output := s.validator.Validate(s.in)
+			output := s.validator.Validate(context.TODO(), s.in)
 			check(t, s.expected, output)
 		})
 	}

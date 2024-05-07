@@ -4,6 +4,8 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🎉 feat: context goes through the validators now
+
 1.4.4 (2024-05-07)
 ------------------
 
