@@ -4,6 +4,7 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🐛 fix: fixed #11 reported bug
 
 1.4.3 (2023-10-10)
 ------------------

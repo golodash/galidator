@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -489,12 +490,26 @@ func decryptPath(path string, v Validator, errorField playgroundValidator.FieldE
 			panic("error structure does not match with validator structure")
 		}
 	} else if rs := v.getRules(); len(rs) != 0 {
+		re, _ := regexp.Compile(`(\w+)\[(\d+)\]`)
+		slicePieces := re.FindStringSubmatch(fieldName)
+		arrayItem := -1
+		if len(slicePieces) > 0 {
+			fieldName = slicePieces[1]
+			arrayItem, _ = strconv.Atoi(slicePieces[2])
+		}
+		fmt.Println(fieldName)
 		if r, ok := rs[fieldName]; ok {
 			if deep := r.getDeepValidator(); deep != nil {
 				if r.getName() != "" {
 					fieldName = r.getName()
 				}
 				output[fieldName] = decryptPath(path, deep, errorField)
+			} else if children := r.getChildrenValidator(); arrayItem != -1 && children != nil {
+				if splits := strings.Split(path, "."); len(splits) == 1 && len(re.FindStringSubmatch(splits[0])) == 0 {
+					output[fieldName] = map[int]interface{}{arrayItem: map[string]interface{}{splits[0]: decryptPath(path, children, errorField)}}
+				} else {
+					output[fieldName] = map[int]interface{}{arrayItem: decryptPath(path, children, errorField)}
+				}
 			} else {
 				panic("error structure does not match with validator structure")
 			}
