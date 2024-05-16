@@ -498,7 +498,6 @@ func decryptPath(path string, v Validator, errorField playgroundValidator.FieldE
 			fieldName = slicePieces[1]
 			arrayItem, _ = strconv.Atoi(slicePieces[2])
 		}
-		fmt.Println(fieldName)
 		if r, ok := rs[fieldName]; ok {
 			if deep := r.getDeepValidator(); deep != nil {
 				if r.getName() != "" {
