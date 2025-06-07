@@ -53,6 +53,10 @@ type (
 		SetDefaultOnNil(input interface{}, defaultValue interface{})
 		// Sets passed default values if value field is zero
 		SetDefault(input interface{}, defaultValue interface{})
+		// Returns ruleSet of an input
+		GetStructRule(input string) ruleSet
+		// Returns the ruleSet of current validator
+		GetRule() ruleSet
 		// Returns Rules
 		getRules() Rules
 		// Returns rule
@@ -107,6 +111,17 @@ func getRawErrorMessage(ruleKey string, messages Messages, specificMessage Messa
 			return fmt.Sprintf("error happened but no error message exists on '%s' rule key", ruleKey)
 		}
 	}
+}
+
+func (o *validatorS) GetRule() ruleSet {
+	return o.rule
+}
+
+func (o *validatorS) GetStructRule(input string) ruleSet {
+	if rule, ok := o.rules[input]; ok {
+		return rule
+	}
+	return nil
 }
 
 func (o *validatorS) Validate(ctx context.Context, input interface{}, translator ...Translator) interface{} {

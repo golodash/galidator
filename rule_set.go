@@ -36,7 +36,7 @@ type (
 		isOptional bool
 		// Holds data for more complex structures, like:
 		//
-		// map, slice or struct
+		// map or struct
 		deepValidator Validator
 		// Defines type of elements of a slice
 		childrenValidator Validator
@@ -47,7 +47,7 @@ type (
 	// An interface with some functions to satisfy validation purpose
 	ruleSet interface {
 		// Validates all validators defined
-		validate(context.Context, interface{}) []string
+		validate(ctx context.Context, input interface{}) []string
 
 		// Checks if input is int
 		Int() ruleSet
@@ -133,6 +133,10 @@ type (
 		WhenNotExistAll(choices ...string) ruleSet
 		// Checks if input is a string
 		String() ruleSet
+		// Returns Validator of current Element (For map and struct elements)
+		GetValidator() Validator
+		// Returns Validator of children Elements (For slices)
+		GetChildrenValidator() Validator
 
 		// Adds a new pair of `key: value` message into existing SpecificMessages variable
 		appendSpecificMessages(key string, value string)
@@ -417,6 +421,14 @@ func (o *ruleSetS) String() ruleSet {
 	functionName := "string"
 	o.validators[functionName] = stringRule
 	return o
+}
+
+func (o *ruleSetS) GetValidator() Validator {
+	return o.deepValidator
+}
+
+func (o *ruleSetS) GetChildrenValidator() Validator {
+	return o.childrenValidator
 }
 
 func (o *ruleSetS) appendSpecificMessages(key string, value string) {
