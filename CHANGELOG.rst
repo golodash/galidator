@@ -4,7 +4,10 @@ CHANGELOG
 UNRELEASED
 ----------
 
+2.1.0 (2025-06-07)
+
 * 🎉 feat: added GetRule, GetStructRule in ruleSet and GetValidator with GetChildrenValidator in Validator
+
 2.0.0 (2024-05-07)
 ------------------
 
