@@ -261,7 +261,7 @@ func passwordRule(ctx context.Context, input interface{}) bool {
 	if !isValid(input) {
 		return false
 	}
-	return regexRule(`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$`)(ctx, input)
+	return regexRule("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[ !\"#$%&'()*+,-.\\/:;<=>?@[\\]^_`{|}~])[A-Za-z\\d !\"#$%&'()*+,-.\\/:;<=>?@[\\]^_`{|}~]{8,}$")(ctx, input)
 }
 
 // If at least one of the passed ruleSets pass, this rule will pass

@@ -44,6 +44,13 @@ func TestPassword(t *testing.T) {
 			panic:     false,
 			expected:  nil,
 		},
+		{
+			name:      "pass-2",
+			validator: g.Validator(g.R().Password().SpecificMessages(galidator.Messages{"password": "password failed"})),
+			in:        "5'N*'~M.fp7iY*F",
+			panic:     false,
+			expected:  nil,
+		},
 	}
 
 	for _, s := range scenarios {
