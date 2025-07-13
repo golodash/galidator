@@ -166,7 +166,7 @@ func lenRule(length int) func(context.Context, interface{}) bool {
 
 // Returns true if input is not 0, "", ”, nil and empty
 func requiredRule(ctx context.Context, input interface{}) bool {
-	return !isNil(input) && !reflect.ValueOf(input).IsZero() && !hasZeroItems(input)
+	return !isNil(input) && !hasZeroItems(input)
 }
 
 // Returns true if input is not zero(0, "", ”)
