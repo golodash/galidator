@@ -43,18 +43,18 @@ func TestRequired(t *testing.T) {
 			expected:  nil,
 		},
 		{
-			name:      "fail-int",
+			name:      "pass-int",
 			validator: g.Validator(g.R().Required()),
 			in:        0,
 			panic:     false,
-			expected:  []string{"required"},
+			expected:  nil,
 		},
 		{
-			name:      "fail-float",
+			name:      "pass-float",
 			validator: g.Validator(g.R().Required()),
 			in:        0.0,
 			panic:     false,
-			expected:  []string{"required"},
+			expected:  nil,
 		},
 		{
 			name:      "fail-string",

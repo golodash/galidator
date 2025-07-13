@@ -49,7 +49,7 @@ func TestWhenExistOne(t *testing.T) {
 			expected: map[string][]string{"username": {"we are required now"}},
 		},
 		{
-			name:      "pass-1",
+			name:      "fail-4",
 			validator: v,
 			in: map[string]interface{}{
 				"id":       0,
@@ -57,10 +57,10 @@ func TestWhenExistOne(t *testing.T) {
 				"username": "",
 			},
 			panic:    false,
-			expected: nil,
+			expected: map[string][]string{"username": {"we are required now"}},
 		},
 		{
-			name:      "pass-2",
+			name:      "pass-1",
 			validator: v,
 			in: map[string]interface{}{
 				"id":       1,
@@ -71,7 +71,7 @@ func TestWhenExistOne(t *testing.T) {
 			expected: nil,
 		},
 		{
-			name:      "pass-3",
+			name:      "pass-2",
 			validator: v,
 			in: map[string]interface{}{
 				"id":       0,

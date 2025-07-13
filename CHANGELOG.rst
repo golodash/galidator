@@ -4,6 +4,11 @@ CHANGELOG
 UNRELEASED
 ----------
 
+* 🐛 fix: required rule doesn't do much when it comes to numbers no more (it doens't check being zero)
+2.1.2 (2025-07-13)
+
+* 🐛 fix: required rule doesn't check for zero values
+
 2.1.1 (2025-07-11)
 
 * 🐛 fix: password validation was a little bit limited

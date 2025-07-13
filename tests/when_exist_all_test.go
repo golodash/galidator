@@ -31,6 +31,17 @@ func TestWhenExistAll(t *testing.T) {
 			validator: v,
 			in: map[string]interface{}{
 				"id":       0,
+				"name":     "name",
+				"username": "",
+			},
+			panic:    false,
+			expected: map[string][]string{"username": {"we are required now"}},
+		},
+		{
+			name:      "pass-2",
+			validator: v,
+			in: map[string]interface{}{
+				"id":       0,
 				"name":     "",
 				"username": "",
 			},
@@ -38,7 +49,7 @@ func TestWhenExistAll(t *testing.T) {
 			expected: nil,
 		},
 		{
-			name:      "pass-2",
+			name:      "pass-3",
 			validator: v,
 			in: map[string]interface{}{
 				"id":       1,
@@ -49,18 +60,7 @@ func TestWhenExistAll(t *testing.T) {
 			expected: nil,
 		},
 		{
-			name:      "pass-3",
-			validator: v,
-			in: map[string]interface{}{
-				"id":       0,
-				"name":     "name",
-				"username": "",
-			},
-			panic:    false,
-			expected: nil,
-		},
-		{
-			name:      "pass-3",
+			name:      "pass-4",
 			validator: v,
 			in: map[string]interface{}{
 				"id":       1,

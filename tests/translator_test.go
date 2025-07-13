@@ -19,18 +19,18 @@ func testTranslator(input string) string {
 func TestTranslator(t *testing.T) {
 	scenarios := []scenario{
 		{
-			name:      "fail-int",
+			name:      "pass-int",
 			validator: g.Validator(g.R().Required()),
 			in:        0,
 			panic:     false,
-			expected:  []string{"this is required which is translated"},
+			expected:  nil,
 		},
 		{
-			name:      "fail-float",
+			name:      "pass-float",
 			validator: g.Validator(g.R().Required()),
 			in:        0.0,
 			panic:     false,
-			expected:  []string{"this is required which is translated"},
+			expected:  nil,
 		},
 		{
 			name:      "fail-string",
